@@ -152,8 +152,7 @@
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
-#undef CONFIG_EXTRA_ENV_SETTINGS
-#define CONFIG_EXTRA_ENV_SETTINGS \
+#define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
 	"consolecmd=setenv console ttyS0,$baudrate\0" \
@@ -386,15 +385,14 @@
 		"cmp.b $loadaddr $verifyaddr " \
 			__stringify(CONFIG_BOARD_SIZE_LIMIT) ";\0"
 
-#undef CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND	\
+#define REAL_BOOTCOMMAND \
 	"if test $bootmode = safemode -o $bootmode = install; then " \
 		"run boot_safemode; " \
 	"else " \
 		"run boot_runmode; "\
 	"fi"
 
-#define CONFIG_PREBOOT \
+#define REAL_PREBOOT \
 	"setenv silent 1; " \
 	"dcache on; " \
 	"nand lock tight; " \
@@ -429,5 +427,16 @@
 			"bootmode=safemode; " \
 		"fi; " \
 	"fi;"
+
+#undef CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	REAL_EXTRA_ENV_SETTINGS
+
+#undef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND \
+	REAL_BOOTCOMMAND
+
+#define CONFIG_PREBOOT \
+	REAL_PREBOOT
 
 #endif /* __CONFIG_NICRIOZYNQ_H */
