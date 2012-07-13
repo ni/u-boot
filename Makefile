@@ -691,7 +691,7 @@ $(TIMESTAMP_FILE):
 		@LC_ALL=C date +'#define U_BOOT_TIME "%T"' >> $@.tmp
 		@cmp -s $@ $@.tmp && rm -f $@.tmp || mv -f $@.tmp $@
 
-easylogo env gdb:
+easylogo env fdtview gdb:
 	$(MAKE) -C tools/$@ all MTD_VERSION=${MTD_VERSION}
 gdbtools: gdb
 
