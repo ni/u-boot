@@ -204,7 +204,6 @@ static struct xnandps_command_format xnandps_commands[] __devinitdata = {
 	{NAND_CMD_RNDIN, NAND_CMD_NONE, 2, NAND_CMD_NONE},
 	{NAND_CMD_ERASE1, NAND_CMD_ERASE2, 3, XNANDPSS_CMD_PHASE},
 	{NAND_CMD_RESET, NAND_CMD_NONE, 0, NAND_CMD_NONE},
-	{NAND_CMD_PARAM, NAND_CMD_NONE, 1, NAND_CMD_NONE},
 	{NAND_CMD_GET_FEATURES, NAND_CMD_NONE, 1, NAND_CMD_NONE},
 	{NAND_CMD_SET_FEATURES, NAND_CMD_NONE, 1, NAND_CMD_NONE},
 	{NAND_CMD_NONE, NAND_CMD_NONE, 0, 0},
@@ -221,10 +220,10 @@ static struct xnandps_command_format xnandps_commands[] __devinitdata = {
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_16 = {
 	.eccbytes = 3,
-	.eccpos = {13, 14, 15},
+	.eccpos = {0, 1, 2},
 	.oobfree = {
-		{.offset = 0,
-		 . length = 12} }
+		{.offset = 8,
+		 . length = 8} }
 };
 
 static struct nand_ecclayout nand_oob_64 = {
@@ -1063,7 +1062,6 @@ int zynq_nand_init(struct nand_chip *nand_chip)
 	u8 set_feature[4] = {0x08, 0x00, 0x00, 0x00};
 	unsigned long ecc_cfg;
 	int ondie_ecc_enabled = 0;
-	int ez_nand_supported = 0;
 
 #ifdef LINUX_ONLY_NOT_UBOOT
 	xnand = kzalloc(sizeof(struct xnandps_info), GFP_KERNEL);
@@ -1204,12 +1202,9 @@ int zynq_nand_init(struct nand_chip *nand_chip)
 			printf("OnDie ECC flash: ");
 			ondie_ecc_enabled = 1;
 		}
-	} else if ((nand_chip->onfi_version == 23) &&
-				(nand_chip->onfi_params.features & (1 << 9))) {
-		ez_nand_supported = 1;
 	}
 
-	if (ondie_ecc_enabled || ez_nand_supported) {
+	if (ondie_ecc_enabled) {
 		/* bypass the controller ECC block */
 		ecc_cfg = xnandps_read32(xnand->smc_regs +
 			XSMCPSS_ECC_MEMCFG_OFFSET(XSMCPSS_ECC_IF1_OFFSET));
