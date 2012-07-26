@@ -356,7 +356,7 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 
 	/************************* GEM0_CLK Setup *************************/
 	/* SLCR unlock */
-	Out32(0xF8000008, 0xDF0D);
+	Out32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK, XPSS_SLCR_UNLOCK_KEY);
 
 	/* Configure GEM0_RCLK_CTRL */
 	Out32(0xF8000138, ((0 << 4) | (1 << 0)));
@@ -379,7 +379,7 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 #endif
 
 	/* SLCR lock */
-	Out32(0xF8000004, 0x767B);
+	Out32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_LOCK, XPSS_SLCR_LOCK_KEY);
 
 	printf("Link is now at %dMbps!\n", link_speed);
 

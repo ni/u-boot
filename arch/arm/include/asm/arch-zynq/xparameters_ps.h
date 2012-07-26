@@ -222,6 +222,16 @@ extern "C" {
 #define XPSS_CPU_TMR_INT_ID		29
 #define XPSS_SCU_WDT_INT_ID		30
 
+/* SLCR Register Offsets */
+#define XPSS_SLCR_LOCK			0x0004
+#define XPSS_SLCR_UNLOCK		0x0008
+
+/* XPSS_SLCR_LOCK value */
+#define XPSS_SLCR_LOCK_KEY	0x767B
+
+/* XPSS_SLCR_UNLOCK value */
+#define XPSS_SLCR_UNLOCK_KEY	0xDF0D
+
 /* L2CC Register Offsets */
 #define XPSS_L2CC_ID_OFFSET			0x0000
 #define XPSS_L2CC_TYPE_OFFSET			0x0004
