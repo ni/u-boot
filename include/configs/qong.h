@@ -22,9 +22,9 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include <asm/arch/mx31-regs.h>
+#include <asm/arch/imx-regs.h>
 
- /* High Level Configuration Options */
+/* High Level Configuration Options */
 #define CONFIG_ARM1136		1	/* This is an arm1136 CPU core */
 #define CONFIG_MX31		1	/* in a mx31 */
 #define CONFIG_QONG		1
@@ -34,6 +34,8 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
+#define CONFIG_SYS_TEXT_BASE 0xa0000000
+
 #define CONFIG_CMDLINE_TAG		1	/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS	1
 #define CONFIG_INITRD_TAG		1
@@ -42,7 +44,6 @@
  * Size of malloc() pool
  */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 1024 * 1024)
-/* size in bytes reserved for initial data */
 
 /*
  * Hardware drivers
@@ -52,6 +53,7 @@
 #define CONFIG_SYS_MX31_UART1	1
 
 #define CONFIG_MXC_GPIO
+#define CONFIG_HW_WATCHDOG
 
 #define CONFIG_MXC_SPI
 #define CONFIG_DEFAULT_SPI_BUS	1

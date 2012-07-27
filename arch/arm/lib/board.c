@@ -262,9 +262,6 @@ init_fnc_t *init_sequence[] = {
 	init_func_i2c,
 #endif
 	dram_init,		/* configure available RAM banks */
-#if defined(CONFIG_CMD_PCI) || defined (CONFIG_PCI)
-	arm_pci_init,
-#endif
 	NULL,
 };
 
@@ -344,21 +341,14 @@ void board_init_f (ulong bootflag)
 	addr &= ~(4096 - 1);
 	debug ("Top of RAM usable for U-Boot at: %08lx\n", addr);
 
-#ifdef CONFIG_VFD
-#	ifndef PAGE_SIZE
-#	  define PAGE_SIZE 4096
-#	endif
-	/*
-	 * reserve memory for VFD display (always full pages)
-	 */
-	addr -= vfd_setmem (addr);
-	gd->fb_base = addr;
-#endif /* CONFIG_VFD */
-
 #ifdef CONFIG_LCD
+#ifdef CONFIG_FB_ADDR
+	gd->fb_base = CONFIG_FB_ADDR;
+#else
 	/* reserve memory for LCD display (always full pages) */
 	addr = lcd_setmem (addr);
 	gd->fb_base = addr;
+#endif /* CONFIG_FB_ADDR */
 #endif /* CONFIG_LCD */
 
 	/*
@@ -399,7 +389,7 @@ void board_init_f (ulong bootflag)
 		CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ, addr_sp);
 #endif
 	/* leave 3 words for abort-stack    */
-	addr_sp -= 3;
+	addr_sp -= 12;
 
 	/* 8-byte alignment for ABI compliance */
 	addr_sp &= ~0x07;
@@ -529,10 +519,9 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	/* initialize environment */
 	env_relocate ();
 
-#ifdef CONFIG_VFD
-	/* must do this after the framebuffer is allocated */
-	drv_vfd_init();
-#endif /* CONFIG_VFD */
+#if defined(CONFIG_CMD_PCI) || defined(CONFIG_PCI)
+	arm_pci_init();
+#endif
 
 	/* IP Address */
 	gd->bd->bi_ip_addr = getenv_IPaddr ("ipaddr");

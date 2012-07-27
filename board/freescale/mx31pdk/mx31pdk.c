@@ -26,10 +26,18 @@
 
 #include <common.h>
 #include <netdev.h>
-#include <asm/arch/mx31.h>
-#include <asm/arch/mx31-regs.h>
+#include <asm/arch/clock.h>
+#include <asm/arch/imx-regs.h>
+#include <watchdog.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#ifdef CONFIG_HW_WATCHDOG
+void hw_watchdog_reset(void)
+{
+	mxc_hw_watchdog_reset();
+}
+#endif
 
 int dram_init(void)
 {
@@ -68,9 +76,17 @@ int board_init(void)
 	return 0;
 }
 
+int board_late_init(void)
+{
+#ifdef CONFIG_HW_WATCHDOG
+	mxc_hw_watchdog_enable();
+#endif
+	return 0;
+}
+
 int checkboard(void)
 {
-	printf("Board: i.MX31 MAX PDK (3DS)\n");
+	printf("Board: MX31PDK\n");
 	return 0;
 }
 

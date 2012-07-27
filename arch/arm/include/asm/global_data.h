@@ -41,9 +41,6 @@ typedef	struct	global_data {
 	unsigned long	env_addr;	/* Address  of Environment struct */
 	unsigned long	env_valid;	/* Checksum of Environment valid? */
 	unsigned long	fb_base;	/* base address of frame buffer */
-#ifdef CONFIG_VFD
-	unsigned char	vfd_type;	/* display type */
-#endif
 #ifdef CONFIG_FSL_ESDHC
 	unsigned long	sdhc_clk;
 #endif
@@ -63,6 +60,9 @@ typedef	struct	global_data {
 	unsigned long	tbu;
 	unsigned long long	timer_reset_value;
 	unsigned long	lastinc;
+#endif
+#ifdef CONFIG_IXP425
+	unsigned long	timestamp;
 #endif
 	unsigned long	relocaddr;	/* Start address of U-Boot in RAM */
 	phys_size_t	ram_size;	/* RAM size */

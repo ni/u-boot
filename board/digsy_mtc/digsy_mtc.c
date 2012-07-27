@@ -42,6 +42,7 @@
 #if defined(CONFIG_DIGSY_REV5)
 #include "is45s16800a2.h"
 #include <mtd/cfi_flash.h>
+#include <flash.h>
 #else
 #include "is42s16800a-7t.h"
 #endif
@@ -190,15 +191,16 @@ phys_size_t initdram(int board_type)
 
 int checkboard(void)
 {
-	char *s = getenv("serial#");
+	char buf[64];
+	int i = getenv_f("serial#", buf, sizeof(buf));
 
 	puts ("Board: InterControl digsyMTC");
 #if defined(CONFIG_DIGSY_REV5)
 	puts (" rev5");
 #endif
-	if (s != NULL) {
+	if (i > 0) {
 		puts(", ");
-		puts(s);
+		puts(buf);
 	}
 	putc('\n');
 
@@ -398,6 +400,7 @@ int update_flash_size (int flash_size)
 			size += flash_get_size(base, i);
 		}
 	}
+	flash_protect_default();
 	gd->bd->bi_flashstart = base;
 	return 0;
 }
@@ -405,6 +408,9 @@ int update_flash_size (int flash_size)
 
 void ft_board_setup(void *blob, bd_t *bd)
 {
+	int phy_addr = CONFIG_PHY_ADDR;
+	char eth_path[] = "/soc5200@f0000000/mdio@3000/ethernet-phy@0";
+
 	ft_cpu_setup(blob, bd);
 	/*
 	 * There are 2 RTC nodes in the DTS, so remove
@@ -422,5 +428,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 #endif
 	ft_adapt_flash_base(blob);
 #endif
+	/* fix up the phy address */
+	do_fixup_by_path(blob, eth_path, "reg", &phy_addr, sizeof(int), 0);
 }
 #endif /* defined(CONFIG_OF_LIBFDT) && defined(CONFIG_OF_BOARD_SETUP) */
