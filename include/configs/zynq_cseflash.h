@@ -60,9 +60,7 @@
 #undef CONFIG_CMD_ITEST	/* Integer (and string) test	*/
 #undef CONFIG_CMD_IMLS		/* List all found images	*/
 
-#undef CONFIG_BOOTM_LINUX
-#undef CONFIG_BOOTM_NETBSD
-#undef CONFIG_BOOTM_RTEMS
+#undef CONFIG_CMD_BOOTM
 #undef CONFIG_GZIP
 #undef CONFIG_ZLIB
 
