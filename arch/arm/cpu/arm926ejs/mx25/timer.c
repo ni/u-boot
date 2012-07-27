@@ -121,20 +121,6 @@ int timer_init(void)
 	return 0;
 }
 
-void reset_timer_masked(void)
-{
-	struct gpt_regs *gpt = (struct gpt_regs *)IMX_GPT1_BASE;
-	/* reset time */
-	/* capture current incrementer value time */
-	lastinc = readl(&gpt->counter);
-	timestamp = 0; /* start "advancing" time stamp from 0 */
-}
-
-void reset_timer(void)
-{
-	reset_timer_masked();
-}
-
 unsigned long long get_ticks (void)
 {
 	struct gpt_regs *gpt = (struct gpt_regs *)IMX_GPT1_BASE;
@@ -170,11 +156,6 @@ ulong get_timer (ulong base)
 	return get_timer_masked () - base;
 }
 
-void set_timer (ulong t)
-{
-	timestamp = time_to_tick(t);
-}
-
 /* delay x useconds AND preserve advance timstamp value */
 void __udelay (unsigned long usec)
 {
@@ -186,4 +167,16 @@ void __udelay (unsigned long usec)
 
 	while (get_ticks() < tmp)	/* loop till event */
 		 /*NOP*/;
+}
+
+/*
+ * This function is derived from PowerPC code (timebase clock frequency).
+ * On ARM it returns the number of timer ticks per second.
+ */
+ulong get_tbclk(void)
+{
+	ulong tbclk;
+
+	tbclk = CONFIG_MX25_CLK32;
+	return tbclk;
 }

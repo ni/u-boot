@@ -28,7 +28,6 @@
 #define __CONFIG_H
 
 /* High Level Configuration Options */
-#define CONFIG_ARMV7		1	/* This is an ARM V7 CPU core */
 #define CONFIG_SAMSUNG		1	/* in a SAMSUNG core */
 #define CONFIG_S5P		1	/* which is in a S5P Family */
 #define CONFIG_S5PC110		1	/* which is in a S5PC110 */
@@ -220,5 +219,17 @@
 #define CONFIG_DOS_PARTITION		1
 
 #define CONFIG_SYS_INIT_SP_ADDR	(CONFIG_SYS_LOAD_ADDR - 0x1000000)
+
+#include <asm/arch/gpio.h>
+/*
+ * I2C Settings
+ */
+#define CONFIG_SOFT_I2C_GPIO_SCL s5pc110_gpio_get_nr(j4, 3)
+#define CONFIG_SOFT_I2C_GPIO_SDA s5pc110_gpio_get_nr(j4, 0)
+
+#define CONFIG_SOFT_I2C	1
+#define CONFIG_SYS_I2C_SPEED	50000
+#define CONFIG_I2C_MULTI_BUS
+#define CONFIG_SYS_MAX_I2C_BUS	7
 
 #endif	/* __CONFIG_H */

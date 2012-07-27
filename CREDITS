@@ -82,7 +82,6 @@ D: Port to the gw8260 board
 N: Curt Brune
 E: curt@cucy.com
 D: Added support for Samsung S3C4510B CPU (ARM7tdmi based SoC)
-D: Added support for ESPD-Inc. EVB4510 Board
 W: http://www.cucy.com
 
 N: Jonathan De Bruyne
@@ -134,11 +133,6 @@ N: Dave Ellis
 E: DGE@sixnetio.com
 D: EEPROM Speedup, SXNI855T port
 
-N: Thomas Elste
-E: info@elste.org
-D: Port for the ModNET50 Board, NET+50 CPU Port
-W: http://www.imms.de
-
 N: Daniel Engstr?m
 E: daniel@omicron.se
 D: x86 port, Support for sc520_cdp board
@@ -160,11 +154,6 @@ D: Support for WEP EP250 (PXA) board
 N: Thomas Frieden
 E: ThomasF@hyperion-entertainment.com
 D: Support for AmigaOne
-
-N: Niklaus Giger
-E: niklaus.giger@netstal.com
-D: Support for HCU(x) boards
-W: www.netstal.com
 
 N: Paul Gortmaker
 E: paul.gortmaker@windriver.com

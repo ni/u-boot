@@ -3,7 +3,7 @@
  * Graeme Russ, <graeme.russ@gmail.com>
  *
  * (C) Copyright 2002
- * Daniel Engström, Omicron Ceti AB, <daniel@omicron.se>
+ * Daniel EngstrÃ¶m, Omicron Ceti AB, <daniel@omicron.se>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -94,17 +94,7 @@ void timer_isr(void *unused)
 	}
 }
 
-void reset_timer (void)
-{
-	system_ticks = 0;
-}
-
 ulong get_timer (ulong base)
 {
 	return (system_ticks - base);
-}
-
-void set_timer (ulong t)
-{
-	system_ticks = t;
 }

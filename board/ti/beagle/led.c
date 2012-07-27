@@ -22,21 +22,19 @@
 #include <asm/arch/cpu.h>
 #include <asm/io.h>
 #include <asm/arch/sys_proto.h>
-#include <asm/arch/gpio.h>
-
-static unsigned int saved_state[2] = {STATUS_LED_OFF, STATUS_LED_OFF};
+#include <asm/gpio.h>
 
 /* GPIO pins for the LEDs */
-#define BEAGLE_LED_USR0	149
-#define BEAGLE_LED_USR1	150
+#define BEAGLE_LED_USR0	150
+#define BEAGLE_LED_USR1	149
 
 #ifdef STATUS_LED_GREEN
-void green_LED_off (void)
+void green_led_off(void)
 {
 	__led_set (STATUS_LED_GREEN, 0);
 }
 
-void green_LED_on (void)
+void green_led_on(void)
 {
 	__led_set (STATUS_LED_GREEN, 1);
 }
@@ -49,42 +47,40 @@ void __led_init (led_id_t mask, int state)
 
 void __led_toggle (led_id_t mask)
 {
+	int state, toggle_gpio = 0;
 #ifdef STATUS_LED_BIT
-	if (STATUS_LED_BIT & mask) {
-		if (STATUS_LED_ON == saved_state[0])
-			__led_set(STATUS_LED_BIT, 0);
-		else
-			__led_set(STATUS_LED_BIT, 1);
-	}
+	if (!toggle_gpio && STATUS_LED_BIT & mask)
+		toggle_gpio = BEAGLE_LED_USR0;
 #endif
 #ifdef STATUS_LED_BIT1
-	if (STATUS_LED_BIT1 & mask) {
-		if (STATUS_LED_ON == saved_state[1])
-			__led_set(STATUS_LED_BIT1, 0);
-		else
-			__led_set(STATUS_LED_BIT1, 1);
-	}
+	if (!toggle_gpio && STATUS_LED_BIT1 & mask)
+		toggle_gpio = BEAGLE_LED_USR1;
 #endif
+	if (toggle_gpio) {
+		if (!gpio_request(toggle_gpio, "")) {
+			gpio_direction_output(toggle_gpio, 0);
+			state = gpio_get_value(toggle_gpio);
+			gpio_set_value(toggle_gpio, !state);
+		}
+	}
 }
 
 void __led_set (led_id_t mask, int state)
 {
 #ifdef STATUS_LED_BIT
 	if (STATUS_LED_BIT & mask) {
-		if (!omap_request_gpio(BEAGLE_LED_USR0)) {
-			omap_set_gpio_direction(BEAGLE_LED_USR0, 0);
-			omap_set_gpio_dataout(BEAGLE_LED_USR0, state);
+		if (!gpio_request(BEAGLE_LED_USR0, "")) {
+			gpio_direction_output(BEAGLE_LED_USR0, 0);
+			gpio_set_value(BEAGLE_LED_USR0, state);
 		}
-		saved_state[0] = state;
 	}
 #endif
 #ifdef STATUS_LED_BIT1
 	if (STATUS_LED_BIT1 & mask) {
-		if (!omap_request_gpio(BEAGLE_LED_USR1)) {
-			omap_set_gpio_direction(BEAGLE_LED_USR1, 0);
-			omap_set_gpio_dataout(BEAGLE_LED_USR1, state);
+		if (!gpio_request(BEAGLE_LED_USR1, "")) {
+			gpio_direction_output(BEAGLE_LED_USR1, 0);
+			gpio_set_value(BEAGLE_LED_USR1, state);
 		}
-		saved_state[1] = state;
 	}
 #endif
 }

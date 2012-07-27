@@ -26,11 +26,9 @@ include $(TOPDIR)/config.mk
 LIB	=  $(obj)lib$(SOC).o
 
 SOBJS	:= lowlevel_init.o
-SOBJS	+= cache.o
 
 COBJS	+= board.o
 COBJS	+= clock.o
-COBJS	+= gpio.o
 COBJS	+= mem.o
 COBJS	+= sys_info.o
 

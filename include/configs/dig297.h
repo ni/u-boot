@@ -35,7 +35,6 @@
 /*
  * High Level Configuration Options
  */
-#define CONFIG_ARMV7		/* This is an ARM V7 CPU core */
 #define CONFIG_OMAP		/* in a TI OMAP core */
 #define CONFIG_OMAP34XX		/* which is a 34XX */
 #define CONFIG_OMAP3430		/* which is in a 3430 */
@@ -98,8 +97,9 @@
 #define CONFIG_BAUDRATE			115200
 #define CONFIG_SYS_BAUDRATE_TABLE	{4800, 9600, 19200, 38400, 57600,\
 					115200}
-#define CONFIG_MMC
-#define CONFIG_OMAP3_MMC
+#define CONFIG_GENERIC_MMC		1
+#define CONFIG_MMC			1
+#define CONFIG_OMAP_HSMMC		1
 #define CONFIG_DOS_PARTITION
 
 /* DDR - I use Micron DDR */

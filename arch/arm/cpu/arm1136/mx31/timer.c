@@ -106,18 +106,6 @@ int timer_init (void)
 	return 0;
 }
 
-void reset_timer_masked (void)
-{
-	/* reset time */
-	gd->lastinc = GPTCNT; /* capture current incrementer value time */
-	gd->tbl = 0; /* start "advancing" time stamp from 0 */
-}
-
-void reset_timer(void)
-{
-	reset_timer_masked();
-}
-
 unsigned long long get_ticks (void)
 {
 	ulong now = GPTCNT; /* current tick value */
@@ -145,11 +133,6 @@ ulong get_timer_masked (void)
 ulong get_timer (ulong base)
 {
 	return get_timer_masked () - base;
-}
-
-void set_timer (ulong t)
-{
-	gd->tbl = time_to_tick(t);
 }
 
 /* delay x useconds AND preserve advance timestamp value */

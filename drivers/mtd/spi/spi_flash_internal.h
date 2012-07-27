@@ -19,6 +19,8 @@
 #define CMD_READ_ARRAY_FAST		0x0b
 #define CMD_READ_ARRAY_LEGACY		0xe8
 
+#define CMD_PAGE_PROGRAM		0x02
+#define CMD_WRITE_DISABLE		0x04
 #define CMD_READ_STATUS			0x05
 #define CMD_WRITE_ENABLE		0x06
 
@@ -44,6 +46,29 @@ int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
  */
 int spi_flash_cmd_write(struct spi_slave *spi, const u8 *cmd, size_t cmd_len,
 		const void *data, size_t data_len);
+
+/*
+ * Write the requested data out breaking it up into multiple write
+ * commands as needed per the write size.
+ */
+int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
+		size_t len, const void *buf);
+
+/*
+ * Enable writing on the SPI flash.
+ */
+static inline int spi_flash_cmd_write_enable(struct spi_flash *flash)
+{
+	return spi_flash_cmd(flash->spi, CMD_WRITE_ENABLE, NULL, 0);
+}
+
+/*
+ * Disable writing on the SPI flash.
+ */
+static inline int spi_flash_cmd_write_disable(struct spi_flash *flash)
+{
+	return spi_flash_cmd(flash->spi, CMD_WRITE_DISABLE, NULL, 0);
+}
 
 /*
  * Same as spi_flash_cmd_read() except it also claims/releases the SPI

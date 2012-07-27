@@ -192,8 +192,14 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 			popts->clk_adjust = pbsp->clk_adjust;
 			popts->wrlvl_start = pbsp->wrlvl_start;
 			popts->twoT_en = pbsp->force_2T;
+			break;
 		}
 		pbsp++;
+	}
+
+	if (i == num_params) {
+		printf("Warning: board specific timing not found "
+			"for data rate %lu MT/s!\n", ddr_freq);
 	}
 
 	/*
@@ -219,7 +225,7 @@ void fsl_ddr_board_options(memctl_options_t *popts,
 	popts->ddr_cdr1 = DDR_CDR1_DHC_EN;
 
 	/* override SPD values. rcw_2 should vary at differnt speed */
-	if (pdimm[0].n_ranks == 4) {
+	if (pdimm[0].registered_dimm == 1) {
 		popts->rcw_override = 1;
 		popts->rcw_1 = 0x000a5a00;
 		if (ddr_freq <= 800)
@@ -250,6 +256,6 @@ phys_size_t initdram(int board_type)
 	dram_size = setup_ddr_tlbs(dram_size / 0x100000);
 	dram_size *= 0x100000;
 
-	puts("    DDR: ");
+	debug("    DDR: ");
 	return dram_size;
 }

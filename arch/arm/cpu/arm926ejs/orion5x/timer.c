@@ -95,13 +95,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define timestamp gd->tbl
 #define lastdec gd->lastinc
 
-void reset_timer_masked(void)
-{
-	/* reset time */
-	lastdec = read_timer();
-	timestamp = 0;
-}
-
 ulong get_timer_masked(void)
 {
 	ulong now = read_timer();
@@ -119,19 +112,9 @@ ulong get_timer_masked(void)
 	return timestamp;
 }
 
-void reset_timer(void)
-{
-	reset_timer_masked();
-}
-
 ulong get_timer(ulong base)
 {
 	return get_timer_masked() - base;
-}
-
-void set_timer(ulong t)
-{
-	timestamp = t;
 }
 
 static inline ulong uboot_cntr_val(void)
@@ -181,5 +164,6 @@ int timer_init(void)
 void timer_init_r(void)
 {
 	/* init the timestamp and lastdec value */
-	reset_timer_masked();
+	lastdec = read_timer();
+	timestamp = 0;
 }

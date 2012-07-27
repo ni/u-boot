@@ -57,13 +57,6 @@ struct clock_control_regs {
 	u32 pdr2;
 };
 
-/* GPIO Registers */
-struct gpio_regs {
-	u32	gpio_dr;
-	u32	gpio_dir;
-	u32	gpio_psr;
-};
-
 struct cspi_regs {
 	u32 rxdata;
 	u32 txdata;
@@ -746,7 +739,7 @@ enum iomux_pins {
 #define IRAM_SIZE	(16 * 1024)
 
 #define MX31_AIPS1_BASE_ADDR	0x43f00000
-#define MX31_OTG_BASE_ADDR	(MX31_AIPS1_BASE_ADDR + 0x88000)
+#define IMX_USB_BASE		(MX31_AIPS1_BASE_ADDR + 0x88000)
 
 /* USB portsc */
 /* values for portsc field */

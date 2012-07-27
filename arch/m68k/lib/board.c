@@ -78,8 +78,6 @@ static char *failed = "*** failed ***\n";
 extern ulong __init_end;
 extern ulong __bss_end__;
 
-extern	void timer_init(void);
-
 #if defined(CONFIG_WATCHDOG)
 # define INIT_FUNC_WATCHDOG_INIT	watchdog_init,
 # define WATCHDOG_DISABLE		watchdog_disable
@@ -573,8 +571,6 @@ void board_init_r (gd_t *id, ulong dest_addr)
 #endif
 
 	udelay (20);
-
-	set_timer (0);
 
 	/* Insert function pointers now that we have relocated the code */
 

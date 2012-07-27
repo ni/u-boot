@@ -33,6 +33,7 @@
 #ifdef CONFIG_FSL_ESDHC
 #include <fsl_esdhc.h>
 #endif
+#include "../../../../drivers/qe/qe.h"		/* For struct qe_firmware */
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -227,6 +228,12 @@ static inline void ft_fixup_l2cache(void *blob)
 	u32 *ph;
 	u32 l2cfg0 = mfspr(SPRN_L2CFG0);
 	u32 size, line_size, num_ways, num_sets;
+	int has_l2 = 1;
+
+	/* P2040/P2040E has no L2, so dont set any L2 props */
+	if ((SVR_SOC_VER(get_svr()) == SVR_P2040) ||
+	    (SVR_SOC_VER(get_svr()) == SVR_P2040_E))
+		has_l2 = 0;
 
 	size = (l2cfg0 & 0x3fff) * 64 * 1024;
 	num_ways = ((l2cfg0 >> 14) & 0x1f) + 1;
@@ -249,21 +256,22 @@ static inline void ft_fixup_l2cache(void *blob)
 			goto next;
 		}
 
+		if (has_l2) {
 #ifdef CONFIG_SYS_CACHE_STASHING
-		{
 			u32 *reg = (u32 *)fdt_getprop(blob, off, "reg", 0);
 			if (reg)
 				fdt_setprop_cell(blob, l2_off, "cache-stash-id",
 					 (*reg * 2) + 32 + 1);
-		}
 #endif
 
-		fdt_setprop(blob, l2_off, "cache-unified", NULL, 0);
-		fdt_setprop_cell(blob, l2_off, "cache-block-size", line_size);
-		fdt_setprop_cell(blob, l2_off, "cache-size", size);
-		fdt_setprop_cell(blob, l2_off, "cache-sets", num_sets);
-		fdt_setprop_cell(blob, l2_off, "cache-level", 2);
-		fdt_setprop(blob, l2_off, "compatible", "cache", 6);
+			fdt_setprop(blob, l2_off, "cache-unified", NULL, 0);
+			fdt_setprop_cell(blob, l2_off, "cache-block-size",
+						line_size);
+			fdt_setprop_cell(blob, l2_off, "cache-size", size);
+			fdt_setprop_cell(blob, l2_off, "cache-sets", num_sets);
+			fdt_setprop_cell(blob, l2_off, "cache-level", 2);
+			fdt_setprop(blob, l2_off, "compatible", "cache", 6);
+		}
 
 		if (l3_off < 0) {
 			ph = (u32 *)fdt_getprop(blob, l2_off, "next-level-cache", 0);
@@ -406,6 +414,126 @@ static void ft_fixup_qe_snum(void *blob)
 }
 #endif
 
+/**
+ * fdt_fixup_fman_firmware -- insert the Fman firmware into the device tree
+ *
+ * The binding for an Fman firmware node is documented in
+ * Documentation/powerpc/dts-bindings/fsl/dpaa/fman.txt.  This node contains
+ * the actual Fman firmware binary data.  The operating system is expected to
+ * be able to parse the binary data to determine any attributes it needs.
+ */
+#ifdef CONFIG_SYS_DPAA_FMAN
+void fdt_fixup_fman_firmware(void *blob)
+{
+	int rc, fmnode, fwnode = -1;
+	uint32_t phandle;
+	struct qe_firmware *fmanfw;
+	const struct qe_header *hdr;
+	unsigned int length;
+	uint32_t crc;
+	const char *p;
+
+	/* The first Fman we find will contain the actual firmware. */
+	fmnode = fdt_node_offset_by_compatible(blob, -1, "fsl,fman");
+	if (fmnode < 0)
+		/* Exit silently if there are no Fman devices */
+		return;
+
+	/* If we already have a firmware node, then also exit silently. */
+	if (fdt_node_offset_by_compatible(blob, -1, "fsl,fman-firmware") > 0)
+		return;
+
+	/* If the environment variable is not set, then exit silently */
+	p = getenv("fman_ucode");
+	if (!p)
+		return;
+
+	fmanfw = (struct qe_firmware *) simple_strtoul(p, NULL, 0);
+	if (!fmanfw)
+		return;
+
+	hdr = &fmanfw->header;
+	length = be32_to_cpu(hdr->length);
+
+	/* Verify the firmware. */
+	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
+		(hdr->magic[2] != 'F')) {
+		printf("Data at %p is not an Fman firmware\n", fmanfw);
+		return;
+	}
+
+	if (length > CONFIG_SYS_FMAN_FW_LENGTH) {
+		printf("Fman firmware at %p is too large (size=%u)\n",
+		       fmanfw, length);
+		return;
+	}
+
+	length -= sizeof(u32);	/* Subtract the size of the CRC */
+	crc = be32_to_cpu(*(u32 *)((void *)fmanfw + length));
+	if (crc != crc32_no_comp(0, (void *)fmanfw, length)) {
+		printf("Fman firmware at %p has invalid CRC\n", fmanfw);
+		return;
+	}
+
+	/* Increase the size of the fdt to make room for the node. */
+	rc = fdt_increase_size(blob, fmanfw->header.length);
+	if (rc < 0) {
+		printf("Unable to make room for Fman firmware: %s\n",
+			fdt_strerror(rc));
+		return;
+	}
+
+	/* Create the firmware node. */
+	fwnode = fdt_add_subnode(blob, fmnode, "fman-firmware");
+	if (fwnode < 0) {
+		char s[64];
+		fdt_get_path(blob, fmnode, s, sizeof(s));
+		printf("Could not add firmware node to %s: %s\n", s,
+		       fdt_strerror(fwnode));
+		return;
+	}
+	rc = fdt_setprop_string(blob, fwnode, "compatible", "fsl,fman-firmware");
+	if (rc < 0) {
+		char s[64];
+		fdt_get_path(blob, fwnode, s, sizeof(s));
+		printf("Could not add compatible property to node %s: %s\n", s,
+		       fdt_strerror(rc));
+		return;
+	}
+	phandle = fdt_alloc_phandle(blob);
+	rc = fdt_setprop_cell(blob, fwnode, "linux,phandle", phandle);
+	if (rc < 0) {
+		char s[64];
+		fdt_get_path(blob, fwnode, s, sizeof(s));
+		printf("Could not add phandle property to node %s: %s\n", s,
+		       fdt_strerror(rc));
+		return;
+	}
+	rc = fdt_setprop(blob, fwnode, "fsl,firmware", fmanfw, fmanfw->header.length);
+	if (rc < 0) {
+		char s[64];
+		fdt_get_path(blob, fwnode, s, sizeof(s));
+		printf("Could not add firmware property to node %s: %s\n", s,
+		       fdt_strerror(rc));
+		return;
+	}
+
+	/* Find all other Fman nodes and point them to the firmware node. */
+	while ((fmnode = fdt_node_offset_by_compatible(blob, fmnode, "fsl,fman")) > 0) {
+		rc = fdt_setprop_cell(blob, fmnode, "fsl,firmware-phandle", phandle);
+		if (rc < 0) {
+			char s[64];
+			fdt_get_path(blob, fmnode, s, sizeof(s));
+			printf("Could not add pointer property to node %s: %s\n",
+			       s, fdt_strerror(rc));
+			return;
+		}
+	}
+}
+#else
+#define fdt_fixup_fman_firmware(x)
+#endif
+
 void ft_cpu_setup(void *blob, bd_t *bd)
 {
 	int off;
@@ -444,6 +572,8 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	ft_qe_setup(blob);
 	ft_fixup_qe_snum(blob);
 #endif
+
+	fdt_fixup_fman_firmware(blob);
 
 #ifdef CONFIG_SYS_NS16550
 	do_fixup_by_compat_u32(blob, "ns16550",
@@ -505,4 +635,79 @@ void ft_cpu_setup(void *blob, bd_t *bd)
 	 */
 	do_fixup_by_compat_u32(blob, "fsl,gianfar-ptp-timer",
 			"timer-frequency", gd->bus_clk/2, 1);
+
+	do_fixup_by_compat_u32(blob, "fsl,flexcan-v1.0",
+			"clock_freq", gd->bus_clk, 1);
+}
+
+/*
+ * For some CCSR devices, we only have the virtual address, not the physical
+ * address.  This is because we map CCSR as a whole, so we typically don't need
+ * a macro for the physical address of any device within CCSR.  In this case,
+ * we calculate the physical address of that device using it's the difference
+ * between the virtual address of the device and the virtual address of the
+ * beginning of CCSR.
+ */
+#define CCSR_VIRT_TO_PHYS(x) \
+	(CONFIG_SYS_CCSRBAR_PHYS + ((x) - CONFIG_SYS_CCSRBAR))
+
+/*
+ * Verify the device tree
+ *
+ * This function compares several CONFIG_xxx macros that contain physical
+ * addresses with the corresponding nodes in the device tree, to see if
+ * the physical addresses are all correct.  For example, if
+ * CONFIG_SYS_NS16550_COM1 is defined, then it contains the virtual address
+ * of the first UART.  We convert this to a physical address and compare
+ * that with the physical address of the first ns16550-compatible node
+ * in the device tree.  If they don't match, then we display a warning.
+ *
+ * Returns 1 on success, 0 on failure
+ */
+int ft_verify_fdt(void *fdt)
+{
+	uint64_t ccsr = 0;
+	int aliases;
+	int off;
+
+	/* First check the CCSR base address */
+	off = fdt_node_offset_by_prop_value(fdt, -1, "device_type", "soc", 4);
+	if (off > 0)
+		ccsr = fdt_get_base_address(fdt, off);
+
+	if (!ccsr) {
+		printf("Warning: could not determine base CCSR address in "
+		       "device tree\n");
+		/* No point in checking anything else */
+		return 0;
+	}
+
+	if (ccsr != CONFIG_SYS_CCSRBAR_PHYS) {
+		printf("Warning: U-Boot configured CCSR at address %llx,\n"
+		       "but the device tree has it at %llx\n",
+		       (uint64_t) CONFIG_SYS_CCSRBAR_PHYS, ccsr);
+		/* No point in checking anything else */
+		return 0;
+	}
+
+	/*
+	 * Get the 'aliases' node.  If there isn't one, then there's nothing
+	 * left to do.
+	 */
+	aliases = fdt_path_offset(fdt, "/aliases");
+	if (aliases > 0) {
+#ifdef CONFIG_SYS_NS16550_COM1
+		if (!fdt_verify_alias_address(fdt, aliases, "serial0",
+			CCSR_VIRT_TO_PHYS(CONFIG_SYS_NS16550_COM1)))
+			return 0;
+#endif
+
+#ifdef CONFIG_SYS_NS16550_COM2
+		if (!fdt_verify_alias_address(fdt, aliases, "serial1",
+			CCSR_VIRT_TO_PHYS(CONFIG_SYS_NS16550_COM2)))
+			return 0;
+#endif
+	}
+
+	return 1;
 }

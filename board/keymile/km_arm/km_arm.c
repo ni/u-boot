@@ -130,10 +130,12 @@ int startup_allowed(void)
 			return 1;
 	return 0;
 }
+#endif
 
+#if (defined(CONFIG_MGCOGE3UN)|defined(CONFIG_PORTL2))
 /*
- * mgcoge3un has always ethernet present. Its connected to the 6061 switch
- * and provides ICNev and piggy4 connections.
+ * These two boards have always ethernet present. Its connected to the mv
+ * switch.
  */
 int ethernet_present(void)
 {
@@ -319,7 +321,7 @@ int dram_init(void)
 {
 	/* dram_init must store complete ramsize in gd->ram_size */
 	/* Fix this */
-	gd->ram_size = get_ram_size((volatile void *)kw_sdram_bar(0),
+	gd->ram_size = get_ram_size((void *)kw_sdram_bar(0),
 				kw_sdram_bs(0));
 	return 0;
 }
@@ -335,7 +337,42 @@ void dram_init_banksize(void)
 	}
 }
 
-/* Configure and enable MV88E1118 PHY */
+#if (defined(CONFIG_MGCOGE3UN)|defined(CONFIG_PORTL2))
+
+#define	PHY_LED_SEL	0x18
+#define PHY_LED0_LINK	(0x5)
+#define PHY_LED1_ACT	(0x8<<4)
+#define PHY_LED2_INT	(0xe<<8)
+#define	PHY_SPEC_CTRL	0x1c
+#define PHY_RGMII_CLK_STABLE	(0x1<<10)
+#define PHY_CLSA	(0x1<<1)
+
+/* Configure and enable MV88E3018 PHY */
+void reset_phy(void)
+{
+	char *name = "egiga0";
+	unsigned short reg;
+
+	if (miiphy_set_current_dev(name))
+		return;
+
+	/* RGMII clk transition on data stable */
+	if (miiphy_read(name, CONFIG_PHY_BASE_ADR, PHY_SPEC_CTRL, &reg) != 0)
+		printf("Error reading PHY spec ctrl reg\n");
+	if (miiphy_write(name, CONFIG_PHY_BASE_ADR, PHY_SPEC_CTRL,
+		reg | PHY_RGMII_CLK_STABLE | PHY_CLSA) != 0)
+		printf("Error writing PHY spec ctrl reg\n");
+
+	/* leds setup */
+	if (miiphy_write(name, CONFIG_PHY_BASE_ADR, PHY_LED_SEL,
+		PHY_LED0_LINK | PHY_LED1_ACT | PHY_LED2_INT) != 0)
+		printf("Error writing PHY LED reg\n");
+
+	/* reset the phy */
+	miiphy_reset(name, CONFIG_PHY_BASE_ADR);
+}
+#else
+/* Configure and enable MV88E1118 PHY on the piggy*/
 void reset_phy(void)
 {
 	char *name = "egiga0";
@@ -346,6 +383,8 @@ void reset_phy(void)
 	/* reset the phy */
 	miiphy_reset(name, CONFIG_PHY_BASE_ADR);
 }
+#endif
+
 
 #if defined(CONFIG_HUSH_INIT_VAR)
 int hush_init_var(void)

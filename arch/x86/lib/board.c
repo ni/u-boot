@@ -3,7 +3,7 @@
  * Graeme Russ, <graeme.russ@gmail.com>
  *
  * (C) Copyright 2002
- * Daniel Engström, Omicron Ceti AB, <daniel@omicron.se>
+ * Daniel EngstrÃ¶m, Omicron Ceti AB, <daniel@omicron.se>
  *
  * (C) Copyright 2002
  * Wolfgang Denk, DENX Software Engineering, <wd@denx.de>
@@ -35,7 +35,6 @@
 #include <watchdog.h>
 #include <command.h>
 #include <stdio_dev.h>
-#include <timestamp.h>
 #include <version.h>
 #include <malloc.h>
 #include <net.h>
@@ -65,9 +64,6 @@ extern ulong __rel_dyn_start;
 extern ulong __rel_dyn_end;
 extern ulong __bss_start;
 extern ulong __bss_end;
-
-const char version_string[] =
-	U_BOOT_VERSION" (" U_BOOT_DATE " - " U_BOOT_TIME ")";
 
 /************************************************************************
  * Init Utilities							*
@@ -362,8 +358,6 @@ void board_init_r(gd_t *id, ulong dest_addr)
 #endif
 
 	udelay(20);
-
-	set_timer (0);
 
 	/* Initialize from environment */
 	if ((s = getenv ("loadaddr")) != NULL) {

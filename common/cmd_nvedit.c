@@ -370,13 +370,14 @@ int _do_env_set (int flag, int argc, char * const argv[])
 	return 0;
 }
 
-int setenv(char *varname, char *varvalue)
+int setenv(const char *varname, const char *varvalue)
 {
-	char * const argv[4] = { "setenv", varname, varvalue, NULL };
+	const char * const argv[4] = { "setenv", varname, varvalue, NULL };
+
 	if ((varvalue == NULL) || (varvalue[0] == '\0'))
-		return _do_env_set(0, 2, argv);
+		return _do_env_set(0, 2, (char * const *)argv);
 	else
-		return _do_env_set(0, 3, argv);
+		return _do_env_set(0, 3, (char * const *)argv);
 }
 
 int do_env_set(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -485,7 +486,7 @@ int do_env_edit(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
  * return address of storage for that variable,
  * or NULL if not found
  */
-char *getenv(char *name)
+char *getenv(const char *name)
 {
 	if (gd->flags & GD_FLG_ENV_READY) {	/* after import into hashtable */
 		ENTRY e, *ep;
@@ -510,7 +511,7 @@ char *getenv(char *name)
 /*
  * Look up variable from environment for restricted C runtime env.
  */
-int getenv_f(char *name, char *buf, unsigned len)
+int getenv_f(const char *name, char *buf, unsigned len)
 {
 	int i, nxt;
 

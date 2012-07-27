@@ -33,6 +33,7 @@
 #include <asm/arch/at91_pio.h>
 #include <asm/arch/at91_pmc.h>
 #include <asm/arch/at91_mc.h>
+#include <asm/arch/at91_common.h>
 
 #ifdef CONFIG_STATUS_LED
 #include <status_led.h>
@@ -74,6 +75,12 @@ int board_init(void)
 #ifdef CONFIG_CMD_NAND
 	cpux9k2_nand_hw_init();
 #endif
+	return 0;
+}
+
+int board_early_init_f(void)
+{
+	at91_seriald_hw_init();
 	return 0;
 }
 
@@ -134,7 +141,7 @@ void reset_phy(void)
 
 int dram_init(void)
 {
-	gd->ram_size = get_ram_size((volatile long *)CONFIG_SYS_SDRAM_BASE,
+	gd->ram_size = get_ram_size((long *)CONFIG_SYS_SDRAM_BASE,
 			CONFIG_SYS_SDRAM_SIZE);
 	return 0;
 }

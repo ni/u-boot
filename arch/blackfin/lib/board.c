@@ -12,11 +12,11 @@
 #include <common.h>
 #include <command.h>
 #include <stdio_dev.h>
+#include <serial.h>
 #include <environment.h>
 #include <malloc.h>
 #include <mmc.h>
 #include <net.h>
-#include <timestamp.h>
 #include <status_led.h>
 #include <version.h>
 
@@ -39,8 +39,6 @@ int post_flag;
 
 DECLARE_GLOBAL_DATA_PTR;
 
-const char version_string[] = U_BOOT_VERSION " ("U_BOOT_DATE" - "U_BOOT_TIME")";
-
 __attribute__((always_inline))
 static inline void serial_early_puts(const char *s)
 {
@@ -52,7 +50,7 @@ static inline void serial_early_puts(const char *s)
 
 static int display_banner(void)
 {
-	printf("\n\n%s\n\n", version_string);
+	display_options();
 	printf("CPU:   ADSP %s "
 		"(Detected Rev: 0.%d) "
 		"(%s boot)\n",
@@ -265,6 +263,9 @@ void board_init_f(ulong bootflag)
 	init_baudrate();
 	serial_early_puts("Serial init\n");
 	serial_init();
+#ifdef CONFIG_SERIAL_MULTI
+	serial_initialize();
+#endif
 	serial_early_puts("Console init flash\n");
 	console_init_f();
 	serial_early_puts("End of early debugging\n");

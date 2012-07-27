@@ -57,21 +57,10 @@ void	dram_init_banksize (void);
 void	setup_serial_tag (struct tag **params);
 void	setup_revision_tag (struct tag **params);
 
-/* ------------------------------------------------------------ */
-/* Here is a list of some prototypes which are incompatible to	*/
-/* the U-Boot implementation					*/
-/* To be fixed!							*/
-/* ------------------------------------------------------------ */
-/* common/cmd_nvedit.c */
-int	setenv		(char *, char *);
-
 /* cpu/.../interrupt.c */
 int	arch_interrupt_init	(void);
 void	reset_timer_masked	(void);
 ulong	get_timer_masked	(void);
 void	udelay_masked		(unsigned long usec);
-
-/* cpu/.../timer.c */
-int	timer_init		(void);
 
 #endif	/* _U_BOOT_ARM_H_ */

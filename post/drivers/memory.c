@@ -225,7 +225,7 @@ const unsigned long long otherpattern = 0x0123456789abcdefULL;
 static int memory_post_dataline(unsigned long long * pmem)
 {
 	unsigned long long temp64 = 0;
-	int num_patterns = sizeof(pattern)/ sizeof(pattern[0]);
+	int num_patterns = ARRAY_SIZE(pattern);
 	int i;
 	unsigned int hi, lo, pathi, patlo;
 	int ret = 0;
@@ -452,13 +452,17 @@ static int memory_post_tests (unsigned long start, unsigned long size)
 	return ret;
 }
 
+/*
+ * !! this is only valid, if you have contiguous memory banks !!
+ */
 __attribute__((weak))
 int arch_memory_test_prepare(u32 *vstart, u32 *size, phys_addr_t *phys_offset)
 {
 	bd_t *bd = gd->bd;
+
 	*vstart = CONFIG_SYS_SDRAM_BASE;
-	*size = (bd->bi_memsize >= 256 << 20 ?
-			256 << 20 : bd->bi_memsize) - (1 << 20);
+	*size = (gd->ram_size >= 256 << 20 ?
+			256 << 20 : gd->ram_size) - (1 << 20);
 
 	/* Limit area to be tested with the board info struct */
 	if ((*vstart) + (*size) > (ulong)bd)
@@ -500,9 +504,10 @@ int memory_post_test(int flags)
 			unsigned long i;
 			for (i = 0; i < (memsize >> 20) && ret == 0; i++) {
 				if (ret == 0)
-					ret = memory_post_tests(i << 20, 0x800);
+					ret = memory_post_tests(vstart +
+						(i << 20), 0x800);
 				if (ret == 0)
-					ret = memory_post_tests(
+					ret = memory_post_tests(vstart +
 						(i << 20) + 0xff800, 0x800);
 			}
 		}

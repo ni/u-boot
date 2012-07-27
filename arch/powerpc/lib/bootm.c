@@ -87,7 +87,7 @@ static void boot_jump_linux(bootm_headers_t *images)
 		 *   r8: 0
 		 *   r9: 0
 		 */
-#if defined(CONFIG_85xx) || defined(CONFIG_440)
+#if defined(CONFIG_MPC85xx) || defined(CONFIG_440)
  #define EPAPR_MAGIC	(0x45504150)
 #else
  #define EPAPR_MAGIC	(0x65504150)
@@ -174,16 +174,6 @@ void arch_lmb_reserve(struct lmb *lmb)
 	return ;
 }
 
-static void boot_prep_linux(void)
-{
-#ifdef CONFIG_MP
-	/* if we are MP make sure to flush the dcache() to any changes are made
-	 * visibile to all other cores */
-	flush_dcache();
-#endif
-	return ;
-}
-
 static int boot_cmdline_linux(bootm_headers_t *images)
 {
 	ulong of_size = images->ft_len;
@@ -225,6 +215,24 @@ static int boot_bd_t_linux(bootm_headers_t *images)
 
 	return ret;
 }
+
+/*
+ * Verify the device tree.
+ *
+ * This function is called after all device tree fix-ups have been enacted,
+ * so that the final device tree can be verified.  The definition of "verified"
+ * is up to the specific implementation.  However, it generally means that the
+ * addresses of some of the devices in the device tree are compared with the
+ * actual addresses at which U-Boot has placed them.
+ *
+ * Returns 1 on success, 0 on failure.  If 0 is returned, U-boot will halt the
+ * boot process.
+ */
+static int __ft_verify_fdt(void *fdt)
+{
+	return 1;
+}
+__attribute__((weak, alias("__ft_verify_fdt"))) int ft_verify_fdt(void *fdt);
 
 static int boot_body_linux(bootm_headers_t *images)
 {
@@ -288,14 +296,19 @@ static int boot_body_linux(bootm_headers_t *images)
 			return ret;
 		of_size = ret;
 
-		if (*initrd_start && *initrd_end)
+		if (*initrd_start && *initrd_end) {
 			of_size += FDT_RAMDISK_OVERHEAD;
+			fdt_set_totalsize(*of_flat_tree, of_size);
+		}
 		/* Create a new LMB reservation */
 		lmb_reserve(lmb, (ulong)*of_flat_tree, of_size);
 
 		/* fixup the initrd now that we know where it should be */
 		if (*initrd_start && *initrd_end)
 			fdt_initrd(*of_flat_tree, *initrd_start, *initrd_end, 1);
+
+		if (!ft_verify_fdt(*of_flat_tree))
+			return -1;
 	}
 #endif	/* CONFIG_OF_LIBFDT */
 	return 0;
@@ -316,17 +329,19 @@ int do_bootm_linux(int flag, int argc, char * const argv[], bootm_headers_t *ima
 		return 0;
 	}
 
-	if (flag & BOOTM_STATE_OS_PREP) {
-		boot_prep_linux();
+	/*
+	 * We do nothing & report success to retain compatiablity with older
+	 * versions of u-boot in which this use to flush the dcache on MP
+	 * systems
+	 */
+	if (flag & BOOTM_STATE_OS_PREP)
 		return 0;
-	}
 
 	if (flag & BOOTM_STATE_OS_GO) {
 		boot_jump_linux(images);
 		return 0;
 	}
 
-	boot_prep_linux();
 	ret = boot_body_linux(images);
 	if (ret)
 		return ret;

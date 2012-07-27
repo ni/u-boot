@@ -46,7 +46,6 @@ int checkcpu (void)
 {
 	sys_info_t sysinfo;
 	uint pvr, svr;
-	uint fam;
 	uint ver;
 	uint major, minor;
 	struct cpu_type *cpu;
@@ -94,30 +93,25 @@ int checkcpu (void)
 	printf(", Version: %d.%d, (0x%08x)\n", major, minor, svr);
 
 	pvr = get_pvr();
-	fam = PVR_FAM(pvr);
 	ver = PVR_VER(pvr);
 	major = PVR_MAJ(pvr);
 	minor = PVR_MIN(pvr);
 
 	printf("Core:  ");
-	if (PVR_FAM(PVR_85xx)) {
-		switch(PVR_MEM(pvr)) {
-		case 0x1:
-		case 0x2:
-			puts("E500");
-			break;
-		case 0x3:
-			puts("E500MC");
-			break;
-		case 0x4:
-			puts("E5500");
-			break;
-		default:
-			puts("Unknown");
-			break;
-		}
-	} else {
+	switch(ver) {
+	case PVR_VER_E500_V1:
+	case PVR_VER_E500_V2:
+		puts("E500");
+		break;
+	case PVR_VER_E500MC:
+		puts("E500MC");
+		break;
+	case PVR_VER_E5500:
+		puts("E5500");
+		break;
+	default:
 		puts("Unknown");
+		break;
 	}
 
 	printf(", Version: %d.%d, (0x%08x)\n", major, minor, pvr);
@@ -336,7 +330,9 @@ phys_size_t initdram(int board_type)
 	}
 #endif
 
-#if defined(CONFIG_SPD_EEPROM) || defined(CONFIG_DDR_SPD)
+#if	defined(CONFIG_SPD_EEPROM)	|| \
+	defined(CONFIG_DDR_SPD)		|| \
+	defined(CONFIG_SYS_DDR_RAW_TIMING)
 	dram_size = fsl_ddr_sdram();
 #else
 	dram_size = fixed_sdram();
@@ -356,7 +352,7 @@ phys_size_t initdram(int board_type)
 	lbc_sdram_init();
 #endif
 
-	puts("DDR: ");
+	debug("DDR: ");
 	return dram_size;
 }
 #endif /* CONFIG_SYS_RAMBOOT */
@@ -371,6 +367,8 @@ void read_tlbcam_entry(int idx, u32 *valid, u32 *tsize, unsigned long *epn,
 		       phys_addr_t *rpn);
 unsigned int
 	setup_ddr_tlbs_phys(phys_addr_t p_addr, unsigned int memsize_in_meg);
+
+void clear_ddr_tlbs_phys(phys_addr_t p_addr, unsigned int memsize_in_meg);
 
 static void dump_spd_ddr_reg(void)
 {
@@ -458,19 +456,9 @@ static int reset_tlb(phys_addr_t p_addr, u32 size, phys_addr_t *phys_offset)
 	u32 vstart = CONFIG_SYS_DDR_SDRAM_BASE;
 	unsigned long epn;
 	u32 tsize, valid, ptr;
-	phys_addr_t rpn = 0;
 	int ddr_esel;
 
-	ptr = vstart;
-
-	while (ptr < (vstart + size)) {
-		ddr_esel = find_tlb_idx((void *)ptr, 1);
-		if (ddr_esel != -1) {
-			read_tlbcam_entry(ddr_esel, &valid, &tsize, &epn, &rpn);
-			disable_tlb(ddr_esel);
-		}
-		ptr += TSIZE_TO_BYTES(tsize);
-	}
+	clear_ddr_tlbs_phys(p_addr, size>>20);
 
 	/* Setup new tlb to cover the physical address */
 	setup_ddr_tlbs_phys(p_addr, size>>20);

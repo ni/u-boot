@@ -5,7 +5,7 @@
  * Graeme Russ, <graeme.russ@gmail.com>
  *
  * (C) Copyright 2002
- * Daniel Engström, Omicron Ceti AB, <daniel@omicron.se>
+ * Daniel EngstrÃ¶m, Omicron Ceti AB, <daniel@omicron.se>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -66,7 +66,7 @@ _start:
 	movw	%ax, %es
 	movw	%ax, %ss
 
-	/* Clear the interupt vectors */
+	/* Clear the interrupt vectors */
 	lidt	blank_idt_ptr
 
 	/* Early platform init (setup gpio, etc ) */

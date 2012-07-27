@@ -692,7 +692,8 @@ struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 	struct phy_device *phydev;
 
 	/* Reset the bus */
-	bus->reset(bus);
+	if (bus->reset)
+		bus->reset(bus);
 
 	/* Wait 15ms to make sure the PHY has come out of hard reset */
 	udelay(15000);
@@ -714,7 +715,7 @@ struct phy_device *phy_connect(struct mii_dev *bus, int addr,
 
 	phydev->dev = dev;
 
-	printf("%s connected to %s\n", dev->name, phydev->drv->name);
+	debug("%s connected to %s\n", dev->name, phydev->drv->name);
 
 	return phydev;
 }

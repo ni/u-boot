@@ -11,6 +11,9 @@
  *		nandwrite.c by Steven J. Hill (sjhill@realitydiluted.com)
  *			       and Thomas Gleixner (tglx@linutronix.de)
  *
+ * Copyright (C) 2008 Nokia Corporation: drop_ffs() function by
+ * Artem Bityutskiy <dedekind1@gmail.com> from mtd-utils
+ *
  * See file CREDITS for list of people who contributed to this
  * project.
  *
@@ -436,6 +439,29 @@ static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length)
 	return ret;
 }
 
+#ifdef CONFIG_CMD_NAND_TRIMFFS
+static size_t drop_ffs(const nand_info_t *nand, const u_char *buf,
+			const size_t *len)
+{
+	size_t i, l = *len;
+
+	for (i = l - 1; i >= 0; i--)
+		if (buf[i] != 0xFF)
+			break;
+
+	/* The resulting length must be aligned to the minimum flash I/O size */
+	l = i + 1;
+	l = (l + nand->writesize - 1) / nand->writesize;
+	l *=  nand->writesize;
+
+	/*
+	 * since the input length may be unaligned, prevent access past the end
+	 * of the buffer
+	 */
+	return min(l, *len);
+}
+#endif
+
 /**
  * nand_write_skip_bad:
  *
@@ -448,11 +474,11 @@ static int check_skip_len(nand_info_t *nand, loff_t offset, size_t length)
  * @param offset	offset in flash
  * @param length	buffer length
  * @param buffer        buffer to read from
- * @param withoob	whether write with yaffs format
+ * @param flags		flags modifying the behaviour of the write to NAND
  * @return		0 in case of success
  */
 int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
-			u_char *buffer, int withoob)
+			u_char *buffer, int flags)
 {
 	int rval = 0, blocksize;
 	size_t left_to_write = *length;
@@ -460,7 +486,10 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 	int need_skip;
 
 #ifdef CONFIG_CMD_NAND_YAFFS
-	if (withoob) {
+	if (flags & WITH_YAFFS_OOB) {
+		if (flags & ~WITH_YAFFS_OOB)
+			return -EINVAL;
+
 		int pages;
 		pages = nand->erasesize / nand->writesize;
 		blocksize = (pages * nand->oobsize) + nand->erasesize;
@@ -499,7 +528,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 		return -EINVAL;
 	}
 
-	if (!need_skip) {
+	if (!need_skip && !(flags & WITH_DROP_FFS)) {
 		rval = nand_write (nand, offset, length, buffer);
 		if (rval == 0)
 			return 0;
@@ -512,7 +541,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 
 	while (left_to_write > 0) {
 		size_t block_offset = offset & (nand->erasesize - 1);
-		size_t write_size;
+		size_t write_size, truncated_write_size;
 
 		WATCHDOG_RESET ();
 
@@ -529,7 +558,7 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 			write_size = blocksize - block_offset;
 
 #ifdef CONFIG_CMD_NAND_YAFFS
-		if (withoob) {
+		if (flags & WITH_YAFFS_OOB) {
 			int page, pages;
 			size_t pagesize = nand->writesize;
 			size_t pagesize_oob = pagesize + nand->oobsize;
@@ -558,7 +587,15 @@ int nand_write_skip_bad(nand_info_t *nand, loff_t offset, size_t *length,
 		else
 #endif
 		{
-			rval = nand_write (nand, offset, &write_size, p_buffer);
+			truncated_write_size = write_size;
+#ifdef CONFIG_CMD_NAND_TRIMFFS
+			if (flags & WITH_DROP_FFS)
+				truncated_write_size = drop_ffs(nand, p_buffer,
+						&write_size);
+#endif
+
+			rval = nand_write(nand, offset, &truncated_write_size,
+					p_buffer);
 			offset += write_size;
 			p_buffer += write_size;
 		}

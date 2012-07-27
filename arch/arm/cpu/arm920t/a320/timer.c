@@ -81,12 +81,6 @@ void reset_timer_masked(void)
 	debug("%s(): lastdec = %lx\n", __func__, lastdec);
 }
 
-void reset_timer(void)
-{
-	debug("%s()\n", __func__);
-	reset_timer_masked();
-}
-
 /*
  * return timer ticks
  */
@@ -130,12 +124,6 @@ ulong get_timer(ulong base)
 {
 	debug("%s(%lx)\n", __func__, base);
 	return get_timer_masked() - base;
-}
-
-void set_timer(ulong t)
-{
-	debug("%s(%lx)\n", __func__, t);
-	timestamp = t;
 }
 
 /* delay x useconds AND preserve advance timestamp value */

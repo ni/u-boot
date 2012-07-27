@@ -26,6 +26,10 @@
 #include <watchdog.h>
 #include <post.h>
 
+#ifdef CONFIG_SYS_POST_HOTKEYS_GPIO
+#include <asm/gpio.h>
+#endif
+
 #ifdef CONFIG_LOGBUFFER
 #include <logbuff.h>
 #endif
@@ -68,6 +72,23 @@ int post_init_f (void)
  */
 int __post_hotkeys_pressed(void)
 {
+#ifdef CONFIG_SYS_POST_HOTKEYS_GPIO
+	int ret;
+	unsigned gpio = CONFIG_SYS_POST_HOTKEYS_GPIO;
+
+	ret = gpio_request(gpio, "hotkeys");
+	if (ret) {
+		printf("POST: gpio hotkey request failed\n");
+		return 0;
+	}
+
+	gpio_direction_input(gpio);
+	ret = gpio_get_value(gpio);
+	gpio_free(gpio);
+
+	return ret;
+#endif
+
 	return 0;	/* No hotkeys supported */
 }
 int post_hotkeys_pressed(void)
@@ -175,7 +196,7 @@ static void post_get_flags (int *test_flags)
 			 POST_CRITICAL };
 	char *var[] = { "post_poweron", "post_normal", "post_slowtest",
 			"post_critical" };
-	int varnum = sizeof (var) / sizeof (var[0]);
+	int varnum = ARRAY_SIZE(var);
 	char list[128];			/* long enough for POST list */
 	char *name;
 	char *s;
@@ -272,18 +293,18 @@ static int post_run_single (struct post_test *test,
 					gd->flags |= GD_FLG_POSTSTOP;
 			}
 		} else {
-		if ((*test->test) (flags) != 0) {
-			post_log ("FAILED\n");
-			show_boot_progress (-32);
-			show_post_progress(i, POST_AFTER, POST_FAILED);
-			if (test_flags & POST_CRITICAL)
-				gd->flags |= GD_FLG_POSTFAIL;
-			if (test_flags & POST_STOP)
-				gd->flags |= GD_FLG_POSTSTOP;
-		}
-		else
-			post_log ("PASSED\n");
-			show_post_progress(i, POST_AFTER, POST_PASSED);
+			if ((*test->test)(flags) != 0) {
+				post_log("FAILED\n");
+				show_boot_progress(-32);
+				show_post_progress(i, POST_AFTER, POST_FAILED);
+				if (test_flags & POST_CRITICAL)
+					gd->flags |= GD_FLG_POSTFAIL;
+				if (test_flags & POST_STOP)
+					gd->flags |= GD_FLG_POSTSTOP;
+			} else {
+				post_log("PASSED\n");
+				show_post_progress(i, POST_AFTER, POST_PASSED);
+			}
 		}
 
 		if ((test_flags & POST_REBOOT) && !(flags & POST_MANUAL)) {

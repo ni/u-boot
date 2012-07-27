@@ -356,7 +356,6 @@ int do_diskboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	ulong addr, cnt;
 	disk_partition_t info;
 	image_header_t *hdr;
-	int rcode = 0;
 #if defined(CONFIG_FIT)
 	const void *fit_hdr = NULL;
 #endif
@@ -495,19 +494,7 @@ int do_diskboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	load_addr = addr;
 
-	/* Check if we should attempt an auto-start */
-	if (((ep = getenv("autostart")) != NULL) && (strcmp(ep,"yes") == 0)) {
-		char *local_args[2];
-
-		local_args[0] = argv[0];
-		local_args[1] = NULL;
-
-		printf ("Automatic boot of image at addr 0x%08lX ...\n", addr);
-
-		do_bootm (cmdtp, 0, 1, local_args);
-		rcode = 1;
-	}
-	return rcode;
+	return bootm_maybe_autostart(cmdtp, argv[0]);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -732,10 +719,12 @@ void ide_init (void)
 
 /* ------------------------------------------------------------------------- */
 
+#ifdef CONFIG_PARTITIONS
 block_dev_desc_t * ide_get_dev(int dev)
 {
 	return (dev < CONFIG_SYS_IDE_MAXDEVICE) ? &ide_dev_desc[dev] : NULL;
 }
+#endif
 
 
 #ifdef CONFIG_IDE_8xx_DIRECT

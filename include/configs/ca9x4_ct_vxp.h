@@ -32,16 +32,13 @@
 #define CONFIG_REVISION_TAG		1
 #define CONFIG_SYS_TEXT_BASE		0x60800000
 
-/* High Level Configuration Options */
-#define CONFIG_ARMV7			1
-
 #define CONFIG_SYS_MEMTEST_START	0x60000000
 #define CONFIG_SYS_MEMTEST_END		0x20000000
 #define CONFIG_SYS_HZ			1000
 
 #define CONFIG_CMDLINE_TAG		1	/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS	1
-#define CONFIG_L2_OFF			1
+#define CONFIG_SYS_L2CACHE_OFF		1
 #define CONFIG_INITRD_TAG		1
 
 #define CONFIG_OF_LIBFDT		1

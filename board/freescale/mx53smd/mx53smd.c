@@ -31,7 +31,7 @@
 #include <netdev.h>
 #include <mmc.h>
 #include <fsl_esdhc.h>
-#include <mxc_gpio.h>
+#include <asm/gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -44,8 +44,8 @@ int dram_init(void)
 {
 	u32 size1, size2;
 
-	size1 = get_ram_size((volatile void *)PHYS_SDRAM_1, PHYS_SDRAM_1_SIZE);
-	size2 = get_ram_size((volatile void *)PHYS_SDRAM_2, PHYS_SDRAM_2_SIZE);
+	size1 = get_ram_size((void *)PHYS_SDRAM_1, PHYS_SDRAM_1_SIZE);
+	size2 = get_ram_size((void *)PHYS_SDRAM_2, PHYS_SDRAM_2_SIZE);
 
 	gd->ram_size = size1 + size2;
 
@@ -139,7 +139,7 @@ struct fsl_esdhc_cfg esdhc_cfg[1] = {
 
 int board_mmc_getcd(u8 *cd, struct mmc *mmc)
 {
-	*cd = mxc_gpio_get(77); /*GPIO3_13*/
+	*cd = gpio_get_value(77); /*GPIO3_13*/
 
 	return 0;
 }

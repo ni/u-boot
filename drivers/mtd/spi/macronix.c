@@ -58,18 +58,23 @@ struct macronix_spi_flash_params {
 	const char *name;
 };
 
-struct macronix_spi_flash {
-	struct spi_flash flash;
-	const struct macronix_spi_flash_params *params;
-};
-
-static inline struct macronix_spi_flash *to_macronix_spi_flash(struct spi_flash
-							       *flash)
-{
-	return container_of(flash, struct macronix_spi_flash, flash);
-}
-
 static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
+	{
+		.idcode = 0x2013,
+		.page_size = 256,
+		.pages_per_sector = 16,
+		.sectors_per_block = 16,
+		.nr_blocks = 8,
+		.name = "MX25L4005",
+	},
+	{
+		.idcode = 0x2014,
+		.page_size = 256,
+		.pages_per_sector = 16,
+		.sectors_per_block = 16,
+		.nr_blocks = 16,
+		.name = "MX25L8005",
+	},
 	{
 		.idcode = 0x2015,
 		.page_size = 256,
@@ -112,66 +117,42 @@ static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 	},
 };
 
-static int macronix_write(struct spi_flash *flash,
-			  u32 offset, size_t len, const void *buf)
+static int macronix_write_status(struct spi_flash *flash, u8 sr)
 {
-	struct macronix_spi_flash *mcx = to_macronix_spi_flash(flash);
-	unsigned long page_addr;
-	unsigned long byte_addr;
-	unsigned long page_size;
-	size_t chunk_len;
-	size_t actual;
+	u8 cmd;
 	int ret;
-	u8 cmd[4];
 
-	page_size = mcx->params->page_size;
-	page_addr = offset / page_size;
-	byte_addr = offset % page_size;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
+	ret = spi_flash_cmd_write_enable(flash);
+	if (ret < 0) {
+		debug("SF: enabling write failed\n");
 		return ret;
 	}
 
-	ret = 0;
-	for (actual = 0; actual < len; actual += chunk_len) {
-		chunk_len = min(len - actual, page_size - byte_addr);
-
-		cmd[0] = CMD_MX25XX_PP;
-		cmd[1] = page_addr >> 8;
-		cmd[2] = page_addr;
-		cmd[3] = byte_addr;
-
-		debug
-		    ("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %d\n",
-		     buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
-
-		ret = spi_flash_cmd(flash->spi, CMD_MX25XX_WREN, NULL, 0);
-		if (ret < 0) {
-			debug("SF: Enabling Write failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
-					  buf + actual, chunk_len);
-		if (ret < 0) {
-			debug("SF: Macronix Page Program failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
-		if (ret)
-			break;
-
-		page_addr++;
-		byte_addr = 0;
+	cmd = CMD_MX25XX_WRSR;
+	ret = spi_flash_cmd_write(flash->spi, &cmd, 1, &sr, 1);
+	if (ret) {
+		debug("SF: fail to write status register\n");
+		return ret;
 	}
 
-	debug("SF: Macronix: Successfully programmed %u bytes @ 0x%x\n",
-	      len, offset);
+	ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
+	if (ret < 0) {
+		debug("SF: write status register timed out\n");
+		return ret;
+	}
 
-	spi_release_bus(flash->spi);
+	return 0;
+}
+
+static int macronix_unlock(struct spi_flash *flash)
+{
+	int ret;
+
+	/* Enable status register writing and clear BP# bits */
+	ret = macronix_write_status(flash, 0);
+	if (ret)
+		debug("SF: fail to disable write protection\n");
+
 	return ret;
 }
 
@@ -183,7 +164,7 @@ static int macronix_erase(struct spi_flash *flash, u32 offset, size_t len)
 struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
 {
 	const struct macronix_spi_flash_params *params;
-	struct macronix_spi_flash *mcx;
+	struct spi_flash *flash;
 	unsigned int i;
 	u16 id = idcode[2] | idcode[1] << 8;
 
@@ -198,22 +179,25 @@ struct spi_flash *spi_flash_probe_macronix(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	mcx = malloc(sizeof(*mcx));
-	if (!mcx) {
+	flash = malloc(sizeof(*flash));
+	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 
-	mcx->params = params;
-	mcx->flash.spi = spi;
-	mcx->flash.name = params->name;
+	flash->spi = spi;
+	flash->name = params->name;
 
-	mcx->flash.write = macronix_write;
-	mcx->flash.erase = macronix_erase;
-	mcx->flash.read = spi_flash_cmd_read_fast;
-	mcx->flash.sector_size = params->page_size * params->pages_per_sector
+	flash->write = spi_flash_cmd_write_multi;
+	flash->erase = macronix_erase;
+	flash->read = spi_flash_cmd_read_fast;
+	flash->page_size = params->page_size;
+	flash->sector_size = params->page_size * params->pages_per_sector
 		* params->sectors_per_block;
-	mcx->flash.size = mcx->flash.sector_size * params->nr_blocks;
+	flash->size = flash->sector_size * params->nr_blocks;
 
-	return &mcx->flash;
+	/* Clear BP# bits for read-only flash */
+	macronix_unlock(flash);
+
+	return flash;
 }

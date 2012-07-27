@@ -575,13 +575,24 @@ int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 			else
 				ret = nand_write_skip_bad(nand, off, &rwsize,
 							  (u_char *)addr, 0);
+#ifdef CONFIG_CMD_NAND_TRIMFFS
+		} else if (!strcmp(s, ".trimffs")) {
+			if (read) {
+				printf("Unknown nand command suffix '%s'\n", s);
+				return 1;
+			}
+			ret = nand_write_skip_bad(nand, off, &rwsize,
+						(u_char *)addr,
+						WITH_DROP_FFS);
+#endif
 #ifdef CONFIG_CMD_NAND_YAFFS
 		} else if (!strcmp(s, ".yaffs")) {
 			if (read) {
 				printf("Unknown nand command suffix '%s'.\n", s);
 				return 1;
 			}
-			ret = nand_write_skip_bad(nand, off, &rwsize, (u_char *)addr, 1);
+			ret = nand_write_skip_bad(nand, off, &rwsize,
+						(u_char *)addr, WITH_YAFFS_OOB);
 #endif
 		} else if (!strcmp(s, ".oob")) {
 			/* out-of-band data */
@@ -688,6 +699,12 @@ U_BOOT_CMD(
 	"nand write - addr off|partition size\n"
 	"    read/write 'size' bytes starting at offset 'off'\n"
 	"    to/from memory address 'addr', skipping bad blocks.\n"
+#ifdef CONFIG_CMD_NAND_TRIMFFS
+	"nand write.trimffs - addr off|partition size\n"
+	"    write 'size' bytes starting at offset 'off' from memory address\n"
+	"    'addr', skipping bad blocks and dropping any pages at the end\n"
+	"    of eraseblocks that contain only 0xFF\n"
+#endif
 #ifdef CONFIG_CMD_NAND_YAFFS
 	"nand write.yaffs - addr off|partition size\n"
 	"    write 'size' bytes starting at offset 'off' with yaffs format\n"
@@ -724,7 +741,7 @@ static int nand_load_image(cmd_tbl_t *cmdtp, nand_info_t *nand,
 			   ulong offset, ulong addr, char *cmd)
 {
 	int r;
-	char *ep, *s;
+	char *s;
 	size_t cnt;
 	image_header_t *hdr;
 #if defined(CONFIG_FIT)
@@ -799,19 +816,7 @@ static int nand_load_image(cmd_tbl_t *cmdtp, nand_info_t *nand,
 
 	load_addr = addr;
 
-	/* Check if we should attempt an auto-start */
-	if (((ep = getenv("autostart")) != NULL) && (strcmp(ep, "yes") == 0)) {
-		char *local_args[2];
-
-		local_args[0] = cmd;
-		local_args[1] = NULL;
-
-		printf("Automatic boot of image at addr 0x%08lx ...\n", addr);
-
-		do_bootm(cmdtp, 0, 1, local_args);
-		return 1;
-	}
-	return 0;
+	return bootm_maybe_autostart(cmdtp, cmd);
 }
 
 int do_nandboot(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])

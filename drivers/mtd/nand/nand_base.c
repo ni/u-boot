@@ -1955,8 +1955,8 @@ static int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 	struct nand_chip *chip = mtd->priv;
 	int ret;
 
-	/* Do not allow reads past end of device */
-	if ((to + len) > mtd->size) 
+	/* Do not allow writes past end of device */
+	if ((to + len) > mtd->size)
 		return -EINVAL;
 	if (!len) 
 		return 0;

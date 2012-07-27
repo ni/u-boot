@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2002
- * Daniel Engström, Omicron Ceti AB, daniel@omicron.se.
+ * Daniel EngstrÃ¶m, Omicron Ceti AB, daniel@omicron.se.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -36,7 +36,6 @@ typedef void (timer_fnc_t) (void);
 int register_timer_isr (timer_fnc_t *isr_func);
 
 /* Architecture specific - can be in arch/x86/cpu/, arch/x86/lib/, or $(BOARD)/ */
-int timer_init(void);
 int dram_init_f(void);
 
 /* cpu/.../interrupts.c */

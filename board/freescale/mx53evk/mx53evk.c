@@ -33,7 +33,7 @@
 #include <mmc.h>
 #include <fsl_esdhc.h>
 #include <fsl_pmic.h>
-#include <mxc_gpio.h>
+#include <asm/gpio.h>
 #include <mc13892.h>
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -46,7 +46,7 @@ u32 get_board_rev(void)
 int dram_init(void)
 {
 	/* dram_init must store complete ramsize in gd->ram_size */
-	gd->ram_size = get_ram_size((volatile void *)CONFIG_SYS_SDRAM_BASE,
+	gd->ram_size = get_ram_size((void *)CONFIG_SYS_SDRAM_BASE,
 				PHYS_SDRAM_1_SIZE);
 	return 0;
 }
@@ -213,9 +213,9 @@ int board_mmc_getcd(u8 *cd, struct mmc *mmc)
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 
 	if (cfg->esdhc_base == MMC_SDHC1_BASE_ADDR)
-		*cd = mxc_gpio_get(77); /*GPIO3_13*/
+		*cd = gpio_get_value(77); /*GPIO3_13*/
 	else
-		*cd = mxc_gpio_get(75); /*GPIO3_11*/
+		*cd = gpio_get_value(75); /*GPIO3_11*/
 
 	return 0;
 }

@@ -79,6 +79,16 @@ _start: b	reset
 #endif
 #endif
 
+#ifdef CONFIG_SPL_BUILD
+_undefined_instruction: .word _undefined_instruction
+_software_interrupt:	.word _software_interrupt
+_prefetch_abort:	.word _prefetch_abort
+_data_abort:		.word _data_abort
+_not_used:		.word _not_used
+_irq:			.word _irq
+_fiq:			.word _fiq
+_pad:			.word 0x12345678 /* now 16*4=64 */
+#else
 _undefined_instruction: .word undefined_instruction
 _software_interrupt:	.word software_interrupt
 _prefetch_abort:	.word prefetch_abort
@@ -87,6 +97,8 @@ _not_used:		.word not_used
 _irq:			.word irq
 _fiq:			.word fiq
 _pad:			.word 0x12345678 /* now 16*4=64 */
+#endif	/* CONFIG_SPL_BUILD */
+
 .global _end_vect
 _end_vect:
 
@@ -125,6 +137,10 @@ _armboot_start:
 _bss_start_ofs:
 	.word __bss_start - _start
 
+.global	_image_copy_end_ofs
+_image_copy_end_ofs:
+	.word 	__image_copy_end - _start
+
 .globl _bss_end_ofs
 _bss_end_ofs:
 	.word __bss_end__ - _start
@@ -155,6 +171,7 @@ IRQ_STACK_START_IN:
  */
 
 reset:
+	bl	save_boot_params
 	/*
 	 * set the cpu to SVC32 mode
 	 */
@@ -218,12 +235,11 @@ stack_setup:
 	mov	sp, r4
 
 	adr	r0, _start
-#ifndef CONFIG_PRELOADER
 	cmp	r0, r6
+	moveq	r9, #0		/* no relocation. relocation offset(r9) = 0 */
 	beq	clear_bss		/* skip relocation */
-#endif
 	mov	r1, r6			/* r1 <- scratch for copy_loop */
-	ldr	r3, _bss_start_ofs
+	ldr	r3, _image_copy_end_ofs
 	add	r2, r0, r3		/* r2 <- source end address	    */
 
 copy_loop:
@@ -232,7 +248,7 @@ copy_loop:
 	cmp	r0, r2			/* until source end address [r2]    */
 	blo	copy_loop
 
-#ifndef CONFIG_PRELOADER
+#ifndef CONFIG_SPL_BUILD
 	/*
 	 * fix .rel.dyn relocations
 	 */
@@ -271,26 +287,48 @@ fixnext:
 	add	r2, r2, #8		/* each rel.dyn entry is 8 bytes */
 	cmp	r2, r3
 	blo	fixloop
+	b	clear_bss
+_rel_dyn_start_ofs:
+	.word __rel_dyn_start - _start
+_rel_dyn_end_ofs:
+	.word __rel_dyn_end - _start
+_dynsym_start_ofs:
+	.word __dynsym_start - _start
+
+#endif	/* #ifndef CONFIG_SPL_BUILD */
 
 clear_bss:
+#ifdef CONFIG_SPL_BUILD
+	/* No relocation for SPL */
+	ldr	r0, =__bss_start
+	ldr	r1, =__bss_end__
+#else
 	ldr	r0, _bss_start_ofs
 	ldr	r1, _bss_end_ofs
 	mov	r4, r6			/* reloc addr */
 	add	r0, r0, r4
 	add	r1, r1, r4
+#endif
 	mov	r2, #0x00000000		/* clear			    */
 
 clbss_l:str	r2, [r0]		/* clear loop...		    */
 	add	r0, r0, #4
 	cmp	r0, r1
 	bne	clbss_l
-#endif	/* #ifndef CONFIG_PRELOADER */
 
 /*
  * We are done. Do not return, instead branch to second part of board
  * initialization, now running from RAM.
  */
 jump_2_ram:
+/*
+ * If I-cache is enabled invalidate it
+ */
+#ifndef CONFIG_SYS_ICACHE_OFF
+	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
+	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+	mcr     p15, 0, r0, c7, c5, 4	@ ISB
+#endif
 	ldr	r0, _board_init_r_ofs
 	adr	r1, _start
 	add	lr, r0, r1
@@ -304,13 +342,8 @@ jump_2_ram:
 _board_init_r_ofs:
 	.word board_init_r - _start
 
-_rel_dyn_start_ofs:
-	.word __rel_dyn_start - _start
-_rel_dyn_end_ofs:
-	.word __rel_dyn_end - _start
-_dynsym_start_ofs:
-	.word __dynsym_start - _start
 
+#ifndef CONFIG_SKIP_LOWLEVEL_INIT
 /*************************************************************************
  *
  * CPU_init_critical registers
@@ -319,7 +352,6 @@ _dynsym_start_ofs:
  * setup memory timing
  *
  *************************************************************************/
-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
 cpu_init_crit:
 	/*
 	 * Invalidate L1 I/D
@@ -327,6 +359,9 @@ cpu_init_crit:
 	mov	r0, #0			@ set up for MCR
 	mcr	p15, 0, r0, c8, c7, 0	@ invalidate TLBs
 	mcr	p15, 0, r0, c7, c5, 0	@ invalidate icache
+	mcr	p15, 0, r0, c7, c5, 6	@ invalidate BP array
+	mcr     p15, 0, r0, c7, c10, 4	@ DSB
+	mcr     p15, 0, r0, c7, c5, 4	@ ISB
 
 	/*
 	 * disable MMU stuff and caches
@@ -335,7 +370,12 @@ cpu_init_crit:
 	bic	r0, r0, #0x00002000	@ clear bits 13 (--V-)
 	bic	r0, r0, #0x00000007	@ clear bits 2:0 (-CAM)
 	orr	r0, r0, #0x00000002	@ set bit 1 (--A-) Align
-	orr	r0, r0, #0x00000800	@ set bit 12 (Z---) BTB
+	orr	r0, r0, #0x00000800	@ set bit 11 (Z---) BTB
+#ifdef CONFIG_SYS_ICACHE_OFF
+	bic	r0, r0, #0x00001000	@ clear bit 12 (I) I-cache
+#else
+	orr	r0, r0, #0x00001000	@ set bit 12 (I) I-cache
+#endif
 	mcr	p15, 0, r0, c1, c0, 0
 
 	/*
@@ -349,6 +389,8 @@ cpu_init_crit:
 	mov	lr, ip			@ restore link
 	mov	pc, lr			@ back to my caller
 #endif
+
+#ifndef CONFIG_SPL_BUILD
 /*
  *************************************************************************
  *
@@ -536,4 +578,5 @@ fiq:
 	bad_save_user_regs
 	bl	do_fiq
 
-#endif
+#endif /* CONFIG_USE_IRQ */
+#endif /* CONFIG_SPL_BUILD */

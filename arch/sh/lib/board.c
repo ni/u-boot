@@ -22,7 +22,6 @@
 #include <command.h>
 #include <malloc.h>
 #include <stdio_dev.h>
-#include <timestamp.h>
 #include <version.h>
 #include <watchdog.h>
 #include <net.h>
@@ -38,8 +37,6 @@ extern int cpu_init(void);
 extern int board_init(void);
 extern int dram_init(void);
 extern int timer_init(void);
-
-const char version_string[] = U_BOOT_VERSION" ("U_BOOT_DATE" - "U_BOOT_TIME")";
 
 unsigned long monitor_flash_len = CONFIG_SYS_MONITOR_LEN;
 
@@ -110,6 +107,15 @@ static int sh_net_init(void)
 }
 #endif
 
+#if defined(CONFIG_CMD_MMC)
+static int sh_mmc_init(void)
+{
+	puts("MMC:   ");
+	mmc_initialize(gd->bd);
+	return 0;
+}
+#endif
+
 typedef int (init_fnc_t) (void);
 
 init_fnc_t *init_sequence[] =
@@ -140,6 +146,9 @@ init_fnc_t *init_sequence[] =
 #endif
 #if defined(CONFIG_CMD_NET)
 	sh_net_init,		/* SH specific eth init */
+#endif
+#if defined(CONFIG_CMD_MMC)
+	sh_mmc_init,
 #endif
 	NULL			/* Terminate this list */
 };

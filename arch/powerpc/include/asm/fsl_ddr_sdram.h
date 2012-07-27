@@ -181,6 +181,9 @@ typedef struct memctl_options_partial_s {
 	unsigned int all_DIMMs_minimum_tRCD_ps;
 } memctl_options_partial_t;
 
+#define DDR_DATA_BUS_WIDTH_64 0
+#define DDR_DATA_BUS_WIDTH_32 1
+#define DDR_DATA_BUS_WIDTH_16 2
 /*
  * Generalized parameters for memory controller configuration,
  * might be a little specific to the FSL memory controller
@@ -268,6 +271,9 @@ typedef struct memctl_options_s {
 	unsigned int rcw_2;
 	/* control register 1 */
 	unsigned int ddr_cdr1;
+
+	unsigned int trwt_override;
+	unsigned int trwt;			/* read-to-write turnaround */
 } memctl_options_t;
 
 extern phys_size_t fsl_ddr_sdram(void);

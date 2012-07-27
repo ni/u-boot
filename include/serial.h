@@ -1,12 +1,12 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
+#include <post.h>
+
 #define NAMESIZE 16
-#define CTLRSIZE 8
 
 struct serial_device {
 	char name[NAMESIZE];
-	char ctlr[CTLRSIZE];
 
 	int  (*init) (void);
 	int  (*uninit) (void);
@@ -15,6 +15,9 @@ struct serial_device {
 	int (*tstc) (void);
 	void (*putc) (const char c);
 	void (*puts) (const char *s);
+#if CONFIG_POST & CONFIG_SYS_POST_UART
+	void (*loop) (int);
+#endif
 
 	struct serial_device *next;
 };
@@ -71,6 +74,15 @@ extern struct serial_device serial_ffuart_device;
 extern struct serial_device serial_btuart_device;
 extern struct serial_device serial_stuart_device;
 
+#if defined(CONFIG_SYS_BFIN_UART)
+extern void serial_register_bfin_uart(void);
+extern struct serial_device bfin_serial0_device;
+extern struct serial_device bfin_serial1_device;
+extern struct serial_device bfin_serial2_device;
+extern struct serial_device bfin_serial3_device;
+#endif
+
+extern void serial_register(struct serial_device *);
 extern void serial_initialize(void);
 extern void serial_stdio_init(void);
 extern int serial_assign(char * name);

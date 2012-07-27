@@ -73,6 +73,7 @@
 #else
 #define CONFIG_FLASH_CFI_DRIVER
 #define CONFIG_SYS_FLASH_CFI
+#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
 #endif
 
 #if defined(CONFIG_SPIFLASH)
@@ -91,6 +92,11 @@
 #define CONFIG_SYS_MMC_ENV_DEV          0
 #define CONFIG_ENV_SIZE			0x2000
 #define CONFIG_ENV_OFFSET		(512 * 1097)
+#elif defined(CONFIG_NAND)
+#define CONFIG_SYS_EXTRA_ENV_RELOC
+#define CONFIG_ENV_IS_IN_NAND
+#define CONFIG_ENV_SIZE			CONFIG_SYS_NAND_BLOCK_SIZE
+#define CONFIG_ENV_OFFSET		(5 * CONFIG_SYS_NAND_BLOCK_SIZE)
 #else
 #define CONFIG_ENV_IS_IN_FLASH
 #define CONFIG_ENV_ADDR		(CONFIG_SYS_MONITOR_BASE - CONFIG_ENV_SECT_SIZE)
@@ -196,10 +202,10 @@
 #define CONFIG_SYS_FLASH_BASE_PHYS	CONFIG_SYS_FLASH_BASE
 #endif
 
-#define CONFIG_SYS_BR0_PRELIM \
-	(BR_PHYS_ADDR((CONFIG_SYS_FLASH_BASE_PHYS + 0x8000000)) | \
-	 BR_PS_16 | BR_V)
-#define CONFIG_SYS_OR0_PRELIM	((0xf8000ff7 & ~OR_GPCM_SCY & ~OR_GPCM_EHTR) \
+#define CONFIG_SYS_FLASH_BR_PRELIM \
+		(BR_PHYS_ADDR((CONFIG_SYS_FLASH_BASE_PHYS + 0x8000000)) \
+		 | BR_PS_16 | BR_V)
+#define CONFIG_SYS_FLASH_OR_PRELIM ((0xf8000ff7 & ~OR_GPCM_SCY & ~OR_GPCM_EHTR) \
 					| OR_GPCM_SCY_8 | OR_GPCM_EHTR_CLEAR)
 
 #define CONFIG_SYS_BR1_PRELIM \
@@ -268,9 +274,21 @@
 			       | OR_FCM_TRLX \
 			       | OR_FCM_EHTR)
 
-#define CONFIG_SYS_BR2_PRELIM	CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
-#define CONFIG_SYS_OR2_PRELIM	CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
+#ifdef CONFIG_NAND
+#define CONFIG_SYS_BR0_PRELIM  CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
+#define CONFIG_SYS_OR0_PRELIM  CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
+#define CONFIG_SYS_BR2_PRELIM  CONFIG_SYS_FLASH_BR_PRELIM /* NOR Base Address */
+#define CONFIG_SYS_OR2_PRELIM  CONFIG_SYS_FLASH_OR_PRELIM /* NOR Options */
+#else
+#define CONFIG_SYS_BR0_PRELIM  CONFIG_SYS_FLASH_BR_PRELIM /* NOR Base Address */
+#define CONFIG_SYS_OR0_PRELIM  CONFIG_SYS_FLASH_OR_PRELIM /* NOR Options */
+#define CONFIG_SYS_BR2_PRELIM  CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
+#define CONFIG_SYS_OR2_PRELIM  CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
+#endif
 #endif /* CONFIG_NAND_FSL_ELBC */
+#else
+#define CONFIG_SYS_BR0_PRELIM  CONFIG_SYS_FLASH_BR_PRELIM /* NOR Base Address */
+#define CONFIG_SYS_OR0_PRELIM  CONFIG_SYS_FLASH_OR_PRELIM /* NOR Options */
 #endif
 
 #define CONFIG_SYS_FLASH_EMPTY_INFO
@@ -469,12 +487,27 @@
 #define CONFIG_SYS_DPAA_FMAN
 #define CONFIG_SYS_DPAA_PME
 /* Default address of microcode for the Linux Fman driver */
-#define CONFIG_SYS_FMAN_FW_ADDR		0xEF000000
-#ifdef CONFIG_PHYS_64BIT
-#define CONFIG_SYS_FMAN_FW_ADDR_PHYS	0xFEF000000ULL
+#define CONFIG_SYS_FMAN_FW
+#if defined(CONFIG_SPIFLASH)
+/*
+ * env is stored at 0x100000, sector size is 0x10000, ucode is stored after
+ * env, so we got 0x110000.
+ */
+#define CONFIG_SYS_QE_FW_IN_SPIFLASH	0x110000
+#elif defined(CONFIG_SDCARD)
+/*
+ * PBL SD boot image should stored at 0x1000(8 blocks), the size of the image is
+ * about 545KB (1089 blocks), Env is stored after the image, and the env size is
+ * 0x2000 (16 blocks), 8 + 1089 + 16 = 1113, enlarge it to 1130.
+ */
+#define CONFIG_SYS_QE_FW_IN_MMC		(512 * 1130)
+#elif defined(CONFIG_NAND)
+#define CONFIG_SYS_QE_FW_IN_NAND	(6 * CONFIG_SYS_NAND_BLOCK_SIZE)
 #else
-#define CONFIG_SYS_FMAN_FW_ADDR_PHYS	CONFIG_SYS_FMAN_FW_ADDR
+#define CONFIG_SYS_FMAN_FW_ADDR		0xEF000000
 #endif
+#define CONFIG_SYS_FMAN_FW_LENGTH	0x10000
+#define CONFIG_SYS_FDT_PAD		(0x3000 + CONFIG_SYS_FMAN_FW_LENGTH)
 
 #ifdef CONFIG_SYS_DPAA_FMAN
 #define CONFIG_FMAN_ENET
@@ -562,6 +595,7 @@
 #define CONFIG_USB_EHCI_FSL
 #define CONFIG_EHCI_HCD_INIT_AFTER_RESET
 #define CONFIG_CMD_EXT2
+#define CONFIG_HAS_FSL_DR_USB
 
 #define CONFIG_MMC
 
@@ -621,9 +655,16 @@
 
 #define CONFIG_BAUDRATE	115200
 
+#if defined(CONFIG_P4080DS)
+#define __USB_PHY_TYPE	ulpi
+#else
+#define __USB_PHY_TYPE	utmi
+#endif
+
 #define	CONFIG_EXTRA_ENV_SETTINGS				\
 	"hwconfig=fsl_ddr:ctlr_intlv=cacheline,"		\
-	"bank_intlv=cs0_cs1\0"					\
+	"bank_intlv=cs0_cs1;"					\
+	"usb1:dr_mode=host,phy_type=" MK_STR(__USB_PHY_TYPE) "\0"\
 	"netdev=eth0\0"						\
 	"uboot=" MK_STR(CONFIG_UBOOTPATH) "\0"			\
 	"ubootaddr=" MK_STR(CONFIG_SYS_TEXT_BASE) "\0"			\
@@ -639,8 +680,7 @@
 	"fdtaddr=c00000\0"					\
 	"fdtfile=p4080ds/p4080ds.dtb\0"				\
 	"bdev=sda3\0"						\
-	"c=ffe\0"						\
-	"fman_ucode="MK_STR(CONFIG_SYS_FMAN_FW_ADDR_PHYS)"\0"
+	"c=ffe\0"
 
 #define CONFIG_HDBOOT					\
 	"setenv bootargs root=/dev/$bdev rw "		\

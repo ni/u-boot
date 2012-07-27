@@ -432,6 +432,9 @@ static int bootm_load_os(image_info_t os, ulong *load_end, int boot_progress)
 		printf ("Unimplemented compression type %d\n", comp);
 		return BOOTM_ERR_UNIMPLEMENTED;
 	}
+
+	flush_cache(load, (*load_end - load) * sizeof(ulong));
+
 	puts ("OK\n");
 	debug ("   kernel loaded at 0x%08lx, end = 0x%08lx\n", load, *load_end);
 	if (boot_progress)
@@ -706,6 +709,21 @@ int do_bootm (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	do_reset (cmdtp, flag, argc, argv);
 
 	return 1;
+}
+
+int bootm_maybe_autostart(cmd_tbl_t *cmdtp, const char *cmd)
+{
+	const char *ep = getenv("autostart");
+
+	if (ep && !strcmp(ep, "yes")) {
+		char *local_args[2];
+		local_args[0] = (char *)cmd;
+		local_args[1] = NULL;
+		printf("Automatic boot of image at addr 0x%08lX ...\n", load_addr);
+		return do_bootm(cmdtp, 0, 1, local_args);
+	}
+
+	return 0;
 }
 
 /**

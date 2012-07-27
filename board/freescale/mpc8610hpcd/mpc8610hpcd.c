@@ -1,5 +1,5 @@
 /*
- * Copyright 2007,2009-2010 Freescale Semiconductor, Inc.
+ * Copyright 2007,2009-2011 Freescale Semiconductor, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -94,10 +94,31 @@ int checkboard(void)
 	volatile ccsr_local_mcm_t *mcm = &immap->im_local_mcm;
 	u8 *pixis_base = (u8 *)PIXIS_BASE;
 
-	printf ("Board: MPC8610HPCD, System ID: 0x%02x, "
-		"System Version: 0x%02x, FPGA Version: 0x%02x\n",
+	printf ("Board: MPC8610HPCD, Sys ID: 0x%02x, "
+		"Sys Ver: 0x%02x, FPGA Ver: 0x%02x, ",
 		in_8(pixis_base + PIXIS_ID), in_8(pixis_base + PIXIS_VER),
 		in_8(pixis_base + PIXIS_PVER));
+
+	/*
+	 * The MPC8610 HPCD workbook says that LBMAP=11 is the "normal" boot
+	 * bank and LBMAP=00 is the alternate bank.  However, the pixis
+	 * altbank code can only set bits, not clear them, so we treat 00 as
+	 * the normal bank and 11 as the alternate.
+	 */
+	switch (in_8(pixis_base + PIXIS_VBOOT) & 0xC0) {
+	case 0:
+		puts("vBank: Standard\n");
+		break;
+	case 0x40:
+		puts("Promjet\n");
+		break;
+	case 0x80:
+		puts("NAND\n");
+		break;
+	case 0xC0:
+		puts("vBank: Alternate\n");
+		break;
+	}
 
 	mcm->abcr |= 0x00010000; /* 0 */
 	mcm->hpmr3 = 0x80000008; /* 4c */
@@ -124,7 +145,7 @@ initdram(int board_type)
 
 	setup_ddr_bat(dram_size);
 
-	puts(" DDR: ");
+	debug(" DDR: ");
 	return dram_size;
 }
 
@@ -206,11 +227,7 @@ static struct pci_config_table pci_fsl86xxads_config_table[] = {
 #endif
 
 
-static struct pci_controller pci1_hose = {
-#ifndef CONFIG_PCI_PNP
-config_table:pci_mpc86xxcts_config_table
-#endif
-};
+static struct pci_controller pci1_hose;
 #endif /* CONFIG_PCI */
 
 void pci_init_board(void)
@@ -240,6 +257,9 @@ void pci_init_board(void)
 			" (base address %lx)\n",
 			pci_agent ? "Agent" : "Host",
 			pci_info.regs);
+#ifndef CONFIG_PCI_PNP
+		pci1_hose.config_table = pci_mpc86xxcts_config_table;
+#endif
 		first_free_busno = fsl_pci_init_port(&pci_info,
 					&pci1_hose, first_free_busno);
 	} else {

@@ -34,19 +34,15 @@ struct winbond_spi_flash_params {
 	const char	*name;
 };
 
-/* spi_flash needs to be first so upper layers can free() it */
-struct winbond_spi_flash {
-	struct spi_flash flash;
-	const struct winbond_spi_flash_params *params;
-};
-
-static inline struct winbond_spi_flash *
-to_winbond_spi_flash(struct spi_flash *flash)
-{
-	return container_of(flash, struct winbond_spi_flash, flash);
-}
-
 static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
+	{
+		.id			= 0x3013,
+		.l2_page_size		= 8,
+		.pages_per_sector	= 16,
+		.sectors_per_block	= 16,
+		.nr_blocks		= 8,
+		.name			= "W25X40",
+	},
 	{
 		.id			= 0x3015,
 		.l2_page_size		= 8,
@@ -105,71 +101,6 @@ static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
 	},
 };
 
-static int winbond_write(struct spi_flash *flash,
-		u32 offset, size_t len, const void *buf)
-{
-	struct winbond_spi_flash *stm = to_winbond_spi_flash(flash);
-	unsigned long page_addr;
-	unsigned long byte_addr;
-	unsigned long page_size;
-	unsigned int page_shift;
-	size_t chunk_len;
-	size_t actual;
-	int ret;
-	u8 cmd[4];
-
-	page_shift = stm->params->l2_page_size;
-	page_size = (1 << page_shift);
-	page_addr = offset / page_size;
-	byte_addr = offset % page_size;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
-		return ret;
-	}
-
-	for (actual = 0; actual < len; actual += chunk_len) {
-		chunk_len = min(len - actual, page_size - byte_addr);
-
-		cmd[0] = CMD_W25_PP;
-		cmd[1] = page_addr >> (16 - page_shift);
-		cmd[2] = page_addr << (page_shift - 8) | (byte_addr >> 8);
-		cmd[3] = byte_addr;
-		debug("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %d\n",
-			buf + actual,
-			cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
-
-		ret = spi_flash_cmd(flash->spi, CMD_W25_WREN, NULL, 0);
-		if (ret < 0) {
-			debug("SF: Enabling Write failed\n");
-			goto out;
-		}
-
-		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
-				buf + actual, chunk_len);
-		if (ret < 0) {
-			debug("SF: Winbond Page Program failed\n");
-			goto out;
-		}
-
-		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
-		if (ret)
-			goto out;
-
-		page_addr++;
-		byte_addr = 0;
-	}
-
-	debug("SF: Winbond: Successfully programmed %u bytes @ 0x%x\n",
-			len, offset);
-	ret = 0;
-
-out:
-	spi_release_bus(flash->spi);
-	return ret;
-}
-
 static int winbond_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
 	return spi_flash_cmd_erase(flash, CMD_W25_SE, offset, len);
@@ -178,9 +109,9 @@ static int winbond_erase(struct spi_flash *flash, u32 offset, size_t len)
 struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 {
 	const struct winbond_spi_flash_params *params;
-	unsigned page_size;
-	struct winbond_spi_flash *stm;
+	struct spi_flash *flash;
 	unsigned int i;
+	unsigned page_size;
 
 	for (i = 0; i < ARRAY_SIZE(winbond_spi_flash_table); i++) {
 		params = &winbond_spi_flash_table[i];
@@ -194,27 +125,26 @@ struct spi_flash *spi_flash_probe_winbond(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	stm = malloc(sizeof(struct winbond_spi_flash));
-	if (!stm) {
+	flash = malloc(sizeof(*flash));
+	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 
-	stm->params = params;
-	stm->flash.spi = spi;
-	stm->flash.name = params->name;
+	flash->spi = spi;
+	flash->name = params->name;
 
 	/* Assuming power-of-two page size initially. */
 	page_size = 1 << params->l2_page_size;
 
-	stm->flash.write = winbond_write;
-	stm->flash.erase = winbond_erase;
-	stm->flash.read = spi_flash_cmd_read_fast;
-	stm->flash.sector_size = (1 << stm->params->l2_page_size) *
-		stm->params->pages_per_sector;
-	stm->flash.size = page_size * params->pages_per_sector
+	flash->write = spi_flash_cmd_write_multi;
+	flash->erase = winbond_erase;
+	flash->read = spi_flash_cmd_read_fast;
+	flash->page_size = page_size;
+	flash->sector_size = page_size * params->pages_per_sector;
+	flash->size = page_size * params->pages_per_sector
 				* params->sectors_per_block
 				* params->nr_blocks;
 
-	return &stm->flash;
+	return flash;
 }

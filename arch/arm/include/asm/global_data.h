@@ -24,7 +24,7 @@
 #ifndef	__ASM_GBL_DATA_H
 #define __ASM_GBL_DATA_H
 /*
- * The following data structure is placed in some memory wich is
+ * The following data structure is placed in some memory which is
  * available very early after boot (like DPRAM on MPC8xx/MPC82xx, or
  * some locked parts of the data cache) to allow for a minimum set of
  * global variables during system initialization (until we have set
@@ -70,7 +70,7 @@ typedef	struct	global_data {
 	unsigned long	irq_sp;		/* irq stack pointer */
 	unsigned long	start_addr_sp;	/* start_addr_stackpointer */
 	unsigned long	reloc_off;
-#if !(defined(CONFIG_SYS_NO_ICACHE) && defined(CONFIG_SYS_NO_DCACHE))
+#if !(defined(CONFIG_SYS_ICACHE_OFF) && defined(CONFIG_SYS_DCACHE_OFF))
 	unsigned long	tlb_addr;
 #endif
 	void		**jt;		/* jump table */

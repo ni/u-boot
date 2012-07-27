@@ -284,12 +284,7 @@
 
 /*
  * Internal Definitions
- *
- * Boot Flags
  */
-#define BOOTFLAG_COLD	0x01 /* Normal Power-On: Boot from FLASH */
-#define BOOTFLAG_WARM	0x02 /* Software reboot */
-
 #define BOOTFLASH_START	0xF0000000
 
 #define CONFIG_KM_CONSOLE_TTY	"ttyS0"
@@ -302,14 +297,13 @@
 #define CONFIG_KM_DEF_ENV "km-common=empty\0"
 #endif
 
-#ifndef CONFIG_KM_DEF_ROOTPATH
-#define CONFIG_KM_DEF_ROOTPATH		\
-	"rootpath=/opt/eldk/ppc_82xx\0"
+#ifndef CONFIG_KM_DEF_ARCH
+#define CONFIG_KM_DEF_ARCH	"arch=ppc_82xx\0"
 #endif
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_KM_DEF_ENV						\
-	CONFIG_KM_DEF_ROOTPATH						\
+	CONFIG_KM_DEF_ARCH						\
 	"dtt_bus=pca9547:70:a\0"					\
 	"EEprom_ivm=pca9547:70:9\0"					\
 	"newenv="							\

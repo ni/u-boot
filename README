@@ -147,7 +147,7 @@ Directory Hierarchy:
     /cpu		CPU specific files
       /arm720t		Files specific to ARM 720 CPUs
       /arm920t		Files specific to ARM 920 CPUs
-	/at91rm9200	Files specific to Atmel AT91RM9200 CPU
+	/at91		Files specific to Atmel AT91RM9200 CPU
 	/imx		Files specific to Freescale MC9328 i.MX CPUs
 	/s3c24x0	Files specific to Samsung S3C24X0 CPUs
       /arm925t		Files specific to ARM 925 CPUs
@@ -180,6 +180,7 @@ Directory Hierarchy:
     /lib		Architecture specific library files
   /mips			Files generic to MIPS architecture
     /cpu		CPU specific files
+      /mips32		Files specific to MIPS32 CPUs
     /lib		Architecture specific library files
   /nios2		Files generic to Altera NIOS2 architecture
     /cpu		CPU specific files
@@ -382,6 +383,38 @@ The following options need to be configured:
 		2. The core frequency as calculated above is multiplied
 		by this value.
 
+- MIPS CPU options:
+		CONFIG_SYS_INIT_SP_OFFSET
+
+		Offset relative to CONFIG_SYS_SDRAM_BASE for initial stack
+		pointer. This is needed for the temporary stack before
+		relocation.
+
+		CONFIG_SYS_MIPS_CACHE_MODE
+
+		Cache operation mode for the MIPS CPU.
+		See also arch/mips/include/asm/mipsregs.h.
+		Possible values are:
+			CONF_CM_CACHABLE_NO_WA
+			CONF_CM_CACHABLE_WA
+			CONF_CM_UNCACHED
+			CONF_CM_CACHABLE_NONCOHERENT
+			CONF_CM_CACHABLE_CE
+			CONF_CM_CACHABLE_COW
+			CONF_CM_CACHABLE_CUW
+			CONF_CM_CACHABLE_ACCELERATED
+
+		CONFIG_SYS_XWAY_EBU_BOOTCFG
+
+		Special option for Lantiq XWAY SoCs for booting from NOR flash.
+		See also arch/mips/cpu/mips32/start.S.
+
+		CONFIG_XWAY_SWAP_BYTES
+
+		Enable compilation of tools/xway-swap-bytes needed for Lantiq
+		XWAY SoCs for booting from NOR flash. The U-Boot image needs to
+		be swapped if a flash programmer is used.
+
 - Linux Kernel Interface:
 		CONFIG_CLOCKS_IN_MHZ
 
@@ -442,6 +475,16 @@ The following options need to be configured:
 		crash. This is needed for buggy hardware (uc101) where
 		no pull down resistor is connected to the signal IDE5V_DD7.
 
+		CONFIG_MACH_TYPE	[relevant for ARM only][mandatory]
+
+		This setting is mandatory for all boards that have only one
+		machine type and must be used to specify the machine type
+		number as it appears in the ARM machine registry
+		(see http://www.arm.linux.org.uk/developer/machines/).
+		Only boards that have multiple machine types supported
+		in a single configuration file and the machine type is
+		runtime discoverable, do not have to use this setting.
+
 - vxWorks boot parameters:
 
 		bootvx constructs a valid bootline using the following
@@ -459,6 +502,17 @@ The following options need to be configured:
 
 		Note: If a "bootargs" environment is defined, it will overwride
 		the defaults discussed just above.
+
+- Cache Configuration:
+		CONFIG_SYS_ICACHE_OFF - Do not enable instruction cache in U-Boot
+		CONFIG_SYS_DCACHE_OFF - Do not enable data cache in U-Boot
+		CONFIG_SYS_L2CACHE_OFF- Do not enable L2 cache in U-Boot
+
+- Cache Configuration for ARM:
+		CONFIG_SYS_L2_PL310 - Enable support for ARM PL310 L2 cache
+				      controller
+		CONFIG_SYS_PL310_BASE - Physical base address of PL310
+					controller register space
 
 - Serial Ports:
 		CONFIG_PL010_SERIAL
@@ -1043,6 +1097,15 @@ The following options need to be configured:
 		enabled with CONFIG_CMD_MMC. The MMC driver also works with
 		the FAT fs. This is enabled with CONFIG_CMD_FAT.
 
+		CONFIG_SH_MMCIF
+		Support for Renesas on-chip MMCIF controller
+
+			CONFIG_SH_MMCIF_ADDR
+			Define the base address of MMCIF registers
+
+			CONFIG_SH_MMCIF_CLK
+			Define the clock frequency for MMCIF
+
 - Journaling Flash filesystem support:
 		CONFIG_JFFS2_NAND, CONFIG_JFFS2_NAND_OFF, CONFIG_JFFS2_NAND_SIZE,
 		CONFIG_JFFS2_NAND_DEV
@@ -1114,7 +1177,7 @@ The following options need to be configured:
 		or CONFIG_VIDEO_SED13806_16BPP
 
 		CONFIG_FSL_DIU_FB
-		Enable the Freescale DIU video driver.  Reference boards for
+		Enable the Freescale DIU video driver.	Reference boards for
 		SOCs that have a DIU should define this macro to enable DIU
 		support, and should also define these other macros:
 
@@ -1693,12 +1756,12 @@ The following options need to be configured:
 		=>
 
 		If you now switch to the new I2C Bus 3 with "i2c dev 3"
-		u-boot sends First the Commando to the mux@70 to enable
-		channel 6, and then the Commando to the mux@71 to enable
+		u-boot first sends the command to the mux@70 to enable
+		channel 6, and then the command to the mux@71 to enable
 		the channel 4.
 
 		After that, you can use the "normal" i2c commands as
-		usual, to communicate with your I2C devices behind
+		usual to communicate with your I2C devices behind
 		the 2 muxes.
 
 		This option is actually implemented for the bitbanging
@@ -2225,6 +2288,45 @@ FIT uImage format:
 		Adds the MTD partitioning infrastructure from the Linux
 		kernel. Needed for UBI support.
 
+- SPL framework
+		CONFIG_SPL
+		Enable building of SPL globally.
+
+		CONFIG_SPL_TEXT_BASE
+		TEXT_BASE for linking the SPL binary.
+
+		CONFIG_SPL_LDSCRIPT
+		LDSCRIPT for linking the SPL binary.
+
+		CONFIG_SPL_LIBCOMMON_SUPPORT
+		Support for common/libcommon.o in SPL binary
+
+		CONFIG_SPL_LIBDISK_SUPPORT
+		Support for disk/libdisk.o in SPL binary
+
+		CONFIG_SPL_I2C_SUPPORT
+		Support for drivers/i2c/libi2c.o in SPL binary
+
+		CONFIG_SPL_GPIO_SUPPORT
+		Support for drivers/gpio/libgpio.o in SPL binary
+
+		CONFIG_SPL_MMC_SUPPORT
+		Support for drivers/mmc/libmmc.o in SPL binary
+
+		CONFIG_SPL_SERIAL_SUPPORT
+		Support for drivers/serial/libserial.o in SPL binary
+
+		CONFIG_SPL_SPI_FLASH_SUPPORT
+		Support for drivers/mtd/spi/libspi_flash.o in SPL binary
+
+		CONFIG_SPL_SPI_SUPPORT
+		Support for drivers/spi/libspi.o in SPL binary
+
+		CONFIG_SPL_FAT_SUPPORT
+		Support for fs/fat/libfat.o in SPL binary
+
+		CONFIG_SPL_LIBGENERIC_SUPPORT
+		Support for lib/libgeneric.o in SPL binary
 
 Modem Support:
 --------------
@@ -2493,6 +2595,11 @@ Configuration Settings:
 The following definitions that deal with the placement and management
 of environment data (variable area); in general, we support the
 following configurations:
+
+- CONFIG_BUILD_ENVCRC:
+
+	Builds up envcrc with the target environment so that external utils
+	may easily extract it and embed it in final U-Boot images.
 
 - CONFIG_ENV_IS_IN_FLASH:
 
@@ -2917,6 +3024,14 @@ Low Level (hardware related) configuration options:
 - CONFIG_SYS_SRIOn_MEM_SIZE:
 		Size of SRIO port 'n' memory region
 
+- CONFIG_SYS_NDFC_16
+		Defined to tell the NDFC that the NAND chip is using a
+		16 bit bus.
+
+- CONFIG_SYS_NDFC_EBC0_CFG
+		Sets the EBC0_CFG register for the NDFC. If not defined
+		a default value will be used.
+
 - CONFIG_SPD_EEPROM
 		Get DDR timing information from an I2C EEPROM. Common
 		with pluggable memory modules such as SODIMMs
@@ -2928,6 +3043,12 @@ Low Level (hardware related) configuration options:
 		If SPD EEPROM is on an I2C bus other than the first
 		one, specify here. Note that the value must resolve
 		to something your driver can deal with.
+
+- CONFIG_SYS_DDR_RAW_TIMING
+		Get DDR timing information from other than SPD. Common with
+		soldered DDR chips onboard without SPD. DDR raw timing
+		parameters are extracted from datasheet and hard-coded into
+		header files or board specific files.
 
 - CONFIG_SYS_83XX_DDR_USES_CS0
 		Only for 83xx systems. If specified, then DDR should
@@ -2982,7 +3103,7 @@ Low Level (hardware related) configuration options:
 		globally (CONFIG_CMD_MEM).
 
 - CONFIG_SKIP_LOWLEVEL_INIT
-		[ARM only] If this variable is defined, then certain
+		[ARM, MIPS only] If this variable is defined, then certain
 		low level initializations (like setting up the memory
 		controller) are omitted and/or U-Boot does not
 		relocate itself into RAM.
@@ -2992,7 +3113,7 @@ Low Level (hardware related) configuration options:
 		other boot loader or by a debugger which performs
 		these initializations itself.
 
-- CONFIG_PRELOADER
+- CONFIG_SPL_BUILD
 		Modifies the behaviour of start.S when compiling a loader
 		that is executed before the actual U-Boot. E.g. when
 		compiling a NAND SPL.
@@ -3279,6 +3400,15 @@ List of environment variables (most likely not complete):
 		  (and eventually uncompressed), but NOT be started.
 		  This can be used to load and uncompress arbitrary
 		  data.
+
+  fdt_high	- if set this restricts the maximum address that the
+		  flattened device tree will be copied into upon boot.
+		  If this is set to the special value 0xFFFFFFFF then
+		  the fdt will not be copied at all on boot.  For this
+		  to work it must reside in writable memory, have
+		  sufficient padding on the end of it for u-boot to
+		  add the information it needs into it, and the memory
+		  must be accessible by the kernel.
 
   i2cfast	- (PPC405GP|PPC405EP only)
 		  if set to 'y' configures Linux I2C driver for fast
@@ -4382,9 +4512,7 @@ Coding Standards:
 
 All contributions to U-Boot should conform to the Linux kernel
 coding style; see the file "Documentation/CodingStyle" and the script
-"scripts/Lindent" in your Linux kernel source directory.  In sources
-originating from U-Boot a style corresponding to "Lindent -pcs" (adding
-spaces before parameters to function calls) is actually used.
+"scripts/Lindent" in your Linux kernel source directory.
 
 Source files originating from a different project (for example the
 MTD subsystem) are generally exempt from these guidelines and are not
@@ -4397,9 +4525,9 @@ in your code.
 
 Please also stick to the following formatting rules:
 - remove any trailing white space
-- use TAB characters for indentation, not spaces
+- use TAB characters for indentation and vertical alignment, not spaces
 - make sure NOT to use DOS '\r\n' line feeds
-- do not add more than 2 empty lines to source files
+- do not add more than 2 consecutive empty lines to source files
 - do not add trailing empty lines to source files
 
 Submissions which do not conform to the standards may be returned
@@ -4433,14 +4561,14 @@ it:
 * For major contributions, your entry to the CREDITS file
 
 * When you add support for a new board, don't forget to add this
-  board to the MAKEALL script, too.
+  board to the MAINTAINERS file, too.
 
 * If your patch adds new configuration options, don't forget to
   document these in the README file.
 
 * The patch itself. If you are using git (which is *strongly*
   recommended) you can easily generate the patch using the
-  "git-format-patch". If you then use "git-send-email" to send it to
+  "git format-patch". If you then use "git send-email" to send it to
   the U-Boot mailing list, you will avoid most of the common problems
   with some other mail clients.
 

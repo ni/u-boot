@@ -48,6 +48,7 @@
 #define KM_ENV_BUS	"pca9547:70:d" /* I2C2 (Mux-Port 5)*/
 
 /* we use a new RAM type on mgcoge3un board */
+#undef CONFIG_SYS_KWD_CONFIG
 #define CONFIG_SYS_KWD_CONFIG $(SRCTREE)/$(CONFIG_BOARDDIR)/kwbimage-memphis.cfg
 
 /*
@@ -74,5 +75,10 @@
 	MVGBE_DIS_FLOW_CTRL_TX_RX_IN_FULL_DUPLEX	|\
 	MVGBE_SET_GMII_SPEED_TO_10_100	|\
 	MVGBE_SET_MII_SPEED_TO_100)
+
+/*
+ * PCIe port not used on mgcoge3un
+ */
+#undef  CONFIG_KIRKWOOD_PCIE_INIT
 
 #endif /* _CONFIG_MGCOGE3UN_H */

@@ -23,7 +23,7 @@
 #include <spi.h>
 #include <asm/errno.h>
 #include <asm/io.h>
-#include <mxc_gpio.h>
+#include <asm/gpio.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/clock.h>
 
@@ -59,8 +59,6 @@ static unsigned long spi_bases[] = {
 	0x50010000,
 	0x53f84000,
 };
-
-#define mxc_get_clock(x)	mx31_get_ipg_clk()
 
 #elif defined(CONFIG_MX51)
 
@@ -147,14 +145,14 @@ void spi_cs_activate(struct spi_slave *slave)
 {
 	struct mxc_spi_slave *mxcs = to_mxc_spi_slave(slave);
 	if (mxcs->gpio > 0)
-		mxc_gpio_set(mxcs->gpio, mxcs->ss_pol);
+		gpio_set_value(mxcs->gpio, mxcs->ss_pol);
 }
 
 void spi_cs_deactivate(struct spi_slave *slave)
 {
 	struct mxc_spi_slave *mxcs = to_mxc_spi_slave(slave);
 	if (mxcs->gpio > 0)
-		mxc_gpio_set(mxcs->gpio,
+		gpio_set_value(mxcs->gpio,
 			      !(mxcs->ss_pol));
 }
 
@@ -470,7 +468,7 @@ static int decode_cs(struct mxc_spi_slave *mxcs, unsigned int cs)
 	if (cs > 3) {
 		mxcs->gpio = cs >> 8;
 		cs &= 3;
-		ret = mxc_gpio_direction(mxcs->gpio, OUT);
+		ret = gpio_direction_output(mxcs->gpio, 0);
 		if (ret) {
 			printf("mxc_spi: cannot setup gpio %d\n", mxcs->gpio);
 			return -EINVAL;

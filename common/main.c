@@ -30,6 +30,7 @@
 #include <common.h>
 #include <watchdog.h>
 #include <command.h>
+#include <version.h>
 #ifdef CONFIG_MODEM_SUPPORT
 #include <malloc.h>		/* for free() prototype */
 #endif
@@ -51,14 +52,10 @@ void inline __show_boot_progress (int val) {}
 void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progress")));
 
 #if defined(CONFIG_UPDATE_TFTP)
-void update_tftp (void);
+int update_tftp (ulong addr);
 #endif /* CONFIG_UPDATE_TFTP */
 
 #define MAX_DELAY_STOP_STR 32
-
-#if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
-static int abortboot(int);
-#endif
 
 #undef DEBUG_PARSER
 
@@ -91,7 +88,7 @@ extern void mdm_init(void); /* defined in board.c */
  */
 #if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
 # if defined(CONFIG_AUTOBOOT_KEYED)
-static __inline__ int abortboot(int bootdelay)
+static inline int abortboot(int bootdelay)
 {
 	int abort = 0;
 	uint64_t etime = endtick(bootdelay);
@@ -205,7 +202,7 @@ static __inline__ int abortboot(int bootdelay)
 static int menukey = 0;
 #endif
 
-static __inline__ int abortboot(int bootdelay)
+static inline int abortboot(int bootdelay)
 {
 	int abort = 0;
 
@@ -311,8 +308,6 @@ void main_loop (void)
 
 #ifdef CONFIG_VERSION_VARIABLE
 	{
-		extern char version_string[];
-
 		setenv ("ver", version_string);  /* set version variable */
 	}
 #endif /* CONFIG_VERSION_VARIABLE */
@@ -345,7 +340,7 @@ void main_loop (void)
 #endif /* CONFIG_PREBOOT */
 
 #if defined(CONFIG_UPDATE_TFTP)
-	update_tftp ();
+	update_tftp (0UL);
 #endif /* CONFIG_UPDATE_TFTP */
 
 #if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
@@ -395,15 +390,15 @@ void main_loop (void)
 
 # ifdef CONFIG_MENUKEY
 	if (menukey == CONFIG_MENUKEY) {
-	    s = getenv("menucmd");
-	    if (s) {
+		s = getenv("menucmd");
+		if (s) {
 # ifndef CONFIG_SYS_HUSH_PARSER
-		run_command (s, 0);
+			run_command(s, 0);
 # else
-		parse_string_outer(s, FLAG_PARSE_SEMICOLON |
-				    FLAG_EXIT_FROM_LOOP);
+			parse_string_outer(s, FLAG_PARSE_SEMICOLON |
+						FLAG_EXIT_FROM_LOOP);
 # endif
-	    }
+		}
 	}
 #endif /* CONFIG_MENUKEY */
 #endif /* CONFIG_BOOTDELAY */

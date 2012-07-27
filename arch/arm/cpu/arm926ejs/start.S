@@ -5,8 +5,8 @@
  *
  *  ----- Adapted for OMAP1610 OMAP730 from ARM925t code ------
  *
- *  Copyright (c) 2001	Marius Gröger <mag@sysgo.de>
- *  Copyright (c) 2002	Alex Züpke <azu@sysgo.de>
+ *  Copyright (c) 2001	Marius GrÃ¶ger <mag@sysgo.de>
+ *  Copyright (c) 2002	Alex ZÃ¼pke <azu@sysgo.de>
  *  Copyright (c) 2002	Gary Jennejohn <garyj@denx.de>
  *  Copyright (c) 2003	Richard Woodruff <r-woodruff2@ti.com>
  *  Copyright (c) 2003	Kshitij <kshitij@ti.com>
@@ -54,7 +54,7 @@
 .globl _start
 _start:
 	b	reset
-#ifdef CONFIG_PRELOADER
+#ifdef CONFIG_SPL_BUILD
 /* No exception handlers in preloader */
 	ldr	pc, _hang
 	ldr	pc, _hang
@@ -98,7 +98,7 @@ _irq:
 _fiq:
 	.word fiq
 
-#endif	/* CONFIG_PRELOADER */
+#endif	/* CONFIG_SPL_BUILD */
 	.balignl 16,0xdeadbeef
 
 
@@ -214,7 +214,7 @@ copy_loop:
 	cmp	r0, r2			/* until source end address [r2]    */
 	blo	copy_loop
 
-#ifndef CONFIG_PRELOADER
+#ifndef CONFIG_SPL_BUILD
 	/*
 	 * fix .rel.dyn relocations
 	 */
@@ -256,7 +256,7 @@ fixnext:
 #endif
 
 clear_bss:
-#ifndef CONFIG_PRELOADER
+#ifndef CONFIG_SPL_BUILD
 	ldr	r0, _bss_start_ofs
 	ldr	r1, _bss_end_ofs
 	mov	r4, r6			/* reloc addr */
@@ -270,7 +270,7 @@ clbss_l:str	r2, [r0]		/* clear loop...		    */
 	bne	clbss_l
 
 	bl coloured_LED_init
-	bl red_LED_on
+	bl red_led_on
 #endif
 
 /*
@@ -343,7 +343,7 @@ cpu_init_crit:
 	mov	pc, lr		/* back to my caller */
 #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
 
-#ifndef CONFIG_PRELOADER
+#ifndef CONFIG_SPL_BUILD
 /*
  *************************************************************************
  *
@@ -440,18 +440,18 @@ cpu_init_crit:
 	.macro get_fiq_stack			@ setup FIQ stack
 	ldr	sp, FIQ_STACK_START
 	.endm
-#endif	/* CONFIG_PRELOADER */
+#endif	/* CONFIG_SPL_BUILD */
 
 /*
  * exception handlers
  */
-#ifdef CONFIG_PRELOADER
+#ifdef CONFIG_SPL_BUILD
 	.align	5
 do_hang:
 	ldr	sp, _TEXT_BASE			/* switch to abort stack */
 1:
 	bl	1b				/* hang and never return */
-#else	/* !CONFIG_PRELOADER */
+#else	/* !CONFIG_SPL_BUILD */
 	.align  5
 undefined_instruction:
 	get_bad_stack
@@ -514,4 +514,4 @@ fiq:
 	bl	do_fiq
 
 #endif
-#endif	/* CONFIG_PRELOADER */
+#endif	/* CONFIG_SPL_BUILD */

@@ -1704,7 +1704,7 @@ int enetInt (struct eth_device *dev)
 			rc = 0;
 		}
 
-		/* handle MAL RX EOB interupt from a receive */
+		/* handle MAL RX EOB interrupt from a receive */
 		/* check for EOB on valid channels	     */
 		if (uic_mal & UIC_MAL_RXEOB) {
 			mal_eob = mfdcr(MAL0_RXEOBISR);
@@ -2035,6 +2035,13 @@ int ppc_4xx_eth_initialize (bd_t * bis)
 		dev->send = ppc_4xx_eth_send;
 		dev->recv = ppc_4xx_eth_rx;
 
+		eth_register(dev);
+
+#if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
+		miiphy_register(dev->name,
+				emac4xx_miiphy_read, emac4xx_miiphy_write);
+#endif
+
 		if (0 == virgin) {
 			/* set the MAL IER ??? names may change with new spec ??? */
 #if defined(CONFIG_440SPE) || \
@@ -2072,13 +2079,6 @@ int ppc_4xx_eth_initialize (bd_t * bis)
 					     dev);
 			virgin = 1;
 		}
-
-		eth_register (dev);
-
-#if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
-		miiphy_register (dev->name,
-				 emac4xx_miiphy_read, emac4xx_miiphy_write);
-#endif
 	}			/* end for each supported device */
 
 	return 0;

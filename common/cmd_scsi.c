@@ -46,7 +46,7 @@
 #define SCSI_VEND_ID 0x10b9
 #define SCSI_DEV_ID  0x5288
 
-#else
+#elif !defined(CONFIG_SCSI_AHCI_PLAT)
 #error no scsi device defined
 #endif
 
@@ -174,7 +174,7 @@ removable:
 		scsi_curr_dev = -1;
 }
 
-
+#ifdef CONFIG_PCI
 void scsi_init(void)
 {
 	int busdevfunc;
@@ -192,12 +192,14 @@ void scsi_init(void)
 	scsi_low_level_init(busdevfunc);
 	scsi_scan(1);
 }
+#endif
 
+#ifdef CONFIG_PARTITIONS
 block_dev_desc_t * scsi_get_dev(int dev)
 {
 	return (dev < CONFIG_SYS_SCSI_MAX_DEVICE) ? &scsi_dev_desc[dev] : NULL;
 }
-
+#endif
 
 /******************************************************************************
  * scsi boot command intepreter. Derived from diskboot
@@ -210,7 +212,6 @@ int do_scsiboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	ulong addr, cnt;
 	disk_partition_t info;
 	image_header_t *hdr;
-	int rcode = 0;
 #if defined(CONFIG_FIT)
 	const void *fit_hdr = NULL;
 #endif
@@ -326,15 +327,7 @@ int do_scsiboot (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	flush_cache (addr, (cnt+1)*info.blksz);
 
-	/* Check if we should attempt an auto-start */
-	if (((ep = getenv("autostart")) != NULL) && (strcmp(ep,"yes") == 0)) {
-		char *local_args[2];
-		local_args[0] = argv[0];
-		local_args[1] = NULL;
-		printf ("Automatic boot of image at addr 0x%08lX ...\n", addr);
-		rcode = do_bootm (cmdtp, 0, 1, local_args);
-	}
-	 return rcode;
+	return bootm_maybe_autostart(cmdtp, argv[0]);
 }
 
 /*********************************************************************************

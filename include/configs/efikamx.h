@@ -38,7 +38,7 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
-#define CONFIG_L2_OFF
+#define CONFIG_SYS_TEXT_BASE		0x97800000
 
 /*
  * Bootloader Components Configuration
@@ -47,6 +47,7 @@
 #define CONFIG_CMD_SF
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
+#define CONFIG_CMD_EXT2
 #define CONFIG_CMD_IDE
 #undef CONFIG_CMD_IMLS
 

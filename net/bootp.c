@@ -138,6 +138,36 @@ static int truncate_sz (const char *name, int maxlen, int curlen)
 	return (curlen);
 }
 
+/*
+ * Check if autoload is enabled. If so, use either NFS or TFTP to download
+ * the boot file.
+ */
+static void auto_load(void)
+{
+	const char *s = getenv("autoload");
+
+	if (s != NULL) {
+		if (*s == 'n') {
+			/*
+			 * Just use BOOTP to configure system;
+			 * Do not use TFTP to load the bootfile.
+			 */
+			NetState = NETLOOP_SUCCESS;
+			return;
+		}
+#if defined(CONFIG_CMD_NFS)
+		if (strcmp(s, "NFS") == 0) {
+			/*
+			 * Use NFS to load the bootfile.
+			 */
+			NfsStart();
+			return;
+		}
+#endif
+	}
+	TftpStart();
+}
+
 #if !defined(CONFIG_CMD_DHCP)
 
 static void BootpVendorFieldProcess (u8 * ext)
@@ -228,6 +258,11 @@ static void BootpVendorFieldProcess (u8 * ext)
 			NetOurNISDomain[size] = 0;
 		}
 		break;
+#if defined(CONFIG_CMD_SNTP) && defined(CONFIG_BOOTP_NTPSERVER)
+	case 42:	/* NTP server IP */
+		NetCopyIP(&NetNtpServerIP, (IPaddr_t *) (ext + 2));
+		break;
+#endif
 		/* Application layer fields */
 	case 43:		/* Vendor specific info - Not yet supported	*/
 		/*
@@ -278,7 +313,13 @@ static void BootpVendorProcess (u8 * ext, int size)
 
 	if (NetBootFileSize)
 		debug("NetBootFileSize: %d\n", NetBootFileSize);
+
+#if defined(CONFIG_CMD_SNTP) && defined(CONFIG_BOOTP_NTPSERVER)
+	if (NetNtpServerIP)
+		debug("NetNtpServerIP : %pI4\n", &NetNtpServerIP);
+#endif
 }
+
 /*
  *	Handle a BOOTP received packet.
  */
@@ -287,7 +328,6 @@ BootpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 	     unsigned len)
 {
 	Bootp_t *bp;
-	char	*s;
 
 	debug("got BOOTP packet (src=%d, dst=%d, len=%d want_len=%zu)\n",
 		src, dest, len, sizeof (Bootp_t));
@@ -314,26 +354,7 @@ BootpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 
 	debug("Got good BOOTP\n");
 
-	if ((s = getenv("autoload")) != NULL) {
-		if (*s == 'n') {
-			/*
-			 * Just use BOOTP to configure system;
-			 * Do not use TFTP to load the bootfile.
-			 */
-			NetState = NETLOOP_SUCCESS;
-			return;
-#if defined(CONFIG_CMD_NFS)
-		} else if (strcmp(s, "NFS") == 0) {
-			/*
-			 * Use NFS to load the bootfile.
-			 */
-			NfsStart();
-			return;
-#endif
-		}
-	}
-
-	TftpStart();
+	auto_load();
 }
 #endif
 
@@ -537,6 +558,11 @@ static int BootpExtended (u8 * e)
 	*e++ = 40;		/* NIS Domain name request */
 	*e++ = 32;
 	e   += 32;
+#endif
+#if defined(CONFIG_BOOTP_NTPSERVER)
+	*e++ = 42;
+	*e++ = 4;
+	e   += 4;
 #endif
 
 	*e++ = 255;		/* End of the list */
@@ -907,34 +933,13 @@ DhcpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 		debug("DHCP State: REQUESTING\n");
 
 		if ( DhcpMessageType((u8 *)bp->bp_vend) == DHCP_ACK ) {
-			char *s;
-
 			if (NetReadLong((ulong*)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
 				DhcpOptionsProcess((u8 *)&bp->bp_vend[4], bp);
 			BootpCopyNetParams(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
 			printf ("DHCP client bound to address %pI4\n", &NetOurIP);
 
-			/* Obey the 'autoload' setting */
-			if ((s = getenv("autoload")) != NULL) {
-				if (*s == 'n') {
-					/*
-					 * Just use BOOTP to configure system;
-					 * Do not use TFTP to load the bootfile.
-					 */
-					NetState = NETLOOP_SUCCESS;
-					return;
-#if defined(CONFIG_CMD_NFS)
-				} else if (strcmp(s, "NFS") == 0) {
-					/*
-					 * Use NFS to load the bootfile.
-					 */
-					NfsStart();
-					return;
-#endif
-				}
-			}
-			TftpStart();
+			auto_load();
 			return;
 		}
 		break;

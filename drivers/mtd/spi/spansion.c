@@ -53,6 +53,7 @@
 #define SPSN_EXT_ID_S25FL128P_256KB	0x0300
 #define SPSN_EXT_ID_S25FL128P_64KB	0x0301
 #define SPSN_EXT_ID_S25FL032P		0x4d00
+#define SPSN_EXT_ID_S25FL129P		0x4d01
 
 struct spansion_spi_flash_params {
 	u16 idcode1;
@@ -62,17 +63,6 @@ struct spansion_spi_flash_params {
 	u16 nr_sectors;
 	const char *name;
 };
-
-struct spansion_spi_flash {
-	struct spi_flash flash;
-	const struct spansion_spi_flash_params *params;
-};
-
-static inline struct spansion_spi_flash *to_spansion_spi_flash(struct spi_flash
-							     *flash)
-{
-	return container_of(flash, struct spansion_spi_flash, flash);
-}
 
 static const struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 	{
@@ -131,70 +121,15 @@ static const struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 		.nr_sectors = 64,
 		.name = "S25FL032P",
 	},
+	{
+		.idcode1 = SPSN_ID_S25FL128P,
+		.idcode2 = SPSN_EXT_ID_S25FL129P,
+		.page_size = 256,
+		.pages_per_sector = 256,
+		.nr_sectors = 256,
+		.name = "S25FL129P_64K",
+	},
 };
-
-static int spansion_write(struct spi_flash *flash,
-			 u32 offset, size_t len, const void *buf)
-{
-	struct spansion_spi_flash *spsn = to_spansion_spi_flash(flash);
-	unsigned long page_addr;
-	unsigned long byte_addr;
-	unsigned long page_size;
-	size_t chunk_len;
-	size_t actual;
-	int ret;
-	u8 cmd[4];
-
-	page_size = spsn->params->page_size;
-	page_addr = offset / page_size;
-	byte_addr = offset % page_size;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
-		return ret;
-	}
-
-	ret = 0;
-	for (actual = 0; actual < len; actual += chunk_len) {
-		chunk_len = min(len - actual, page_size - byte_addr);
-
-		cmd[0] = CMD_S25FLXX_PP;
-		cmd[1] = page_addr >> 8;
-		cmd[2] = page_addr;
-		cmd[3] = byte_addr;
-
-		debug
-		    ("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %d\n",
-		     buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
-
-		ret = spi_flash_cmd(flash->spi, CMD_S25FLXX_WREN, NULL, 0);
-		if (ret < 0) {
-			debug("SF: Enabling Write failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
-					  buf + actual, chunk_len);
-		if (ret < 0) {
-			debug("SF: SPANSION Page Program failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
-		if (ret)
-			break;
-
-		page_addr++;
-		byte_addr = 0;
-	}
-
-	debug("SF: SPANSION: Successfully programmed %u bytes @ 0x%x\n",
-	      len, offset);
-
-	spi_release_bus(flash->spi);
-	return ret;
-}
 
 static int spansion_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
@@ -204,7 +139,7 @@ static int spansion_erase(struct spi_flash *flash, u32 offset, size_t len)
 struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 {
 	const struct spansion_spi_flash_params *params;
-	struct spansion_spi_flash *spsn;
+	struct spi_flash *flash;
 	unsigned int i;
 	unsigned short jedec, ext_jedec;
 
@@ -224,21 +159,21 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 		return NULL;
 	}
 
-	spsn = malloc(sizeof(struct spansion_spi_flash));
-	if (!spsn) {
+	flash = malloc(sizeof(*flash));
+	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 
-	spsn->params = params;
-	spsn->flash.spi = spi;
-	spsn->flash.name = params->name;
+	flash->spi = spi;
+	flash->name = params->name;
 
-	spsn->flash.write = spansion_write;
-	spsn->flash.erase = spansion_erase;
-	spsn->flash.read = spi_flash_cmd_read_fast;
-	spsn->flash.sector_size = params->page_size * params->pages_per_sector;
-	spsn->flash.size = spsn->flash.sector_size * params->nr_sectors;
+	flash->write = spi_flash_cmd_write_multi;
+	flash->erase = spansion_erase;
+	flash->read = spi_flash_cmd_read_fast;
+	flash->page_size = params->page_size;
+	flash->sector_size = params->page_size * params->pages_per_sector;
+	flash->size = flash->sector_size * params->nr_sectors;
 
-	return &spsn->flash;
+	return flash;
 }

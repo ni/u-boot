@@ -43,7 +43,7 @@ ifneq ($(HOST_TOOLS_ALL),)
 CONFIG_LCD_LOGO = y
 CONFIG_CMD_LOADS = y
 CONFIG_CMD_NET = y
-CONFIG_INCA_IP = y
+CONFIG_XWAY_SWAP_BYTES = y
 CONFIG_NETCONSOLE = y
 CONFIG_SHA1_CHECK_UB_IMG = y
 endif
@@ -65,7 +65,7 @@ BIN_FILES-$(CONFIG_VIDEO_LOGO) += bmp_logo$(SFX)
 BIN_FILES-$(CONFIG_BUILD_ENVCRC) += envcrc$(SFX)
 BIN_FILES-$(CONFIG_CMD_NET) += gen_eth_addr$(SFX)
 BIN_FILES-$(CONFIG_CMD_LOADS) += img2srec$(SFX)
-BIN_FILES-$(CONFIG_INCA_IP) += inca-swap-bytes$(SFX)
+BIN_FILES-$(CONFIG_XWAY_SWAP_BYTES) += xway-swap-bytes$(SFX)
 BIN_FILES-y += mkimage$(SFX)
 BIN_FILES-$(CONFIG_NETCONSOLE) += ncb$(SFX)
 BIN_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1$(SFX)
@@ -85,13 +85,15 @@ OBJ_FILES-$(CONFIG_BUILD_ENVCRC) += envcrc.o
 NOPED_OBJ_FILES-y += fit_image.o
 OBJ_FILES-$(CONFIG_CMD_NET) += gen_eth_addr.o
 OBJ_FILES-$(CONFIG_CMD_LOADS) += img2srec.o
-OBJ_FILES-$(CONFIG_INCA_IP) += inca-swap-bytes.o
+OBJ_FILES-$(CONFIG_XWAY_SWAP_BYTES) += xway-swap-bytes.o
 NOPED_OBJ_FILES-y += kwbimage.o
 NOPED_OBJ_FILES-y += imximage.o
+NOPED_OBJ_FILES-y += omapimage.o
 NOPED_OBJ_FILES-y += mkimage.o
 OBJ_FILES-$(CONFIG_NETCONSOLE) += ncb.o
 NOPED_OBJ_FILES-y += os_support.o
 OBJ_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1.o
+NOPED_OBJ_FILES-y += ublimage.o
 
 # Don't build by default
 #ifeq ($(ARCH),ppc)
@@ -128,6 +130,9 @@ LOGO_BMP= logos/ronetix.bmp
 endif
 ifeq ($(VENDOR),syteco)
 LOGO_BMP= logos/syteco.bmp
+endif
+ifeq ($(VENDOR),intercontrol)
+LOGO_BMP= logos/intercontrol.bmp
 endif
 
 # now $(obj) is defined
@@ -175,7 +180,7 @@ $(obj)img2srec$(SFX):	$(obj)img2srec.o
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@
 
-$(obj)inca-swap-bytes$(SFX):	$(obj)inca-swap-bytes.o
+$(obj)xway-swap-bytes$(SFX):	$(obj)xway-swap-bytes.o
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@
 
@@ -188,7 +193,9 @@ $(obj)mkimage$(SFX):	$(obj)crc32.o \
 			$(obj)md5.o \
 			$(obj)mkimage.o \
 			$(obj)os_support.o \
+			$(obj)omapimage.o \
 			$(obj)sha1.o \
+			$(obj)ublimage.o \
 			$(LIBFDT_OBJS)
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@

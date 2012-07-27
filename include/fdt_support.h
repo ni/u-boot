@@ -79,6 +79,7 @@ void ft_pci_setup(void *blob, bd_t *bd);
 
 void set_working_fdt_addr(void *addr);
 int fdt_resize(void *blob);
+int fdt_increase_size(void *fdt, int add_len);
 
 int fdt_fixup_nor_flash_size(void *blob);
 
@@ -88,7 +89,12 @@ u64 fdt_translate_address(void *blob, int node_offset, const u32 *in_addr);
 int fdt_node_offset_by_compat_reg(void *blob, const char *compat,
 					phys_addr_t compat_off);
 int fdt_alloc_phandle(void *blob);
+int fdt_create_phandle(void *fdt, int nodeoffset, uint32_t phandle);
 int fdt_add_edid(void *blob, const char *compat, unsigned char *buf);
+
+int fdt_verify_alias_address(void *fdt, int anode, const char *alias,
+			      u64 addr);
+u64 fdt_get_base_address(void *fdt, int node);
 
 #endif /* ifdef CONFIG_OF_LIBFDT */
 #endif /* ifndef __FDT_SUPPORT_H */

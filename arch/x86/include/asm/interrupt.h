@@ -3,7 +3,7 @@
  * Graeme Russ, graeme.russ@gmail.com
  *
  * (C) Copyright 2002
- * Daniel Engström, Omicron Ceti AB, daniel@omicron.se
+ * Daniel EngstrÃ¶m, Omicron Ceti AB, daniel@omicron.se
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -32,7 +32,7 @@
 /* arch/x86/cpu/interrupts.c */
 void set_vector(u8 intnum, void *routine);
 
-/* arch/x86/lib/interupts.c */
+/* arch/x86/lib/interrupts.c */
 void disable_irq(int irq);
 void enable_irq(int irq);
 

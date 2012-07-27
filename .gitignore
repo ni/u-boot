@@ -33,6 +33,7 @@
 /u-boot.sha1
 /u-boot.dis
 /u-boot.lds
+/u-boot.ubl
 
 #
 # Generated files
@@ -45,6 +46,7 @@
 
 /include/generated/
 /lib/asm-offsets.s
+/arch/*/cpu/asm-offsets.s
 
 # stgit generated dirs
 patches-*

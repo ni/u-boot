@@ -24,81 +24,15 @@
 #include <common.h>
 #include <serial.h>
 #include <stdio_dev.h>
+#include <post.h>
+#include <linux/compiler.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
 static struct serial_device *serial_devices = NULL;
 static struct serial_device *serial_current = NULL;
 
-#if !defined(CONFIG_LWMON) && !defined(CONFIG_PXA250) && !defined(CONFIG_PXA27X)
-struct serial_device *__default_serial_console (void)
-{
-#if defined(CONFIG_8xx_CONS_SMC1) || defined(CONFIG_8xx_CONS_SMC2)
-	return &serial_smc_device;
-#elif defined(CONFIG_8xx_CONS_SCC1) || defined(CONFIG_8xx_CONS_SCC2) \
-   || defined(CONFIG_8xx_CONS_SCC3) || defined(CONFIG_8xx_CONS_SCC4)
-	return &serial_scc_device;
-#elif defined(CONFIG_4xx) \
-   || defined(CONFIG_MB86R0x) || defined(CONFIG_MPC5xxx) \
-   || defined(CONFIG_MPC83xx) || defined(CONFIG_MPC85xx) \
-   || defined(CONFIG_MPC86xx) || defined(CONFIG_SYS_SC520) \
-   || defined(CONFIG_TEGRA2)
-#if defined(CONFIG_CONS_INDEX) && defined(CONFIG_SYS_NS16550_SERIAL)
-#if (CONFIG_CONS_INDEX==1)
-	return &eserial1_device;
-#elif (CONFIG_CONS_INDEX==2)
-	return &eserial2_device;
-#elif (CONFIG_CONS_INDEX==3)
-	return &eserial3_device;
-#elif (CONFIG_CONS_INDEX==4)
-	return &eserial4_device;
-#else
-#error "Bad CONFIG_CONS_INDEX."
-#endif
-#else
-	return &serial0_device;
-#endif
-#elif defined(CONFIG_MPC512X)
-#if (CONFIG_PSC_CONSOLE == 3)
-		return &serial3_device;
-#elif (CONFIG_PSC_CONSOLE == 6)
-		return &serial6_device;
-#else
-#error "Bad CONFIG_PSC_CONSOLE."
-#endif
-#elif defined(CONFIG_S3C2410)
-#if defined(CONFIG_SERIAL1)
-	return &s3c24xx_serial0_device;
-#elif defined(CONFIG_SERIAL2)
-	return &s3c24xx_serial1_device;
-#elif defined(CONFIG_SERIAL3)
-	return &s3c24xx_serial2_device;
-#else
-#error "CONFIG_SERIAL? missing."
-#endif
-#elif defined(CONFIG_S5P)
-#if defined(CONFIG_SERIAL0)
-	return &s5p_serial0_device;
-#elif defined(CONFIG_SERIAL1)
-	return &s5p_serial1_device;
-#elif defined(CONFIG_SERIAL2)
-	return &s5p_serial2_device;
-#elif defined(CONFIG_SERIAL3)
-	return &s5p_serial3_device;
-#else
-#error "CONFIG_SERIAL? missing."
-#endif
-#elif defined(CONFIG_OMAP3_ZOOM2)
-		return ZOOM2_DEFAULT_SERIAL_DEVICE;
-#else
-#error No default console
-#endif
-}
-
-struct serial_device *default_serial_console(void) __attribute__((weak, alias("__default_serial_console")));
-#endif
-
-int serial_register (struct serial_device *dev)
+void serial_register(struct serial_device *dev)
 {
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
 	dev->init += gd->reloc_off;
@@ -111,8 +45,6 @@ int serial_register (struct serial_device *dev)
 
 	dev->next = serial_devices;
 	serial_devices = dev;
-
-	return 0;
 }
 
 void serial_initialize (void)
@@ -172,6 +104,9 @@ void serial_initialize (void)
 #if defined(CONFIG_SYS_PSC6)
 	serial_register(&serial6_device);
 #endif
+#endif
+#if defined(CONFIG_SYS_BFIN_UART)
+	serial_register_bfin_uart();
 #endif
 	serial_assign (default_serial_console ()->name);
 }
@@ -291,3 +226,91 @@ void serial_puts (const char *s)
 
 	serial_current->puts (s);
 }
+
+#if CONFIG_POST & CONFIG_SYS_POST_UART
+static const int bauds[] = CONFIG_SYS_BAUDRATE_TABLE;
+
+/* Mark weak until post/cpu/.../uart.c migrate over */
+__weak
+int uart_post_test(int flags)
+{
+	unsigned char c;
+	int ret, saved_baud, b;
+	struct serial_device *saved_dev, *s;
+	bd_t *bd = gd->bd;
+
+	/* Save current serial state */
+	ret = 0;
+	saved_dev = serial_current;
+	saved_baud = bd->bi_baudrate;
+
+	for (s = serial_devices; s; s = s->next) {
+		/* If this driver doesn't support loop back, skip it */
+		if (!s->loop)
+			continue;
+
+		/* Test the next device */
+		serial_current = s;
+
+		ret = serial_init();
+		if (ret)
+			goto done;
+
+		/* Consume anything that happens to be queued */
+		while (serial_tstc())
+			serial_getc();
+
+		/* Enable loop back */
+		s->loop(1);
+
+		/* Test every available baud rate */
+		for (b = 0; b < ARRAY_SIZE(bauds); ++b) {
+			bd->bi_baudrate = bauds[b];
+			serial_setbrg();
+
+			/*
+			 * Stick to printable chars to avoid issues:
+			 *  - terminal corruption
+			 *  - serial program reacting to sequences and sending
+			 *    back random extra data
+			 *  - most serial drivers add in extra chars (like \r\n)
+			 */
+			for (c = 0x20; c < 0x7f; ++c) {
+				/* Send it out */
+				serial_putc(c);
+
+				/* Make sure it's the same one */
+				ret = (c != serial_getc());
+				if (ret) {
+					s->loop(0);
+					goto done;
+				}
+
+				/* Clean up the output in case it was sent */
+				serial_putc('\b');
+				ret = ('\b' != serial_getc());
+				if (ret) {
+					s->loop(0);
+					goto done;
+				}
+			}
+		}
+
+		/* Disable loop back */
+		s->loop(0);
+
+		/* XXX: There is no serial_uninit() !? */
+		if (s->uninit)
+			s->uninit();
+	}
+
+ done:
+	/* Restore previous serial state */
+	serial_current = saved_dev;
+	bd->bi_baudrate = saved_baud;
+	serial_reinit_all();
+	serial_setbrg();
+
+	return ret;
+}
+#endif

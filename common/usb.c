@@ -957,8 +957,8 @@ void usb_scan_devices(void)
 	/* insert "driver" if possible */
 #ifdef CONFIG_USB_KEYBOARD
 	drv_usb_kbd_init();
-	USB_PRINTF("scan end\n");
 #endif
+	USB_PRINTF("scan end\n");
 }
 
 
@@ -1166,6 +1166,7 @@ void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	dev->children[port] = usb;
 	usb->parent = dev;
+	usb->portnr = port + 1;
 	/* Run it through the hoops (find a driver, etc) */
 	if (usb_new_device(usb)) {
 		/* Woops, disable the port */

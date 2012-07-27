@@ -46,15 +46,6 @@
 #define CMD_M25PXX_DP		0xb9	/* Deep Power-down */
 #define CMD_M25PXX_RES		0xab	/* Release from DP, and Read Signature */
 
-#define STM_ID_M25P10		0x11
-#define STM_ID_M25P16		0x15
-#define STM_ID_M25P20		0x12
-#define STM_ID_M25P32		0x16
-#define STM_ID_M25P40		0x13
-#define STM_ID_M25P64		0x17
-#define STM_ID_M25P80		0x14
-#define STM_ID_M25P128		0x18
-
 struct stmicro_spi_flash_params {
 	u8 idcode1;
 	u16 page_size;
@@ -63,139 +54,64 @@ struct stmicro_spi_flash_params {
 	const char *name;
 };
 
-/* spi_flash needs to be first so upper layers can free() it */
-struct stmicro_spi_flash {
-	struct spi_flash flash;
-	const struct stmicro_spi_flash_params *params;
-};
-
-static inline struct stmicro_spi_flash *to_stmicro_spi_flash(struct spi_flash
-							     *flash)
-{
-	return container_of(flash, struct stmicro_spi_flash, flash);
-}
-
 static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 	{
-		.idcode1 = STM_ID_M25P10,
+		.idcode1 = 0x11,
 		.page_size = 256,
 		.pages_per_sector = 128,
 		.nr_sectors = 4,
 		.name = "M25P10",
 	},
 	{
-		.idcode1 = STM_ID_M25P16,
+		.idcode1 = 0x15,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 32,
 		.name = "M25P16",
 	},
 	{
-		.idcode1 = STM_ID_M25P20,
+		.idcode1 = 0x12,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 4,
 		.name = "M25P20",
 	},
 	{
-		.idcode1 = STM_ID_M25P32,
+		.idcode1 = 0x16,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 64,
 		.name = "M25P32",
 	},
 	{
-		.idcode1 = STM_ID_M25P40,
+		.idcode1 = 0x13,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 8,
 		.name = "M25P40",
 	},
 	{
-		.idcode1 = STM_ID_M25P64,
+		.idcode1 = 0x17,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 128,
 		.name = "M25P64",
 	},
 	{
-		.idcode1 = STM_ID_M25P80,
+		.idcode1 = 0x14,
 		.page_size = 256,
 		.pages_per_sector = 256,
 		.nr_sectors = 16,
 		.name = "M25P80",
 	},
 	{
-		.idcode1 = STM_ID_M25P128,
+		.idcode1 = 0x18,
 		.page_size = 256,
 		.pages_per_sector = 1024,
 		.nr_sectors = 64,
 		.name = "M25P128",
 	},
 };
-
-static int stmicro_write(struct spi_flash *flash,
-			 u32 offset, size_t len, const void *buf)
-{
-	struct stmicro_spi_flash *stm = to_stmicro_spi_flash(flash);
-	unsigned long page_addr;
-	unsigned long byte_addr;
-	unsigned long page_size;
-	size_t chunk_len;
-	size_t actual;
-	int ret;
-	u8 cmd[4];
-
-	page_size = stm->params->page_size;
-	page_addr = offset / page_size;
-	byte_addr = offset % page_size;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
-		return ret;
-	}
-
-	ret = 0;
-	for (actual = 0; actual < len; actual += chunk_len) {
-		chunk_len = min(len - actual, page_size - byte_addr);
-
-		cmd[0] = CMD_M25PXX_PP;
-		cmd[1] = page_addr >> 8;
-		cmd[2] = page_addr;
-		cmd[3] = byte_addr;
-
-		debug
-		    ("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %d\n",
-		     buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
-
-		ret = spi_flash_cmd(flash->spi, CMD_M25PXX_WREN, NULL, 0);
-		if (ret < 0) {
-			debug("SF: Enabling Write failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
-					  buf + actual, chunk_len);
-		if (ret < 0) {
-			debug("SF: STMicro Page Program failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
-		if (ret)
-			break;
-
-		page_addr++;
-		byte_addr = 0;
-	}
-
-	debug("SF: STMicro: Successfully programmed %u bytes @ 0x%x\n",
-	      len, offset);
-
-	spi_release_bus(flash->spi);
-	return ret;
-}
 
 static int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
@@ -205,7 +121,7 @@ static int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 {
 	const struct stmicro_spi_flash_params *params;
-	struct stmicro_spi_flash *stm;
+	struct spi_flash *flash;
 	unsigned int i;
 
 	if (idcode[0] == 0xff) {
@@ -233,21 +149,21 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 		return NULL;
 	}
 
-	stm = malloc(sizeof(struct stmicro_spi_flash));
-	if (!stm) {
+	flash = malloc(sizeof(*flash));
+	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 
-	stm->params = params;
-	stm->flash.spi = spi;
-	stm->flash.name = params->name;
+	flash->spi = spi;
+	flash->name = params->name;
 
-	stm->flash.write = stmicro_write;
-	stm->flash.erase = stmicro_erase;
-	stm->flash.read = spi_flash_cmd_read_fast;
-	stm->flash.sector_size = params->page_size * params->pages_per_sector;
-	stm->flash.size = stm->flash.sector_size * params->nr_sectors;
+	flash->write = spi_flash_cmd_write_multi;
+	flash->erase = stmicro_erase;
+	flash->read = spi_flash_cmd_read_fast;
+	flash->page_size = params->page_size;
+	flash->sector_size = params->page_size * params->pages_per_sector;
+	flash->size = flash->sector_size * params->nr_sectors;
 
-	return &stm->flash;
+	return flash;
 }

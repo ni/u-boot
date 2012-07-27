@@ -23,36 +23,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-unsigned long get_cpu_clk_rate(void)
-{
-	return gd->cpu_clk_rate_hz;
-}
-
-unsigned long get_main_clk_rate(void)
-{
-	return gd->main_clk_rate_hz;
-}
-
-unsigned long get_mck_clk_rate(void)
-{
-	return gd->mck_rate_hz;
-}
-
-unsigned long get_plla_clk_rate(void)
-{
-	return gd->plla_rate_hz;
-}
-
-unsigned long get_pllb_clk_rate(void)
-{
-	return gd->pllb_rate_hz;
-}
-
-u32 get_pllb_init(void)
-{
-	return gd->at91_pllb_usb_init;
-}
-
 static unsigned long at91_css_to_rate(unsigned long css)
 {
 	switch (css) {
@@ -192,10 +162,7 @@ int at91_clock_init(unsigned long main_clock)
 	freq = gd->mck_rate_hz;
 
 	freq /= (1 << ((mckr & AT91_PMC_MCKR_PRES_MASK) >> 2));	/* prescale */
-#if defined(CONFIG_AT91RM9200)
-	/* mdiv */
-	gd->mck_rate_hz = freq / (1 + ((mckr & AT91_PMC_MCKR_MDIV_MASK) >> 8));
-#elif defined(CONFIG_AT91SAM9G20)
+#if defined(CONFIG_AT91SAM9G20)
 	/* mdiv ; (x >> 7) = ((x >> 8) * 2) */
 	gd->mck_rate_hz = (mckr & AT91_PMC_MCKR_MDIV_MASK) ?
 		freq / ((mckr & AT91_PMC_MCKR_MDIV_MASK) >> 7) : freq;

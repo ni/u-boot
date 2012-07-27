@@ -124,7 +124,9 @@ extern unsigned long nand_env_oob_offset;
 /* The build system likes to know if the env is embedded */
 #ifdef DO_DEPS_ONLY
 # ifdef ENV_IS_EMBEDDED
-#  define CONFIG_ENV_IS_EMBEDDED
+#  ifndef CONFIG_ENV_IS_EMBEDDED
+#   define CONFIG_ENV_IS_EMBEDDED
+#  endif
 # endif
 #endif
 
@@ -160,7 +162,7 @@ extern struct hsearch_data env_htab;
 unsigned char env_get_char (int);
 
 /* Function that returns a pointer to a value from the environment */
-unsigned char *env_get_addr(int);
+const unsigned char *env_get_addr(int);
 unsigned char env_get_char_memory (int index);
 
 /* Function that updates CRC of the enironment */

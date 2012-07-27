@@ -30,7 +30,6 @@
  * High Level Configuration Options
  * (easy to change)
  */
-#define CONFIG_ARMV7		1	/* This is an ARM V7 CPU core */
 #define CONFIG_SAMSUNG		1	/* in a SAMSUNG core */
 #define CONFIG_S5P		1	/* which is in a S5P Family */
 #define CONFIG_S5PC210		1	/* which is in a S5PC210 */
@@ -43,7 +42,7 @@
 #define CONFIG_DISPLAY_BOARDINFO
 
 /* Keep L2 Cache Disabled */
-#define CONFIG_L2_OFF			1
+#define CONFIG_SYS_L2CACHE_OFF		1
 
 #define CONFIG_SYS_SDRAM_BASE		0x40000000
 #define CONFIG_SYS_TEXT_BASE		0x44800000

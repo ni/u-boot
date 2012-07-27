@@ -174,7 +174,19 @@ int step_assign_addresses(fsl_ddr_info_t *pinfo,
 		switch (pinfo->memctl_opts[i].data_bus_width) {
 		case 2:
 			/* 16-bit */
-			printf("can't handle 16-bit mode yet\n");
+			for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+				unsigned int dw;
+				if (!pinfo->dimm_params[i][j].n_ranks)
+					continue;
+				dw = pinfo->dimm_params[i][j].primary_sdram_width;
+				if ((dw == 72 || dw == 64)) {
+					dbw_cap_adj[i] = 2;
+					break;
+				} else if ((dw == 40 || dw == 32)) {
+					dbw_cap_adj[i] = 1;
+					break;
+				}
+			}
 			break;
 
 		case 1:
@@ -313,6 +325,7 @@ fsl_ddr_compute(fsl_ddr_info_t *pinfo, unsigned int start_step,
 
 	switch (start_step) {
 	case STEP_GET_SPD:
+#if defined(CONFIG_DDR_SPD) || defined(CONFIG_SPD_EEPROM)
 		/* STEP 1:  Gather all DIMM SPD data */
 		for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
 			fsl_ddr_get_spd(pinfo->spd_installed_dimms[i], i);
@@ -330,12 +343,20 @@ fsl_ddr_compute(fsl_ddr_info_t *pinfo, unsigned int start_step,
 					&(pinfo->dimm_params[i][j]);
 
 				retval = compute_dimm_parameters(spd, pdimm, i);
+#ifdef CONFIG_SYS_DDR_RAW_TIMING
+				if (retval != 0) {
+					printf("SPD error! Trying fallback to "
+					"raw timing calculation\n");
+					fsl_ddr_get_dimm_params(pdimm, i, j);
+				}
+#else
 				if (retval == 2) {
 					printf("Error: compute_dimm_parameters"
 					" non-zero returned FATAL value "
 					"for memctl=%u dimm=%u\n", i, j);
 					return 0;
 				}
+#endif
 				if (retval) {
 					debug("Warning: compute_dimm_parameters"
 					" non-zero return value for memctl=%u "
@@ -344,6 +365,17 @@ fsl_ddr_compute(fsl_ddr_info_t *pinfo, unsigned int start_step,
 			}
 		}
 
+#else
+	case STEP_COMPUTE_DIMM_PARMS:
+		for (i = 0; i < CONFIG_NUM_DDR_CONTROLLERS; i++) {
+			for (j = 0; j < CONFIG_DIMM_SLOTS_PER_CTLR; j++) {
+				dimm_params_t *pdimm =
+					&(pinfo->dimm_params[i][j]);
+				fsl_ddr_get_dimm_params(pdimm, i, j);
+			}
+		}
+		debug("Filling dimm parameters from board specific file\n");
+#endif
 	case STEP_COMPUTE_COMMON_PARMS:
 		/*
 		 * STEP 3: Compute a common set of timing parameters

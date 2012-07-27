@@ -42,12 +42,6 @@ int timer_init(void)
 	return 0;
 }
 
-void reset_timer(void)
-{
-	timestamp = 0;
-	write_c0_compare(read_c0_count() + CYCLES_PER_JIFFY);
-}
-
 ulong get_timer(ulong base)
 {
 	unsigned int count;
@@ -62,12 +56,6 @@ ulong get_timer(ulong base)
 	write_c0_compare(expirelo);
 
 	return (timestamp - base);
-}
-
-void set_timer(ulong t)
-{
-	timestamp = t;
-	write_c0_compare(read_c0_count() + CYCLES_PER_JIFFY);
 }
 
 void __udelay(unsigned long usec)

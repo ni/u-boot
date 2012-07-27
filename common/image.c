@@ -130,17 +130,22 @@ static const table_entry_t uimage_os[] = {
 };
 
 static const table_entry_t uimage_type[] = {
-	{	IH_TYPE_INVALID,    NULL,	  "Invalid Image",	},
 	{	IH_TYPE_FILESYSTEM, "filesystem", "Filesystem Image",	},
 	{	IH_TYPE_FIRMWARE,   "firmware",	  "Firmware",		},
+	{	IH_TYPE_FLATDT,     "flat_dt",    "Flat Device Tree",	},
+	{	IH_TYPE_INVALID,    NULL,	  "Invalid Image",	},
+	{	IH_TYPE_IMXIMAGE,   "imximage",   "Freescale i.MX Boot Image",},
 	{	IH_TYPE_KERNEL,	    "kernel",	  "Kernel Image",	},
+	{	IH_TYPE_KWBIMAGE,   "kwbimage",   "Kirkwood Boot Image",},
 	{	IH_TYPE_MULTI,	    "multi",	  "Multi-File Image",	},
+	{	IH_TYPE_OMAPIMAGE,  "omapimage",  "TI OMAP SPL With GP CH",},
 	{	IH_TYPE_RAMDISK,    "ramdisk",	  "RAMDisk Image",	},
 	{	IH_TYPE_SCRIPT,     "script",	  "Script",		},
 	{	IH_TYPE_STANDALONE, "standalone", "Standalone Program", },
 	{	IH_TYPE_FLATDT,     "flat_dt",    "Flat Device Tree",	},
 	{	IH_TYPE_KWBIMAGE,   "kwbimage",   "Kirkwood Boot Image",},
 	{	IH_TYPE_IMXIMAGE,   "imximage",   "Freescale i.MX Boot Image",},
+	{	IH_TYPE_UBLIMAGE,   "ublimage",   "Davinci UBL image",},
 	{	-1,		    "",		  "",			},
 };
 
@@ -965,17 +970,6 @@ int boot_get_ramdisk (int argc, char * const argv[], bootm_headers_t *images,
 			rd_data = rd_len = rd_load = 0;
 			return 1;
 		}
-
-#if defined(CONFIG_B2) || defined(CONFIG_EVB4510) || defined(CONFIG_ARMADILLO)
-		/*
-		 * We need to copy the ramdisk to SRAM to let Linux boot
-		 */
-		if (rd_data) {
-			memmove ((void *)rd_load, (uchar *)rd_data, rd_len);
-			rd_data = rd_load;
-		}
-#endif /* CONFIG_B2 || CONFIG_EVB4510 || CONFIG_ARMADILLO */
-
 	} else if (images->legacy_hdr_valid &&
 			image_check_type (&images->legacy_hdr_os_copy, IH_TYPE_MULTI)) {
 		/*
@@ -1234,8 +1228,10 @@ int boot_relocate_fdt (struct lmb *lmb, char **of_flat_tree, ulong *of_size)
 {
 	void	*fdt_blob = *of_flat_tree;
 	void	*of_start = 0;
+	char	*fdt_high;
 	ulong	of_len = 0;
 	int	err;
+	int	disable_relocation = 0;
 
 	/* nothing to do */
 	if (*of_size == 0)
@@ -1249,26 +1245,62 @@ int boot_relocate_fdt (struct lmb *lmb, char **of_flat_tree, ulong *of_size)
 	/* position on a 4K boundary before the alloc_current */
 	/* Pad the FDT by a specified amount */
 	of_len = *of_size + CONFIG_SYS_FDT_PAD;
-	of_start = (void *)(unsigned long)lmb_alloc_base(lmb, of_len, 0x1000,
-			getenv_bootm_mapsize() + getenv_bootm_low());
+
+	/* If fdt_high is set use it to select the relocation address */
+	fdt_high = getenv("fdt_high");
+	if (fdt_high) {
+		void *desired_addr = (void *)simple_strtoul(fdt_high, NULL, 16);
+
+		if (((ulong) desired_addr) == ~0UL) {
+			/* All ones means use fdt in place */
+			desired_addr = fdt_blob;
+			disable_relocation = 1;
+		}
+		if (desired_addr) {
+			of_start =
+			    (void *)(ulong) lmb_alloc_base(lmb, of_len, 0x1000,
+							   ((ulong)
+							    desired_addr)
+							   + of_len);
+			if (desired_addr && of_start != desired_addr) {
+				puts("Failed using fdt_high value for Device Tree");
+				goto error;
+			}
+		} else {
+			of_start =
+			    (void *)(ulong) lmb_alloc(lmb, of_len, 0x1000);
+		}
+	} else {
+		of_start =
+		    (void *)(ulong) lmb_alloc_base(lmb, of_len, 0x1000,
+						   getenv_bootm_mapsize()
+						   + getenv_bootm_low());
+	}
 
 	if (of_start == 0) {
 		puts("device tree - allocation error\n");
 		goto error;
 	}
 
-	debug ("## device tree at %p ... %p (len=%ld [0x%lX])\n",
-		fdt_blob, fdt_blob + *of_size - 1, of_len, of_len);
+	if (disable_relocation) {
+		/* We assume there is space after the existing fdt to use for padding */
+		fdt_set_totalsize(of_start, of_len);
+		printf("   Using Device Tree in place at %p, end %p\n",
+		       of_start, of_start + of_len - 1);
+	} else {
+		debug ("## device tree at %p ... %p (len=%ld [0x%lX])\n",
+			fdt_blob, fdt_blob + *of_size - 1, of_len, of_len);
 
-	printf ("   Loading Device Tree to %p, end %p ... ",
-		of_start, of_start + of_len - 1);
+		printf ("   Loading Device Tree to %p, end %p ... ",
+			of_start, of_start + of_len - 1);
 
-	err = fdt_open_into (fdt_blob, of_start, of_len);
-	if (err != 0) {
-		fdt_error ("fdt move failed");
-		goto error;
+		err = fdt_open_into (fdt_blob, of_start, of_len);
+		if (err != 0) {
+			fdt_error ("fdt move failed");
+			goto error;
+		}
+		puts ("OK\n");
 	}
-	puts ("OK\n");
 
 	*of_flat_tree = of_start;
 	*of_size = of_len;

@@ -74,7 +74,7 @@ Joe D'Abbraccio <ljd015@freescale.com>
 
 	MPC837xERDB	MPC837x
 
-Kári Davíðsson <kd@flaga.is>
+KÃ¡ri DavÃ­Ã°sson <kd@flaga.is>
 
 	FLAGADM		MPC823
 
@@ -142,6 +142,10 @@ Alex Dubov <oakad@yahoo.com>
 
 	mpq101		MPC8548
 
+Phil Edworthy <phil.edworthy@renesas.com>
+
+	rsk7264		SH7264
+
 Dirk Eibach <eibach@gdsys.de>
 
 	devconcenter	PPC460EX
@@ -192,12 +196,6 @@ Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 	VOM405		PPC405EP
 	WUH405		PPC405EP
 	CMS700		PPC405EP
-
-Niklaus Giger <niklaus.giger@netstal.com>
-
-	HCU4		PPC405GPr
-	MCU25		PPC405GPr
-	HCU5		PPC440EPx
 
 Siddarth Gore <gores@marvell.com>
 
@@ -451,6 +449,7 @@ Peter De Schrijver <p2@mind.be>
 
 Andre Schwarz <andre.schwarz@matrix-vision.de>
 
+	mergerbox	MPC8377
 	mvbc_p		MPC5200
 	mvblm7		MPC8343
 	mvsmr		MPC5200
@@ -516,6 +515,7 @@ Ilya Yanok <yanok@emcraft.com>
 Roy Zang <tie-fei.zang@freescale.com>
 
 	mpc7448hpc2	MPC7448
+	P1023RDS	P1023
 
 John Zhan <zhanz@sinovee.com>
 
@@ -548,6 +548,8 @@ Unknown / orphaned boards:
 
 	EVB64260	MPC7xx_74xx
 
+	versatile	ARM926EJ-S
+
 
 #########################################################################
 # ARM Systems:								#
@@ -559,10 +561,6 @@ Unknown / orphaned boards:
 Albert ARIBAUD <albert.u.boot@aribaud.net>
 
 	edminiv2	ARM926EJS (Orion5x SoC)
-
-Rowel Atienza <rowel@diwalabs.com>
-
-	armadillo	ARM720T
 
 Stefano Babic <sbabic@denx.de>
 
@@ -593,13 +591,18 @@ Eric Benard <eric@eukrea.com>
 	cpu9260		ARM926EJS (AT91SAM9260 SoC)
 	cpu9G20		ARM926EJS (AT91SAM9G20 SoC)
 
+Ajay Bhargav <ajay.bhargav@einfochips.com>
+
+	gplugd		ARM926EJS (ARMADA100 88AP168 SoC)
+
 Rishi Bhattacharya <rishi@ti.com>
 
 	omap5912osk	ARM926EJS
 
-Andreas Bießmann <andreas.devel@gmail.com>
+Andreas BieÃŸmann <andreas.devel@gmail.com>
 
 	at91rm9200ek	at91rm9200
+	grasshopper	avr32
 
 Cliff Brake <cliff.brake@gmail.com>
 
@@ -621,18 +624,9 @@ Eric Cooper <ecc@cmu.edu>
 
 	dockstar	ARM926EJS (Kirkwood SoC)
 
-George G. Davis <gdavis@mvista.com>
-
-	assabet		SA1100
-	gcplus		SA1100
-
 Wolfgang Denk <wd@denx.de>
 	imx27lite	i.MX27
 	qong		i.MX31
-
-Thomas Elste <info@elste.org>
-
-	modnet50	ARM720T (NET+50)
 
 Kristoffer Ericson <kristoffer.ericson@gmail.com>
 
@@ -641,6 +635,7 @@ Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Fabio Estevam <fabio.estevam@freescale.com>
 
 	mx31pdk		i.MX31
+	mx53ard		i.MX53
 	mx53smd		i.MX53
 
 Daniel Gorsulowski <daniel.gorsulowski@esd.eu>
@@ -652,10 +647,11 @@ Sedji Gaouaou<sedji.gaouaou@atmel.com>
 	at91sam9g10ek		ARM926EJS (AT91SAM9G10 SoC)
 	at91sam9m10g45ek	ARM926EJS (AT91SAM9G45 SoC)
 
-Marius Gröger <mag@sysgo.de>
+Simon Guinot <simon.guinot@sequanux.org>
 
-	impa7		ARM720T (EP7211)
-	ep7312		ARM720T (EP7312)
+	inetspace_v2	ARM926EJS (Kirkwood SoC)
+	netspace_v2	ARM926EJS (Kirkwood SoC)
+	netspace_max_v2	ARM926EJS (Kirkwood SoC)
 
 Igor Grinberg <grinberg@compulab.co.il>
 
@@ -674,10 +670,6 @@ Grazvydas Ignotas <notasas@gmail.com>
 
 	omap3_pandora	ARM ARMV7 (OMAP3xx SoC)
 
-Gary Jennejohn <garyj@denx.de>
-
-	smdk2400	ARM920T
-
 Matthias Kaehlcke <matthias@kaehlcke.net>
 	edb9301			ARM920T (EP9301)
 	edb9302			ARM920T (EP9302)
@@ -687,9 +679,6 @@ Matthias Kaehlcke <matthias@kaehlcke.net>
 	edb9312			ARM920T (EP9312)
 	edb9315			ARM920T (EP9315)
 	edb9315a		ARM920T (EP9315)
-
-Konstantin Kletschke <kletschke@synertronixx.de>
-	scb9328		ARM920T
 
 Nishant Kamat <nskamat@ti.com>
 
@@ -703,7 +692,11 @@ Minkyu Kang <mk7.kang@samsung.com>
 
 Chander Kashyap <k.chander@samsung.com>
 
+	origen			ARM ARMV7 (S5PC210 SoC)
 	SMDKV310		ARM ARMV7 (S5PC210 SoC)
+
+Torsten Koschorrek <koschorrek@synertronixx.de>
+	scb9328		ARM920T (i.MXL)
 
 Frederik Kriewitz <frederik@kriewitz.eu>
 
@@ -730,12 +723,17 @@ Sergey Lapin <slapin@ossfans.org>
 
 	afeb9260	ARM926EJS (AT91SAM9260 SoC)
 
+Valentin Longchamp <valentin.longchamp@keymile.com>
+
+	km_kirkwood	ARM926EJS (Kirkwood SoC)
+	portl2		ARM926EJS (Kirkwood SoC)
+
 Nishanth Menon <nm@ti.com>
 
 	omap3_sdp3430	ARM ARMV7 (OMAP3xx SoC)
 	omap3_zoom1	ARM ARMV7 (OMAP3xx SoC)
 
-David Müller <d.mueller@elsoft.ch>
+David MÃ¼ller <d.mueller@elsoft.ch>
 
 	smdk2410	ARM920T
 	VCMA9		ARM920T
@@ -748,10 +746,6 @@ Nagendra T S  <nagendra@mistralsolutions.com>
 
    am3517_crane    ARM ARMV7 (AM35x SoC)
 
-Rolf Offermanns <rof@sysgo.de>
-
-	shannon		SA1100
-
 Kyungmin Park <kyungmin.park@samsung.com>
 
 	apollon		ARM1136EJS
@@ -763,11 +757,9 @@ Sandeep Paulraj <s-paulraj@ti.com>
 	davinci_dm365evm	ARM926EJS
 	davinci_dm6467evm	ARM926EJS
 
-Peter Pearse <peter.pearse@arm.com>
-	integratorcp	All current ARM supplied & supported core modules
-			-see http://www.arm.com/products/DevTools/Hardware_Platforms.html
-	versatile	ARM926EJ-S
-	versatile	ARM926EJ-S
+Linus Walleij <linus.walleij@linaro.org>
+	integratorap	various
+	integratorcp	various
 
 Dave Peverley <dpeverley@mpc-data.co.uk>
 
@@ -779,7 +771,6 @@ Manikandan Pillai <mani.pillai@ti.com>
 
 Stelian Pop <stelian.pop@leadtechdesign.com>
 
-	at91cap9adk	ARM926EJS (AT91CAP9 SoC)
 	at91sam9260ek	ARM926EJS (AT91SAM9260 SoC)
 	at91sam9261ek	ARM926EJS (AT91SAM9261 SoC)
 	at91sam9263ek	ARM926EJS (AT91SAM9263 SoC)
@@ -795,7 +786,6 @@ John Rigby <jcrigby@gmail.com>
 
 Stefan Roese <sr@denx.de>
 
-	ixdpg425	xscale/ixp
 	pdnb3		xscale/ixp
 	scpu		xscale/ixp
 
@@ -818,8 +808,6 @@ Heiko Schocher <hs@denx.de>
 
 	magnesium	i.MX27
 	mgcoge3un	ARM926EJS (Kirkwood SoC)
-	suen3		ARM926EJS (Kirkwood SoC)
-	suen8		ARM926EJS (Kirkwood SoC)
 
 Robert Schwebel <r.schwebel@pengutronix.de>
 
@@ -833,10 +821,6 @@ Michael Schwingen <michael@schwingen.org>
 	actux3		xscale/ixp
 	actux4		xscale/ixp
 	dvlhost		xscale/ixp
-
-Andrea Scian <andrea.scian@dave-tech.it>
-
-	B2		ARM7TDMI (S3C44B0X)
 
 Nick Thompson <nick.thompson@gefanuc.com>
 
@@ -892,15 +876,11 @@ Lei Wen <leiwen@marvell.com>
 Matthias Weisser <weisserm@arcor.de>
 
 	jadecpu		ARM926EJS (MB86R01 SoC)
+	zmx25		ARM926EJS (imx25 SoC)
 
 Richard Woodruff <r-woodruff2@ti.com>
 
 	omap2420h4	ARM1136EJS
-
-Alex Züpke <azu@sysgo.de>
-
-	lart		SA1100
-	dnp1110		SA1110
 
 Syed Mohammed Khasim <sm.khasim@gmail.com>
 Sughosh Ganu <urwithsughosh@gmail.com>
@@ -913,7 +893,6 @@ Unknown / orphaned boards:
  	Board		CPU	Last known maintainer / Comment
 .........................................................................
 	cradle		xscale/pxa	Kyle Harris <kharris@nexus-tech.net> / dead address
-	ixdp425		xscale/ixp	Kyle Harris <kharris@nexus-tech.net> / dead address
 	lubbock		xscale/pxa	Kyle Harris <kharris@nexus-tech.net> / dead address
 
 	imx31_phycore_eet i.MX31  Guennadi Liakhovetski <g.liakhovetski@gmx.de> / resigned

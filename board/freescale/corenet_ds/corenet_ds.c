@@ -142,7 +142,9 @@ int board_early_init_r(void)
 			0, flash_esel, BOOKE_PAGESZ_256M, 1);	/* ts, esel, tsize, iprot */
 
 	set_liodns();
+#ifdef CONFIG_SYS_DPAA_QBMAN
 	setup_portals();
+#endif
 
 	return 0;
 }
@@ -234,6 +236,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 #endif
 
 	fdt_fixup_liodn(blob);
+	fdt_fixup_dr_usb(blob, bd);
 }
 
 int board_eth_init(bd_t *bis)

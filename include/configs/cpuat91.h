@@ -37,6 +37,7 @@
 #endif
 
 #define AT91C_XTAL_CLOCK		18432000
+#define CONFIG_SYS_AT91_SLOW_CLOCK	32768
 #define AT91C_MAIN_CLOCK		((AT91C_XTAL_CLOCK / 4) * 39)
 #define AT91C_MASTER_CLOCK		(AT91C_MAIN_CLOCK / 3)
 #define CONFIG_SYS_HZ_CLOCK		(AT91C_MASTER_CLOCK / 2)
@@ -45,14 +46,15 @@
 #define CONFIG_ARM920T
 #define CONFIG_AT91RM9200
 #define CONFIG_CPUAT91
-#define CONFIG_AT91FAMILY
-
 #undef CONFIG_USE_IRQ
 #define USE_920T_MMU
+
+#include <asm/hardware.h>	/* needed for port definitions */
 
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
+#define CONFIG_BOARD_EARLY_INIT_F
 
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 #define CONFIG_SYS_USE_MAIN_OSCILLATOR
@@ -86,9 +88,9 @@
 #define CONFIG_SYS_SDRC_TR_VAL	0x000002E0 /* Write refresh rate */
 #endif	/* CONFIG_SKIP_LOWLEVEL_INIT */
 
-/* define one of these to choose the DBGU, USART0 or USART1 as console */
-#define CONFIG_AT91RM9200_USART
-#define CONFIG_DBGU
+#define CONFIG_ATMEL_USART
+#define CONFIG_USART_BASE	ATMEL_BASE_DBGU
+#define CONFIG_USART_ID		0/* ignored in arm */
 
 #undef CONFIG_HARD_I2C
 #undef CONFIG_SOFT_I2C

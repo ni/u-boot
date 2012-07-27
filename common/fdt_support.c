@@ -1195,6 +1195,46 @@ int fdt_alloc_phandle(void *blob)
 	return phandle + 1;
 }
 
+/*
+ * fdt_create_phandle: Create a phandle property for the given node
+ *
+ * @fdt: ptr to device tree
+ * @nodeoffset: node to update
+ * @phandle: phandle value to set (must be unique)
+*/
+int fdt_create_phandle(void *fdt, int nodeoffset, uint32_t phandle)
+{
+	int ret;
+
+#ifdef DEBUG
+	int off = fdt_node_offset_by_phandle(fdt, phandle);
+
+	if ((off >= 0) && (off != nodeoffset)) {
+		char buf[64];
+
+		fdt_get_path(fdt, nodeoffset, buf, sizeof(buf));
+		printf("Trying to update node %s with phandle %u ",
+		       buf, phandle);
+
+		fdt_get_path(fdt, off, buf, sizeof(buf));
+		printf("that already exists in node %s.\n", buf);
+		return -FDT_ERR_BADPHANDLE;
+	}
+#endif
+
+	ret = fdt_setprop_cell(fdt, nodeoffset, "phandle", phandle);
+	if (ret < 0)
+		return ret;
+
+	/*
+	 * For now, also set the deprecated "linux,phandle" property, so that we
+	 * don't break older kernels.
+	 */
+	ret = fdt_setprop_cell(fdt, nodeoffset, "linux,phandle", phandle);
+
+	return ret;
+}
+
 #if defined(CONFIG_VIDEO)
 int fdt_add_edid(void *blob, const char *compat, unsigned char *edid_buf)
 {
@@ -1223,3 +1263,70 @@ err_size:
 	return ret;
 }
 #endif
+
+/*
+ * Verify the physical address of device tree node for a given alias
+ *
+ * This function locates the device tree node of a given alias, and then
+ * verifies that the physical address of that device matches the given
+ * parameter.  It displays a message if there is a mismatch.
+ *
+ * Returns 1 on success, 0 on failure
+ */
+int fdt_verify_alias_address(void *fdt, int anode, const char *alias, u64 addr)
+{
+	const char *path;
+	const u32 *reg;
+	int node, len;
+	u64 dt_addr;
+
+	path = fdt_getprop(fdt, anode, alias, NULL);
+	if (!path) {
+		/* If there's no such alias, then it's not a failure */
+		return 1;
+	}
+
+	node = fdt_path_offset(fdt, path);
+	if (node < 0) {
+		printf("Warning: device tree alias '%s' points to invalid "
+		       "node %s.\n", alias, path);
+		return 0;
+	}
+
+	reg = fdt_getprop(fdt, node, "reg", &len);
+	if (!reg) {
+		printf("Warning: device tree node '%s' has no address.\n",
+		       path);
+		return 0;
+	}
+
+	dt_addr = fdt_translate_address(fdt, node, reg);
+	if (addr != dt_addr) {
+		printf("Warning: U-Boot configured device %s at address %llx,\n"
+		       " but the device tree has it address %llx.\n",
+		       alias, addr, dt_addr);
+		return 0;
+	}
+
+	return 1;
+}
+
+/*
+ * Returns the base address of an SOC or PCI node
+ */
+u64 fdt_get_base_address(void *fdt, int node)
+{
+	int size;
+	u32 naddr;
+	const u32 *prop;
+
+	prop = fdt_getprop(fdt, node, "#address-cells", &size);
+	if (prop && size == 4)
+		naddr = *prop;
+	else
+		naddr = 2;
+
+	prop = fdt_getprop(fdt, node, "ranges", &size);
+
+	return prop ? fdt_translate_address(fdt, node, prop + naddr) : 0;
+}

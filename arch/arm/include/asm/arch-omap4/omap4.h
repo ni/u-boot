@@ -51,6 +51,18 @@
 #define CONTROL_PADCONF_CORE	(OMAP44XX_L4_CORE_BASE + 0x100000)
 #define CONTROL_PADCONF_WKUP	(OMAP44XX_L4_CORE_BASE + 0x31E000)
 
+/* LPDDR2 IO regs */
+#define LPDDR2_IO_REGS_BASE	0x4A100638
+
+/* CONTROL_ID_CODE */
+#define CONTROL_ID_CODE		0x4A002204
+
+#define OMAP4_CONTROL_ID_CODE_ES1_0	0x0B85202F
+#define OMAP4_CONTROL_ID_CODE_ES2_0	0x1B85202F
+#define OMAP4_CONTROL_ID_CODE_ES2_1	0x3B95C02F
+#define OMAP4_CONTROL_ID_CODE_ES2_2	0x4B95C02F
+#define OMAP4_CONTROL_ID_CODE_ES2_3	0x6B95C02F
+
 /* UART */
 #define UART1_BASE		(OMAP44XX_L4_PER_BASE + 0x6a000)
 #define UART2_BASE		(OMAP44XX_L4_PER_BASE + 0x6c000)
@@ -70,12 +82,9 @@
 /* GPMC */
 #define OMAP44XX_GPMC_BASE	0x50000000
 
-/* DMM */
-#define OMAP44XX_DMM_BASE		0x4E000000
-#define DMM_LISA_MAP_BASE		(OMAP44XX_DMM_BASE + 0x40)
-#define DMM_LISA_MAP_SYS_SIZE_MASK	(7 << 20)
-#define DMM_LISA_MAP_SYS_SIZE_SHIFT	20
-#define DMM_LISA_MAP_SYS_ADDR_MASK	(0xFF << 24)
+/* SYSTEM CONTROL MODULE */
+#define SYSCTRL_GENERAL_CORE_BASE	0x4A002000
+
 /*
  * Hardware Register Details
  */
@@ -100,6 +109,22 @@
 #define PRM_RSTCTRL		PRM_DEVICE_BASE
 #define PRM_RSTCTRL_RESET	0x01
 
+/* Control Module */
+#define LDOSRAM_ACTMODE_VSET_IN_MASK	(0x1F << 5)
+#define LDOSRAM_VOLT_CTRL_OVERRIDE	0x0401040f
+#define CONTROL_EFUSE_1_OVERRIDE	0x1C4D0110
+#define CONTROL_EFUSE_2_OVERRIDE	0x00084000
+
+/* LPDDR2 IO regs */
+#define CONTROL_LPDDR2IO_SLEW_125PS_DRV8_PULL_DOWN	0x1C1C1C1C
+#define CONTROL_LPDDR2IO_SLEW_325PS_DRV8_GATE_KEEPER	0x9E9E9E9E
+#define CONTROL_LPDDR2IO_SLEW_315PS_DRV12_PULL_DOWN	0x7C7C7C7C
+#define LPDDR2IO_GR10_WD_MASK				(3 << 17)
+#define CONTROL_LPDDR2IO_3_VAL		0xA0888C00
+
+/* CONTROL_EFUSE_2 */
+#define CONTROL_EFUSE_2_NMOS_PMOS_PTV_CODE_1		0x00ffc000
+
 #ifndef __ASSEMBLY__
 
 struct s32ktimer {
@@ -107,6 +132,30 @@ struct s32ktimer {
 	unsigned int s32k_cr;	/* 0x10 */
 };
 
+struct omap4_sys_ctrl_regs {
+	unsigned int pad1[129];
+	unsigned int control_id_code;			/* 0x4A002204 */
+	unsigned int pad11[22];
+	unsigned int control_std_fuse_opp_bgap;		/* 0x4a002260 */
+	unsigned int pad2[47];
+	unsigned int control_ldosram_iva_voltage_ctrl;	/* 0x4A002320 */
+	unsigned int control_ldosram_mpu_voltage_ctrl;	/* 0x4A002324 */
+	unsigned int control_ldosram_core_voltage_ctrl;	/* 0x4A002328 */
+	unsigned int pad3[260341];
+	unsigned int control_efuse_1;			/* 0x4A100700 */
+	unsigned int control_efuse_2;			/* 0x4A100704 */
+};
+
+struct control_lpddr2io_regs {
+	unsigned int control_lpddr2io1_0;
+	unsigned int control_lpddr2io1_1;
+	unsigned int control_lpddr2io1_2;
+	unsigned int control_lpddr2io1_3;
+	unsigned int control_lpddr2io2_0;
+	unsigned int control_lpddr2io2_1;
+	unsigned int control_lpddr2io2_2;
+	unsigned int control_lpddr2io2_3;
+};
 #endif /* __ASSEMBLY__ */
 
 /*
@@ -119,13 +168,30 @@ struct s32ktimer {
 /* base address for indirect vectors (internal boot mode) */
 #define SRAM_ROM_VECT_BASE	0x4030D000
 /* Temporary SRAM stack used while low level init is done */
-#define LOW_LEVEL_SRAM_STACK	NON_SECURE_SRAM_END
+#define LOW_LEVEL_SRAM_STACK		NON_SECURE_SRAM_END
+#define SRAM_SCRATCH_SPACE_ADDR		NON_SECURE_SRAM_START
+/* SRAM scratch space entries */
+#define OMAP4_SRAM_SCRATCH_OMAP4_REV	SRAM_SCRATCH_SPACE_ADDR
+#define OMAP4_SRAM_SCRATCH_EMIF_SIZE	(SRAM_SCRATCH_SPACE_ADDR + 0x4)
+#define OMAP4_SRAM_SCRATCH_EMIF_T_NUM	(SRAM_SCRATCH_SPACE_ADDR + 0xC)
+#define OMAP4_SRAM_SCRATCH_EMIF_T_DEN	(SRAM_SCRATCH_SPACE_ADDR + 0x10)
+#define OMAP4_SRAM_SCRATCH_SPACE_END	(SRAM_SCRATCH_SPACE_ADDR + 0x14)
 
-/*
- * OMAP4 real hardware:
- * TODO: Change this to the IDCODE in the hw regsiter
- */
-#define CPU_OMAP4430_ES10	1
-#define CPU_OMAP4430_ES20	2
+/* Silicon revisions */
+#define OMAP4430_SILICON_ID_INVALID	0xFFFFFFFF
+#define OMAP4430_ES1_0	0x44300100
+#define OMAP4430_ES2_0	0x44300200
+#define OMAP4430_ES2_1	0x44300210
+#define OMAP4430_ES2_2	0x44300220
+#define OMAP4430_ES2_3	0x44300230
+#define OMAP4460_ES1_0	0x44600100
+
+/* ROM code defines */
+/* Boot device */
+#define BOOT_DEVICE_MASK	0xFF
+#define BOOT_DEVICE_OFFSET	0x8
+#define DEV_DESC_PTR_OFFSET	0x4
+#define DEV_DATA_PTR_OFFSET	0x18
+#define BOOT_MODE_OFFSET	0x8
 
 #endif

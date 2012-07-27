@@ -59,7 +59,7 @@ int timer_init(void)
 	when the value in TC_RC is reached */
 	writel(AT91_TC_CMR_TCCLKS_CLOCK1 | AT91_TC_CMR_CPCTRG, &tc->tc[0].cmr);
 
-	writel(0xFFFFFFFF, &tc->tc[0].idr); /* disable interupts */
+	writel(0xFFFFFFFF, &tc->tc[0].idr); /* disable interrupts */
 	writel(TIMER_LOAD_VAL, &tc->tc[0].rc);
 
 	writel(AT91_TC_CCR_SWTRG | AT91_TC_CCR_CLKEN, &tc->tc[0].ccr);
@@ -72,33 +72,14 @@ int timer_init(void)
 /*
  * timer without interrupts
  */
-
-void reset_timer(void)
-{
-	reset_timer_masked();
-}
-
 ulong get_timer(ulong base)
 {
 	return get_timer_masked() - base;
 }
 
-void set_timer(ulong t)
-{
-	gd->tbl = t;
-}
-
 void __udelay(unsigned long usec)
 {
 	udelay_masked(usec);
-}
-
-void reset_timer_masked(void)
-{
-	/* reset time */
-	at91_tc_t *tc = (at91_tc_t *) ATMEL_BASE_TC;
-	gd->lastinc = readl(&tc->tc[0].cv) & 0x0000ffff;
-	gd->tbl = 0;
 }
 
 ulong get_timer_raw(void)

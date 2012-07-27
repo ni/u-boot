@@ -124,7 +124,6 @@ struct bfticu_iomap {
 
 int ethernet_present(void);
 int ivm_read_eeprom(void);
-void set_pin(int state, unsigned long mask);
 
 int set_km_env(void);
 int fdt_set_node_and_value(void *blob,
@@ -138,4 +137,5 @@ int fdt_get_node_and_value(void *blob,
 				void **var);
 
 int i2c_soft_read_pin(void);
+int i2c_make_abort(void);
 #endif /* __KEYMILE_COMMON_H */

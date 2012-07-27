@@ -89,11 +89,6 @@ void reset_timer_masked(void)
 	gd->timestamp = 0;
 }
 
-void reset_timer(void)
-{
-	reset_timer_masked();
-}
-
 ulong get_timer_masked(void)
 {
 	return tick_to_time(get_ticks());
@@ -102,11 +97,6 @@ ulong get_timer_masked(void)
 ulong get_timer(ulong base)
 {
 	return get_timer_masked() - base;
-}
-
-void set_timer(ulong t)
-{
-	gd->timestamp = time_to_tick(t);
 }
 
 /* delay x useconds AND preserve advance timestamp value */

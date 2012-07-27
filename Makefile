@@ -22,7 +22,7 @@
 #
 
 VERSION = 2011
-PATCHLEVEL = 06
+PATCHLEVEL = 09
 SUBLEVEL =
 EXTRAVERSION =
 ifneq "$(SUBLEVEL)" ""
@@ -104,10 +104,11 @@ $(if $(BUILD_DIR),,$(error output directory "$(saved-output)" does not exist))
 endif # ifneq ($(BUILD_DIR),)
 
 OBJTREE		:= $(if $(BUILD_DIR),$(BUILD_DIR),$(CURDIR))
+SPLTREE		:= $(OBJTREE)/spl
 SRCTREE		:= $(CURDIR)
 TOPDIR		:= $(SRCTREE)
 LNDIR		:= $(OBJTREE)
-export	TOPDIR SRCTREE OBJTREE
+export	TOPDIR SRCTREE OBJTREE SPLTREE
 
 MKCONFIG	:= $(SRCTREE)/mkconfig
 export MKCONFIG
@@ -341,22 +342,15 @@ BOARD_SIZE_CHECK =
 endif
 
 # Always append ALL so that arch config.mk's can add custom ones
-ALL += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map
+ALL-y += $(obj)u-boot.srec $(obj)u-boot.bin $(obj)System.map
 
-ifeq ($(CONFIG_NAND_U_BOOT),y)
-ALL += $(obj)u-boot-nand.bin
-endif
-
-ifeq ($(CONFIG_ONENAND_U_BOOT),y)
-ALL += $(obj)u-boot-onenand.bin
+ALL-$(CONFIG_NAND_U_BOOT) += $(obj)u-boot-nand.bin
+ALL-$(CONFIG_ONENAND_U_BOOT) += $(obj)u-boot-onenand.bin
 ONENAND_BIN ?= $(obj)onenand_ipl/onenand-ipl-2k.bin
-endif
+ALL-$(CONFIG_MMC_U_BOOT) += $(obj)mmc_spl/u-boot-mmc-spl.bin
+ALL-$(CONFIG_SPL) += $(obj)spl/u-boot-spl.bin
 
-ifeq ($(CONFIG_MMC_U_BOOT),y)
-ALL += $(obj)mmc_spl/u-boot-mmc-spl.bin
-endif
-
-all:		$(ALL)
+all:		$(ALL-y)
 
 $(obj)u-boot.hex:	$(obj)u-boot
 		$(OBJCOPY) ${OBJCFLAGS} -O ihex $< $@
@@ -381,7 +375,7 @@ $(obj)u-boot.ldr.srec:	$(obj)u-boot.ldr
 
 $(obj)u-boot.img:	$(obj)u-boot.bin
 		$(obj)tools/mkimage -A $(ARCH) -T firmware -C none \
-		-a $(CONFIG_SYS_TEXT_BASE) -e 0 \
+		-O u-boot -a $(CONFIG_SYS_TEXT_BASE) -e 0 \
 		-n $(shell sed -n -e 's/.*U_BOOT_VERSION//p' $(VERSION_FILE) | \
 			sed -e 's/"[	 ]*$$/ for $(BOARD) board"/') \
 		-d $< $@
@@ -399,6 +393,10 @@ $(obj)u-boot.sha1:	$(obj)u-boot.bin
 
 $(obj)u-boot.dis:	$(obj)u-boot
 		$(OBJDUMP) -d $< > $@
+
+$(obj)u-boot.ubl:       $(obj)u-boot-nand.bin
+		$(obj)tools/mkimage -n $(UBL_CONFIG) -T ublimage \
+		-e $(CONFIG_SYS_TEXT_BASE) -d $< $@
 
 GEN_UBOOT = \
 		UNDEF_SYM=`$(OBJDUMP) -x $(LIBBOARD) $(LIBS) | \
@@ -452,6 +450,9 @@ mmc_spl:	$(TIMESTAMP_FILE) $(VERSION_FILE) depend
 
 $(obj)mmc_spl/u-boot-mmc-spl.bin:	mmc_spl
 
+$(obj)spl/u-boot-spl.bin:		depend
+		$(MAKE) -C spl all
+
 $(TIMESTAMP_FILE):
 		@LC_ALL=C date +'#define U_BOOT_DATE "%b %d %C%y"' > $@
 		@LC_ALL=C date +'#define U_BOOT_TIME "%T"' >> $@
@@ -463,7 +464,8 @@ updater:
 # parallel sub-makes creating .depend files simultaneously.
 depend dep:	$(TIMESTAMP_FILE) $(VERSION_FILE) \
 		$(obj)include/autoconf.mk \
-		$(obj)include/generated/generic-asm-offsets.h
+		$(obj)include/generated/generic-asm-offsets.h \
+		$(obj)include/generated/asm-offsets.h
 		for dir in $(SUBDIRS) $(CPUDIR) $(dir $(LDSCRIPT)) ; do \
 			$(MAKE) -C $$dir _depend ; done
 
@@ -471,15 +473,19 @@ TAG_SUBDIRS = $(SUBDIRS)
 TAG_SUBDIRS += $(dir $(__LIBS))
 TAG_SUBDIRS += include
 
+FIND := find
+FINDFLAGS := -L
+
 tags ctags:
-		ctags -w -o $(obj)ctags `find $(TAG_SUBDIRS) \
+		ctags -w -o $(obj)ctags `$(FIND) $(FINDFLAGS) $(TAG_SUBDIRS) \
 						-name '*.[chS]' -print`
 
 etags:
-		etags -a -o $(obj)etags `find $(TAG_SUBDIRS) \
+		etags -a -o $(obj)etags `$(FIND) $(FINDFLAGS) $(TAG_SUBDIRS) \
 						-name '*.[chS]' -print`
 cscope:
-		find $(TAG_SUBDIRS) -name '*.[chS]' -print > cscope.files
+		$(FIND) $(FINDFLAGS) $(TAG_SUBDIRS) -name '*.[chS]' -print > \
+						cscope.files
 		cscope -b -q -k
 
 SYSTEM_MAP = \
@@ -522,6 +528,21 @@ $(obj)lib/asm-offsets.s:	$(obj)include/autoconf.mk.dep \
 		$(CFLAGS) $(CFLAGS_$(BCURDIR)/$(@F)) $(CFLAGS_$(BCURDIR)) \
 		-o $@ $(src)lib/asm-offsets.c -c -S
 
+$(obj)include/generated/asm-offsets.h:	$(obj)include/autoconf.mk.dep \
+	$(obj)$(CPUDIR)/$(SOC)/asm-offsets.s
+	@echo Generating $@
+	tools/scripts/make-asm-offsets $(obj)$(CPUDIR)/$(SOC)/asm-offsets.s $@
+
+$(obj)$(CPUDIR)/$(SOC)/asm-offsets.s:	$(obj)include/autoconf.mk.dep
+	@mkdir -p $(obj)$(CPUDIR)/$(SOC)
+	if [ -f $(src)$(CPUDIR)/$(SOC)/asm-offsets.c ];then \
+		$(CC) -DDO_DEPS_ONLY \
+		$(CFLAGS) $(CFLAGS_$(BCURDIR)/$(@F)) $(CFLAGS_$(BCURDIR)) \
+			-o $@ $(src)$(CPUDIR)/$(SOC)/asm-offsets.c -c -S; \
+	else \
+		touch $@; \
+	fi
+
 #########################################################################
 else	# !config.mk
 all $(obj)u-boot.hex $(obj)u-boot.srec $(obj)u-boot.bin \
@@ -536,6 +557,7 @@ tools: $(VERSION_FILE)
 endif	# config.mk
 
 $(VERSION_FILE):
+		@mkdir -p $(dir $(VERSION_FILE))
 		@( localvers='$(shell $(TOPDIR)/tools/setlocalversion $(TOPDIR))' ; \
 		   printf '#define PLAIN_VERSION "%s%s"\n' \
 			"$(U_BOOT_VERSION)" "$${localvers}" ; \
@@ -718,6 +740,7 @@ M54455EVB_stm33_config :	unconfig
 		cp $(obj)board/freescale/m54455evb/u-boot.stm $(obj)board/freescale/m54455evb/u-boot.lds ; \
 	fi; \
 	echo "#define CONFIG_SYS_INPUT_CLKSRC $${FREQ}" >> $(obj)include/config.h ; \
+	$(XECHO) "... with $${FREQ}Hz input clock"
 	@$(MKCONFIG) -n $@ -a M54455EVB m68k mcf5445x m54455evb freescale
 
 M5475AFE_config \
@@ -792,132 +815,6 @@ M5485HFE_config :	unconfig
 # ARM
 #========================================================================
 
-#########################################################################
-## ARM926EJ-S Systems
-#########################################################################
-
-at91sam9261ek_nandflash_config \
-at91sam9261ek_dataflash_cs0_config \
-at91sam9261ek_dataflash_cs3_config \
-at91sam9261ek_config \
-at91sam9g10ek_nandflash_config \
-at91sam9g10ek_dataflash_cs0_config \
-at91sam9g10ek_dataflash_cs3_config \
-at91sam9g10ek_config	:	unconfig
-	@mkdir -p $(obj)include
-	@if [ "$(findstring 9g10,$@)" ] ; then \
-		echo "#define CONFIG_AT91SAM9G10EK 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_AT91SAM9261EK 1"	>>$(obj)include/config.h ; \
-	fi;
-	@if [ "$(findstring _nandflash,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_NANDFLASH 1"	>>$(obj)include/config.h ; \
-	elif [ "$(findstring dataflash_cs0,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_DATAFLASH_CS3 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_SYS_USE_DATAFLASH_CS0 1"	>>$(obj)include/config.h ; \
-	fi;
-	@$(MKCONFIG) -n $@ -a at91sam9261ek arm arm926ejs at91sam9261ek atmel at91
-
-at91sam9263ek_norflash_config \
-at91sam9263ek_norflash_boot_config \
-at91sam9263ek_nandflash_config \
-at91sam9263ek_dataflash_config \
-at91sam9263ek_dataflash_cs0_config \
-at91sam9263ek_config	:	unconfig
-	@mkdir -p $(obj)include
-	@if [ "$(findstring _nandflash,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_NANDFLASH 1"	>>$(obj)include/config.h ; \
-	elif [ "$(findstring norflash,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_NORFLASH 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_SYS_USE_DATAFLASH 1"	>>$(obj)include/config.h ; \
-	fi;
-	@if [ "$(findstring norflash_boot,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_BOOT_NORFLASH 1"	>>$(obj)include/config.h ; \
-	fi;
-	@$(MKCONFIG) -n $@ -a at91sam9263ek arm arm926ejs at91sam9263ek atmel at91
-
-at91sam9rlek_nandflash_config \
-at91sam9rlek_dataflash_config \
-at91sam9rlek_dataflash_cs0_config \
-at91sam9rlek_config	:	unconfig
-	@mkdir -p $(obj)include
-	@if [ "$(findstring _nandflash,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_NANDFLASH 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_SYS_USE_DATAFLASH 1"	>>$(obj)include/config.h ; \
-	fi;
-	@$(MKCONFIG) -n $@ -a at91sam9rlek arm arm926ejs at91sam9rlek atmel at91
-
-at91sam9m10g45ek_nandflash_config \
-at91sam9m10g45ek_dataflash_config \
-at91sam9m10g45ek_dataflash_cs0_config \
-at91sam9m10g45ek_config \
-at91sam9g45ekes_nandflash_config \
-at91sam9g45ekes_dataflash_config \
-at91sam9g45ekes_dataflash_cs0_config \
-at91sam9g45ekes_config	:	unconfig
-	@mkdir -p $(obj)include
-		@if [ "$(findstring 9m10,$@)" ] ; then \
-		echo "#define CONFIG_AT91SAM9M10G45EK 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_AT91SAM9G45EKES 1"	>>$(obj)include/config.h ; \
-	fi;
-	@if [ "$(findstring _nandflash,$@)" ] ; then \
-		echo "#define CONFIG_SYS_USE_NANDFLASH 1"	>>$(obj)include/config.h ; \
-	else \
-		echo "#define CONFIG_ATMEL_SPI 1"	>>$(obj)include/config.h ; \
-	fi;
-	@$(MKCONFIG) -n $@ -a at91sam9m10g45ek arm arm926ejs at91sam9m10g45ek atmel at91
-
-pm9g45_config	:	unconfig
-	@mkdir -p $(obj)include
-	@$(MKCONFIG) -a pm9g45 arm arm926ejs pm9g45 ronetix at91
-
-SBC35_A9G20_NANDFLASH_config \
-SBC35_A9G20_EEPROM_config \
-SBC35_A9G20_config	:	unconfig
-	@mkdir -p $(obj)include
-	@echo "#define CONFIG_$(@:_config=) 1" >$(obj)include/config.h
-	@$(MKCONFIG) -n $@ -a sbc35_a9g20 arm arm926ejs sbc35_a9g20 calao at91
-
-TNY_A9G20_NANDFLASH_config \
-TNY_A9G20_EEPROM_config \
-TNY_A9G20_config \
-TNY_A9260_NANDFLASH_config \
-TNY_A9260_EEPROM_config \
-TNY_A9260_config	:	unconfig
-	@mkdir -p $(obj)include
-	@echo "#define CONFIG_$(@:_config=) 1" >$(obj)include/config.h
-	@$(MKCONFIG) -n $@ -a tny_a9260 arm arm926ejs tny_a9260 calao at91
-
-########################################################################
-## ARM Integrator boards - see doc/README-integrator for more info.
-integratorap_config	\
-ap_config		\
-ap966_config		\
-ap922_config		\
-ap922_XA10_config	\
-ap7_config		\
-ap720t_config		\
-ap920t_config		\
-ap926ejs_config		\
-ap946es_config: unconfig
-	@board/armltd/integrator/split_by_variant.sh ap $@
-
-integratorcp_config	\
-cp_config		\
-cp920t_config		\
-cp926ejs_config		\
-cp946es_config		\
-cp1136_config		\
-cp966_config		\
-cp922_config		\
-cp922_XA10_config	\
-cp1026_config: unconfig
-	@board/armltd/integrator/split_by_variant.sh cp $@
-
 xtract_omap1610xxx = $(subst _cs0boot,,$(subst _cs3boot,,$(subst _cs_autoboot,,$(subst _config,,$1))))
 
 omap1610inn_config \
@@ -970,25 +867,6 @@ SX1_config:		unconfig
 tx25_config	: unconfig
 	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
 	@$(MKCONFIG) $@ arm arm926ejs tx25 karo mx25
-
-edb9301_config \
-edb9302_config \
-edb9302a_config \
-edb9307_config \
-edb9307a_config \
-edb9312_config \
-edb9315_config \
-edb9315a_config: unconfig
-	@$(MKCONFIG) -n $@ -t $(@:_config=) edb93xx arm arm920t edb93xx - ep93xx
-
-#########################################################################
-# ARM supplied Versatile development boards
-#########################################################################
-
-versatile_config	\
-versatileab_config	\
-versatilepb_config :	unconfig
-	@board/armltd/versatile/split_by_variant.sh $@
 
 #########################################################################
 ## XScale Systems
@@ -1047,20 +925,6 @@ smdk6400_config	:	unconfig
 	@$(MKCONFIG) smdk6400 arm arm1176 smdk6400 samsung s3c64xx
 	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
 
-#========================================================================
-# Nios
-#========================================================================
-
-#########################################################################
-## Nios-II
-#########################################################################
-
-# nios2 generic boards
-NIOS2_GENERIC = nios2-generic
-
-$(NIOS2_GENERIC:%=%_config) : unconfig
-	@$(MKCONFIG) $@ nios2 nios2 nios2-generic altera
-
 #########################################################################
 #########################################################################
 
@@ -1085,18 +949,20 @@ clean:
 	       $(obj)tools/ncb		   $(obj)tools/ubsha1
 	@rm -f $(obj)board/cray/L1/{bootscript.c,bootscript.image}	  \
 	       $(obj)board/matrix_vision/*/bootscript.img		  \
-	       $(obj)board/netstar/{eeprom,crcek,crcit,*.srec,*.bin}	  \
 	       $(obj)board/voiceblue/eeprom 				  \
-	       $(obj)board/armltd/{integratorap,integratorcp}/u-boot.lds  \
 	       $(obj)u-boot.lds						  \
-	       $(obj)arch/blackfin/cpu/bootrom-asm-offsets.[chs]
+	       $(obj)arch/blackfin/cpu/bootrom-asm-offsets.[chs]	  \
+	       $(obj)arch/blackfin/cpu/init.{lds,elf}
 	@rm -f $(obj)include/bmp_logo.h
 	@rm -f $(obj)lib/asm-offsets.s
-	@rm -f $(obj)nand_spl/{u-boot.lds,u-boot-spl,u-boot-spl.map,System.map}
+	@rm -f $(obj)include/generated/asm-offsets.h
+	@rm -f $(obj)$(CPUDIR)/$(SOC)/asm-offsets.s
+	@rm -f $(obj)nand_spl/{u-boot.lds,u-boot-nand_spl.lds,u-boot-spl,u-boot-spl.map,System.map}
 	@rm -f $(obj)onenand_ipl/onenand-{ipl,ipl.bin,ipl.map}
 	@rm -f $(obj)mmc_spl/{u-boot.lds,u-boot-spl,u-boot-spl.map,u-boot-spl.bin,u-boot-mmc-spl.bin}
 	@rm -f $(ONENAND_BIN)
 	@rm -f $(obj)onenand_ipl/u-boot.lds
+	@rm -f $(obj)spl/{u-boot-spl,u-boot-spl.bin,u-boot-spl.lds,u-boot-spl.map}
 	@rm -f $(TIMESTAMP_FILE) $(VERSION_FILE)
 	@find $(OBJTREE) -type f \
 		\( -name 'core' -o -name '*.bak' -o -name '*~' \
@@ -1110,9 +976,10 @@ clobber:	clean
 		| xargs -0 rm -f
 	@rm -f $(OBJS) $(obj)*.bak $(obj)ctags $(obj)etags $(obj)TAGS \
 		$(obj)cscope.* $(obj)*.*~
-	@rm -f $(obj)u-boot $(obj)u-boot.map $(obj)u-boot.hex $(ALL)
+	@rm -f $(obj)u-boot $(obj)u-boot.map $(obj)u-boot.hex $(ALL-y)
 	@rm -f $(obj)u-boot.kwb
 	@rm -f $(obj)u-boot.imx
+	@rm -f $(obj)u-boot.ubl
 	@rm -f $(obj)tools/{env/crc32.c,inca-swap-bytes}
 	@rm -f $(obj)arch/powerpc/cpu/mpc824x/bedbug_603e.c
 	@rm -fr $(obj)include/asm/proc $(obj)include/asm/arch $(obj)include/asm
@@ -1121,12 +988,9 @@ clobber:	clean
 	@[ ! -d $(obj)onenand_ipl ] || find $(obj)onenand_ipl -name "*" -type l -print | xargs rm -f
 	@[ ! -d $(obj)mmc_spl ] || find $(obj)mmc_spl -name "*" -type l -print | xargs rm -f
 
-ifeq ($(OBJTREE),$(SRCTREE))
 mrproper \
 distclean:	clobber unconfig
-else
-mrproper \
-distclean:	clobber unconfig
+ifneq ($(OBJTREE),$(SRCTREE))
 	rm -rf $(obj)*
 endif
 
