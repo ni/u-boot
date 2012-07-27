@@ -55,15 +55,10 @@
 #define STM_ID_M25P80		0x14
 #define STM_ID_M25P128		0x18
 
-#define STM_ID_N25Q128		0x20BB1810
-
 #define STMICRO_SR_WIP		(1 << 0)	/* Write-in-Progress */
 
 struct stmicro_spi_flash_params {
 	u8 idcode1;
-	/* XILINX: idcode1 isn't specific enough;
-	 * multiple non-compatible devices match. Store complete idcode */
-	u32 idcode;
 	u16 page_size;
 	u16 pages_per_sector;
 	u16 nr_sectors;
@@ -74,8 +69,6 @@ struct stmicro_spi_flash_params {
 struct stmicro_spi_flash {
 	struct spi_flash flash;
 	const struct stmicro_spi_flash_params *params;
-
-	unsigned addr_width;
 };
 
 static inline struct stmicro_spi_flash *to_stmicro_spi_flash(struct spi_flash
@@ -134,26 +127,6 @@ static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 		.nr_sectors = 16,
 		.name = "M25P80",
 	},
-/*
- * XILINX:
- * This table only examines the capacity of the device.
- * The M25P128 and N25Q128 have the same capacity (16777216)
- * but different number of sectors, pages per sector.
- * Match the N25Q128 which is actually present on the board.
- */
-	{
-		.idcode1 = STM_ID_M25P128,
-		.idcode = STM_ID_N25Q128,
-		.page_size = 256,
-		.pages_per_sector = 256,
-#ifdef CONFIG_XILINX_PSS_QSPI_USE_DUAL_FLASH
-		.nr_sectors = 512,
-		.name = "N25Q128x2",
-#else
-		.nr_sectors = 256,
-		.name = "N25Q128",
-#endif
-	},
 	{
 		.idcode1 = STM_ID_M25P128,
 		.page_size = 256,
@@ -162,27 +135,6 @@ static const struct stmicro_spi_flash_params stmicro_spi_flash_table[] = {
 		.name = "M25P128",
 	},
 };
-
-static inline void stmicro_addr2cmd(struct stmicro_spi_flash *stm,
-                             unsigned page_addr, unsigned byte_addr, u8 *cmd)
-{
-	/* opcode is in cmd[0] */
-	if (stm->addr_width == 4) {
-		cmd[1] = page_addr >> 16;
-		cmd[2] = page_addr >> 8;
-		cmd[3] = page_addr;
-		cmd[4] = byte_addr;
-	} else {
-		cmd[1] = page_addr >> 8;
-		cmd[2] = page_addr;
-		cmd[3] = byte_addr;
-	}
-}
-
-static inline int stmicro_cmdsz(struct stmicro_spi_flash *flash)
-{
-	return 1 + flash->addr_width;
-}
 
 static int stmicro_wait_ready(struct spi_flash *flash, unsigned long timeout)
 {
@@ -224,16 +176,18 @@ static int stmicro_read_fast(struct spi_flash *flash,
 	struct stmicro_spi_flash *stm = to_stmicro_spi_flash(flash);
 	unsigned long page_addr;
 	unsigned long page_size;
-	u8 cmd[6];
+	u8 cmd[5];
 
 	page_size = stm->params->page_size;
 	page_addr = offset / page_size;
 
 	cmd[0] = CMD_READ_ARRAY_FAST;
-	stmicro_addr2cmd(stm, page_addr, offset % page_size, cmd);
-	cmd[stmicro_cmdsz(stm)] = 0x00;
+	cmd[1] = page_addr >> 8;
+	cmd[2] = page_addr;
+	cmd[3] = offset % page_size;
+	cmd[4] = 0x00;
 
-	return spi_flash_read_common(flash, cmd, stmicro_cmdsz(stm)+1 , buf, len);
+	return spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
 }
 
 static int stmicro_write(struct spi_flash *flash,
@@ -246,7 +200,7 @@ static int stmicro_write(struct spi_flash *flash,
 	size_t chunk_len;
 	size_t actual;
 	int ret;
-	u8 cmd[5];
+	u8 cmd[4];
 
 	page_size = stm->params->page_size;
 	page_addr = offset / page_size;
@@ -263,7 +217,9 @@ static int stmicro_write(struct spi_flash *flash,
 		chunk_len = min(len - actual, page_size - byte_addr);
 
 		cmd[0] = CMD_M25PXX_PP;
-		stmicro_addr2cmd(stm, page_addr, byte_addr, cmd);
+		cmd[1] = page_addr >> 8;
+		cmd[2] = page_addr;
+		cmd[3] = byte_addr;
 
 		debug
 		    ("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %d\n",
@@ -275,7 +231,7 @@ static int stmicro_write(struct spi_flash *flash,
 			break;
 		}
 
-		ret = spi_flash_cmd_write(flash->spi, cmd, stmicro_cmdsz(stm),
+		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
 					  buf + actual, chunk_len);
 		if (ret < 0) {
 			debug("SF: STMicro Page Program failed\n");
@@ -305,7 +261,7 @@ int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 	unsigned long sector_size;
 	size_t actual;
 	int ret;
-	u8 cmd[5];
+	u8 cmd[4];
 
 	/*
 	 * This function currently uses sector erase only.
@@ -322,6 +278,8 @@ int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 
 	len /= sector_size;
 	cmd[0] = CMD_M25PXX_SE;
+	cmd[2] = 0x00;
+	cmd[3] = 0x00;
 
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
@@ -331,11 +289,7 @@ int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 
 	ret = 0;
 	for (actual = 0; actual < len; actual++) {
-		unsigned page_addr;
-
-		page_addr = offset / stm->params->page_size;
-		stmicro_addr2cmd(stm, page_addr, 0, cmd);
-
+		cmd[1] = offset >> 16;
 		offset += sector_size;
 
 		ret = spi_flash_cmd(flash->spi, CMD_M25PXX_WREN, NULL, 0);
@@ -344,7 +298,7 @@ int stmicro_erase(struct spi_flash *flash, u32 offset, size_t len)
 			break;
 		}
 
-		ret = spi_flash_cmd_write(flash->spi, cmd, stmicro_cmdsz(stm), NULL, 0);
+		ret = spi_flash_cmd_write(flash->spi, cmd, 4, NULL, 0);
 		if (ret < 0) {
 			debug("SF: STMicro page erase failed\n");
 			break;
@@ -386,15 +340,7 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 	for (i = 0; i < ARRAY_SIZE(stmicro_spi_flash_table); i++) {
 		params = &stmicro_spi_flash_table[i];
 		if (params->idcode1 == idcode[2]) {
-			if (params->idcode == 0) {
-				break;
-			}
-			/* Check complete device ID, if specified */
-			if ((((params->idcode & 0xFF000000) >> 24) == idcode[0]) &&
-			    (((params->idcode & 0x00FF0000) >> 16) == idcode[1]) &&
-			    (((params->idcode & 0x000000FF) >>  0) == idcode[3])) {
-				break;
-			}
+			break;
 		}
 	}
 
@@ -418,12 +364,6 @@ struct spi_flash *spi_flash_probe_stmicro(struct spi_slave *spi, u8 * idcode)
 	stm->flash.read = stmicro_read_fast;
 	stm->flash.size = params->page_size * params->pages_per_sector
 	    * params->nr_sectors;
-
-	if (stm->flash.size > 0x1000000) {
- 		stm->addr_width = 4;
-	} else {
-		stm->addr_width = 3;
-	} 
 
 	printf("SF: Detected %s with page size %u, total ",
 	       params->name, params->page_size);
