@@ -33,11 +33,6 @@
 #include <mmc.h>
 #include <div64.h>
 
-/* Set block count limit because of 16 bit register limit on some hardware*/
-#ifndef CONFIG_SYS_MMC_MAX_BLK_COUNT
-#define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
-#endif
-
 static struct list_head mmc_devices;
 static int cur_dev_num = -1;
 
@@ -144,8 +139,11 @@ mmc_bwrite(int dev_num, ulong start, lbaint_t blkcnt, const void*src)
 		return 0;
 
 	do {
-		cur = (blocks_todo > CONFIG_SYS_MMC_MAX_BLK_COUNT) ?
-		       CONFIG_SYS_MMC_MAX_BLK_COUNT : blocks_todo;
+		/*
+		 * The 65535 constraint comes from some hardware has
+		 * only 16 bit width block number counter
+		 */
+		cur = (blocks_todo > 65535) ? 65535 : blocks_todo;
 		if(mmc_write_blocks(mmc, start, cur, src) != cur)
 			return 0;
 		blocks_todo -= cur;
@@ -217,8 +215,11 @@ static ulong mmc_bread(int dev_num, ulong start, lbaint_t blkcnt, void *dst)
 		return 0;
 
 	do {
-		cur = (blocks_todo > CONFIG_SYS_MMC_MAX_BLK_COUNT) ?
-		       CONFIG_SYS_MMC_MAX_BLK_COUNT : blocks_todo;
+		/*
+		 * The 65535 constraint comes from some hardware has
+		 * only 16 bit width block number counter
+		 */
+		cur = (blocks_todo > 65535) ? 65535 : blocks_todo;
 		if(mmc_read_blocks(mmc, dst, start, cur) != cur)
 			return 0;
 		blocks_todo -= cur;
