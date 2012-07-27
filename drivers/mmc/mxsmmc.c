@@ -41,6 +41,14 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/sys_proto.h>
+#include <asm/arch/dma.h>
+
+/*
+ * CONFIG_MXS_MMC_DMA: This feature is highly experimental and has no
+ *                     performance benefit unless you operate the platform with
+ *                     data cache enabled. This is disabled by default, enable
+ *                     only if you know what you're doing.
+ */
 
 struct mxsmmc_priv {
 	int			id;
@@ -49,6 +57,7 @@ struct mxsmmc_priv {
 	uint32_t		*clkctrl_ssp;
 	uint32_t		buswidth;
 	int			(*mmc_is_wp)(int);
+	struct mxs_dma_desc	*desc;
 };
 
 #define	MXSMMC_MAX_TIMEOUT	10000
@@ -65,8 +74,12 @@ mxsmmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	uint32_t reg;
 	int timeout;
 	uint32_t data_count;
-	uint32_t *data_ptr;
 	uint32_t ctrl0;
+#ifndef CONFIG_MXS_MMC_DMA
+	uint32_t *data_ptr;
+#else
+	uint32_t cache_data_count;
+#endif
 
 	debug("MMC%d: CMD%d\n", mmc->block_dev.dev, cmd->cmdidx);
 
@@ -183,9 +196,43 @@ mxsmmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 	if (!data)
 		return 0;
 
-	/* Process the data */
 	data_count = data->blocksize * data->blocks;
 	timeout = MXSMMC_MAX_TIMEOUT;
+
+#ifdef CONFIG_MXS_MMC_DMA
+	if (data_count % ARCH_DMA_MINALIGN)
+		cache_data_count = roundup(data_count, ARCH_DMA_MINALIGN);
+	else
+		cache_data_count = data_count;
+
+	if (data->flags & MMC_DATA_READ) {
+		priv->desc->cmd.data = MXS_DMA_DESC_COMMAND_DMA_WRITE;
+		priv->desc->cmd.address = (dma_addr_t)data->dest;
+	} else {
+		priv->desc->cmd.data = MXS_DMA_DESC_COMMAND_DMA_READ;
+		priv->desc->cmd.address = (dma_addr_t)data->src;
+
+		/* Flush data to DRAM so DMA can pick them up */
+		flush_dcache_range((uint32_t)priv->desc->cmd.address,
+			(uint32_t)(priv->desc->cmd.address + cache_data_count));
+	}
+
+	priv->desc->cmd.data |= MXS_DMA_DESC_IRQ | MXS_DMA_DESC_DEC_SEM |
+				(data_count << MXS_DMA_DESC_BYTES_OFFSET);
+
+
+	mxs_dma_desc_append(MXS_DMA_CHANNEL_AHB_APBH_SSP0, priv->desc);
+	if (mxs_dma_go(MXS_DMA_CHANNEL_AHB_APBH_SSP0)) {
+		printf("MMC%d: DMA transfer failed\n", mmc->block_dev.dev);
+		return COMM_ERR;
+	}
+
+	/* The data arrived into DRAM, invalidate cache over them */
+	if (data->flags & MMC_DATA_READ) {
+		invalidate_dcache_range((uint32_t)priv->desc->cmd.address,
+			(uint32_t)(priv->desc->cmd.address + cache_data_count));
+	}
+#else
 	if (data->flags & MMC_DATA_READ) {
 		data_ptr = (uint32_t *)data->dest;
 		while (data_count && --timeout) {
@@ -216,6 +263,7 @@ mxsmmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 			mmc->block_dev.dev, cmd->cmdidx, reg);
 		return COMM_ERR;
 	}
+#endif
 
 	/* Check data errors */
 	reg = readl(&ssp_regs->hw_ssp_status);
@@ -270,7 +318,8 @@ static int mxsmmc_init(struct mmc *mmc)
 	/* 8 bits word length in MMC mode */
 	clrsetbits_le32(&ssp_regs->hw_ssp_ctrl1,
 		SSP_CTRL1_SSP_MODE_MASK | SSP_CTRL1_WORD_LENGTH_MASK,
-		SSP_CTRL1_SSP_MODE_SD_MMC | SSP_CTRL1_WORD_LENGTH_EIGHT_BITS);
+		SSP_CTRL1_SSP_MODE_SD_MMC | SSP_CTRL1_WORD_LENGTH_EIGHT_BITS |
+		SSP_CTRL1_DMA_ENABLE);
 
 	/* Set initial bit clock 400 KHz */
 	mx28_set_ssp_busclock(priv->id, 400);
@@ -289,6 +338,7 @@ int mxsmmc_initialize(bd_t *bis, int id, int (*wp)(int))
 		(struct mx28_clkctrl_regs *)MXS_CLKCTRL_BASE;
 	struct mmc *mmc = NULL;
 	struct mxsmmc_priv *priv = NULL;
+	int ret;
 
 	mmc = malloc(sizeof(struct mmc));
 	if (!mmc)
@@ -299,6 +349,17 @@ int mxsmmc_initialize(bd_t *bis, int id, int (*wp)(int))
 		free(mmc);
 		return -ENOMEM;
 	}
+
+	priv->desc = mxs_dma_desc_alloc();
+	if (!priv->desc) {
+		free(priv);
+		free(mmc);
+		return -ENOMEM;
+	}
+
+	ret = mxs_dma_init_channel(id);
+	if (ret)
+		return ret;
 
 	priv->mmc_is_wp = wp;
 	priv->id = id;
@@ -329,6 +390,7 @@ int mxsmmc_initialize(bd_t *bis, int id, int (*wp)(int))
 	mmc->send_cmd = mxsmmc_send_cmd;
 	mmc->set_ios = mxsmmc_set_ios;
 	mmc->init = mxsmmc_init;
+	mmc->getcd = NULL;
 	mmc->priv = priv;
 
 	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
@@ -344,7 +406,7 @@ int mxsmmc_initialize(bd_t *bis, int id, int (*wp)(int))
 	 */
 	mmc->f_min = 400000;
 	mmc->f_max = mxc_get_clock(MXC_SSP0_CLK + id) * 1000 / 2;
-	mmc->b_max = 0;
+	mmc->b_max = 0x40;
 
 	mmc_register(mmc);
 	return 0;

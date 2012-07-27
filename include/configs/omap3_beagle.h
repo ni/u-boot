@@ -129,6 +129,14 @@
 /* USB EHCI */
 #define CONFIG_CMD_USB
 #define CONFIG_USB_EHCI
+
+#define CONFIG_USB_EHCI_OMAP
+/*#define CONFIG_EHCI_DCACHE*/ /* leave it disabled for now */
+#define CONFIG_OMAP_EHCI_PHY1_RESET_GPIO	147
+
+#define CONFIG_USB_ULPI
+#define CONFIG_USB_ULPI_VIEWPORT_OMAP
+
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 3
 #define CONFIG_USB_HOST_ETHER
 #define CONFIG_USB_ETHER_SMSC95XX
@@ -159,6 +167,7 @@
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_SETEXPR	/* Evaluate expressions		*/
+#define CONFIG_CMD_GPIO     /* Enable gpio command */
 
 #undef CONFIG_CMD_FLASH		/* flinfo, erase, protect	*/
 #undef CONFIG_CMD_FPGA		/* FPGA configuration Support	*/
@@ -272,10 +281,16 @@
 	"ramboot=echo Booting from ramdisk ...; " \
 		"run ramargs; " \
 		"bootm ${loadaddr}\0" \
-
+	"userbutton=if gpio input 173; then run userbutton_xm; " \
+		"else run userbutton_nonxm; fi;\0" \
+	"userbutton_xm=gpio input 4;\0" \
+	"userbutton_nonxm=gpio input 7;\0"
+/* "run userbutton" will return 1 (false) if is pressed and 0 (false) if not */
 #define CONFIG_BOOTCOMMAND \
 	"if mmc rescan ${mmcdev}; then " \
-		"if userbutton; then " \
+		"if run userbutton; then " \
+			"setenv bootenv uEnv.txt;" \
+		"else " \
 			"setenv bootenv user.txt;" \
 		"fi;" \
 		"echo SD/MMC found on device ${mmcdev};" \
@@ -418,10 +433,6 @@
 						10, 11, 12, 13}
 #define CONFIG_SYS_NAND_ECCSIZE		512
 #define CONFIG_SYS_NAND_ECCBYTES	3
-#define CONFIG_SYS_NAND_ECCSTEPS	(CONFIG_SYS_NAND_PAGE_SIZE / \
-						CONFIG_SYS_NAND_ECCSIZE)
-#define CONFIG_SYS_NAND_ECCTOTAL	(CONFIG_SYS_NAND_ECCBYTES * \
-						CONFIG_SYS_NAND_ECCSTEPS)
 #define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_TEXT_BASE
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	0x80000
 

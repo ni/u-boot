@@ -31,6 +31,7 @@ COBJS-$(CONFIG_ARMADA100_FEC) += armada100_fec.o
 COBJS-$(CONFIG_DRIVER_AT91EMAC) += at91_emac.o
 COBJS-$(CONFIG_DRIVER_AX88180) += ax88180.o
 COBJS-$(CONFIG_BFIN_MAC) += bfin_mac.o
+COBJS-$(CONFIG_CALXEDA_XGMAC) += calxedaxgmac.o
 COBJS-$(CONFIG_CS8900) += cs8900.o
 COBJS-$(CONFIG_TULIP) += dc2114x.o
 COBJS-$(CONFIG_DESIGNWARE_ETH) += designware.o
@@ -76,6 +77,8 @@ COBJS-$(CONFIG_ULI526X) += uli526x.o
 COBJS-$(CONFIG_VSC7385_ENET) += vsc7385.o
 COBJS-$(CONFIG_XILINX_AXIEMAC) += xilinx_axi_emac.o
 COBJS-$(CONFIG_XILINX_EMACLITE) += xilinx_emaclite.o
+COBJS-$(CONFIG_XILINX_LL_TEMAC) += xilinx_ll_temac.o xilinx_ll_temac_mdio.o \
+		xilinx_ll_temac_fifo.o xilinx_ll_temac_sdma.o
 COBJS-$(CONFIG_ZYNQ_GEM) += zynq_gem.o zynq_gem_bdring.o zynq_gem_control.o \
 			zynq_gem_g.o zynq_gem_sinit.o zynq_gem_wrap.o
 

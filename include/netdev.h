@@ -48,6 +48,7 @@ int at91emac_register(bd_t *bis, unsigned long iobase);
 int au1x00_enet_initialize(bd_t*);
 int ax88180_initialize(bd_t *bis);
 int bfin_EMAC_initialize(bd_t *bis);
+int calxedaxgmac_initialize(u32 id, ulong base_addr);
 int cs8900_initialize(u8 dev_num, int base_addr);
 int davinci_emac_initialize(void);
 int dc21x4x_initialize(bd_t *bis);
@@ -101,7 +102,19 @@ int xilinx_axiemac_initialize(bd_t *bis, unsigned long base_addr,
 							unsigned long dma_addr);
 int xilinx_emaclite_initialize(bd_t *bis, unsigned long base_addr,
 							int txpp, int rxpp);
+int xilinx_ll_temac_eth_init(bd_t *bis, unsigned long base_addr, int flags,
+						unsigned long ctrl_addr);
 int zynq_gem_initialize(bd_t *bis);
+
+/*
+ * As long as the Xilinx xps_ll_temac ethernet driver has not its own interface
+ * exported by a public hader file, we need a global definition at this point.
+ */
+#if defined(CONFIG_XILINX_LL_TEMAC)
+#define XILINX_LL_TEMAC_M_FIFO		0	/* use FIFO Ctrl */
+#define XILINX_LL_TEMAC_M_SDMA_PLB	(1 << 0)/* use SDMA Ctrl via PLB */
+#define XILINX_LL_TEMAC_M_SDMA_DCR	(1 << 1)/* use SDMA Ctrl via DCR */
+#endif
 
 /* Boards with PCI network controllers can call this from their board_eth_init()
  * function to initialize whatever's on board.

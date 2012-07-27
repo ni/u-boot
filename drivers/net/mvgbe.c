@@ -52,6 +52,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define MV_PHY_ADR_REQUEST 0xee
 #define MVGBE_SMI_REG (((struct mvgbe_registers *)MVGBE0_BASE)->smi)
 
+#if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
 /*
  * smi_reg_read - miiphy_read callback function.
  *
@@ -181,6 +182,7 @@ static int smi_reg_write(const char *devname, u8 phy_adr, u8 reg_ofs, u16 data)
 
 	return 0;
 }
+#endif
 
 /* Stop and checks all queues */
 static void stop_queue(u32 * qreg)
@@ -651,7 +653,6 @@ int mvgbe_initialize(bd_t *bis)
 	struct mvgbe_device *dmvgbe;
 	struct eth_device *dev;
 	int devnum;
-	char *s;
 	u8 used_ports[MAX_MVGBE_DEVS] = CONFIG_MVGBE_PORTS;
 
 	for (devnum = 0; devnum < MAX_MVGBE_DEVS; devnum++) {
@@ -703,44 +704,22 @@ error1:
 
 		dev = &dmvgbe->dev;
 
-		/* must be less than NAMESIZE (16) */
+		/* must be less than sizeof(dev->name) */
 		sprintf(dev->name, "egiga%d", devnum);
 
-		/* Extract the MAC address from the environment */
 		switch (devnum) {
 		case 0:
 			dmvgbe->regs = (void *)MVGBE0_BASE;
-			s = "ethaddr";
 			break;
 #if defined(MVGBE1_BASE)
 		case 1:
 			dmvgbe->regs = (void *)MVGBE1_BASE;
-			s = "eth1addr";
 			break;
 #endif
 		default:	/* this should never happen */
 			printf("Err..(%s) Invalid device number %d\n",
 				__FUNCTION__, devnum);
 			return -1;
-		}
-
-		while (!eth_getenv_enetaddr(s, dev->enetaddr)) {
-			/* Generate Private MAC addr if not set */
-			dev->enetaddr[0] = 0x02;
-			dev->enetaddr[1] = 0x50;
-			dev->enetaddr[2] = 0x43;
-#if defined (CONFIG_SKIP_LOCAL_MAC_RANDOMIZATION)
-			/* Generate fixed lower MAC half using devnum */
-			dev->enetaddr[3] = 0;
-			dev->enetaddr[4] = 0;
-			dev->enetaddr[5] = devnum;
-#else
-			/* Generate random lower MAC half */
-			dev->enetaddr[3] = get_random_hex();
-			dev->enetaddr[4] = get_random_hex();
-			dev->enetaddr[5] = get_random_hex();
-#endif
-			eth_setenv_enetaddr(s, dev->enetaddr);
 		}
 
 		dev->init = (void *)mvgbe_init;
