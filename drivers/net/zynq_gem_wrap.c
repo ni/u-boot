@@ -392,7 +392,7 @@ void Xgmac_halt(struct eth_device *dev)
 	return;
 }
 
-int Xgmac_send(struct eth_device *dev, volatile void *packet, int length)
+int Xgmac_send(struct eth_device *dev, void *packet, int length)
 {
 	volatile int Status;
 	XEmacPss_Bd *BdPtr;
