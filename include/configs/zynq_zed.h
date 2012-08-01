@@ -102,9 +102,13 @@
 #endif
 
 /* Secure Digital */
+#define CONFIG_MMC
 
 #ifdef CONFIG_MMC
 #define CONFIG_GENERIC_MMC
+#define CONFIG_SDHCI
+#define CONFIG_MMC_SDMA
+#define CONFIG_ZYNQ_SDHCI
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_EXT2

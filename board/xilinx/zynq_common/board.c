@@ -4,6 +4,7 @@
 
 #include <common.h>
 #include <asm/arch/nand.h>
+#include <asm/arch/sdhci.h>
 #include <netdev.h>
 #include <zynqpl.h>
 
@@ -186,6 +187,13 @@ int board_late_init (void)
 int board_eth_init(bd_t *bis)
 {
 	return zynq_gem_initialize(bis);
+}
+#endif
+
+#ifdef CONFIG_CMD_MMC
+int board_mmc_init(bd_t *bd)
+{
+	return zynq_sdhci_init(XPSS_SDIO0_BASEADDR, 0, 0, 0);
 }
 #endif
 
