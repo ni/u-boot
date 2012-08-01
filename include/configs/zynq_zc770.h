@@ -146,11 +146,9 @@
 
 #if defined(CONFIG_ZC770_XM010)
 /* Secure Digital */
-#define CONFIG_MMC
 
 #ifdef CONFIG_MMC
 #define CONFIG_GENERIC_MMC
-#define CONFIG_ZYNQ_MMC
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_EXT2
