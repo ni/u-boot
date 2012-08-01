@@ -260,7 +260,7 @@ static int sdhci_set_clock(struct mmc *mmc, unsigned int clock)
 	if (clock == 0)
 		return 0;
 
-	if (host->version >= SDHCI_SPEC_300) {
+	if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300) {
 		/* Version 3.00 divisors must be a multiple of 2. */
 		if (mmc->f_max <= clock)
 			div = 1;
