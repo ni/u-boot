@@ -7,10 +7,9 @@
 
 #include <asm/arch/xparameters.h>
 #include <config.h>
+#include <linux/linkage.h>
 
-
-.globl lowlevel_init
-lowlevel_init:
+ENTRY(lowlevel_init)
 
 	# unlock SLCR
 	ldr r1, =(XPSS_SYS_CTRL_BASEADDR + 8)
@@ -673,6 +672,8 @@ lowlevel_init:
 	
 	mov pc, lr
 
+#ifdef CONFIG_EP107
+
 doit:
 	# Reset DDR controller
 	ldr r1, =(XPSS_DDR_CTRL_BASEADDR + 0)
@@ -793,3 +794,6 @@ loop:
 
 	mov pc, lr
 
+#endif
+
+ENDPROC(lowlevel_init)

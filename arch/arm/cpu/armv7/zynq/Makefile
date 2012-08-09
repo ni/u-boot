@@ -28,9 +28,13 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(SOC).o
 
-COBJS-y	= timer.o 
+COBJS-y	:= timer.o
 
-OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS-y))
+SOBJS   := lowlevel_init.o
+
+COBJS	:= $(sort $(COBJS-y))
+
+OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
 
 all:	$(obj).depend $(LIB)
 

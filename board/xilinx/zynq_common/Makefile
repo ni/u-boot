@@ -33,8 +33,6 @@ COBJS-y	:= board.o \
 
 COBJS	:= $(sort $(COBJS-y))
 
-SOBJS	:= lowlevel_init.o
-
 SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
 SOBJS	:= $(addprefix $(obj),$(SOBJS))
