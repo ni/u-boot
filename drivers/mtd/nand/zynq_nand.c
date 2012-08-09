@@ -35,6 +35,7 @@
 #include <mach/smc.h>
 #endif
 
+#define NDEBUG
 #include "xbasic_types.h"
 #include <common.h>
 #include <malloc.h>

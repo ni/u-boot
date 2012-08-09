@@ -28,8 +28,7 @@ endif
 
 LIB	= $(obj)lib$(BOARD).o
 
-COBJS-y	:= board.o \
-	   ../common/xbasic_types.o
+COBJS-y	:= board.o
 
 COBJS	:= $(sort $(COBJS-y))
 

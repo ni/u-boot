@@ -30,6 +30,7 @@
 #include <linux/xilinx_devices.h>
 #else
 
+#define NDEBUG
 #include "xbasic_types.h"
 #include <common.h>
 #include <malloc.h>

@@ -287,6 +287,7 @@ extern "C" {
 
 #include <asm/arch/xparameters.h>
 
+#define NDEBUG
 #include "xbasic_types.h"
 #include "xstatus.h"
 #include "zynq_gem_hw.h"
