@@ -225,6 +225,7 @@ extern "C" {
 /* SLCR Register Offsets */
 #define XPSS_SLCR_LOCK			0x0004
 #define XPSS_SLCR_UNLOCK		0x0008
+#define XPSS_SLCR_PSS_RST_CTRL		0x0200
 
 /* XPSS_SLCR_LOCK value */
 #define XPSS_SLCR_LOCK_KEY	0x767B

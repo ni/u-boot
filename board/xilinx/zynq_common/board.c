@@ -5,6 +5,7 @@
 #include <common.h>
 #include <asm/arch/nand.h>
 #include <asm/arch/sdhci.h>
+#include <asm/io.h>
 #include <netdev.h>
 #include <zynqpl.h>
 
@@ -25,34 +26,8 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define dmb() __asm__ __volatile__ ("dmb" : : : "memory")
-
-static void Out32(u32 OutAddress, u32 Value)
-{
-    *(volatile u32 *) OutAddress = Value;
-    dmb();
-}
-
-static u32 In32(u32 InAddress)
-{
-    volatile u32 temp = *(volatile u32 *)InAddress;
-    dmb();
-    return temp;
-}
-
-static inline void Out8(u32 OutAddress, u8 Value)
-{
-    *(volatile u8 *) OutAddress = Value;
-}
-
-static inline u8 In8(u32 InAddress)
-{
-    return *(u8 *) InAddress;
-}
-
 /* Common IO for xgmac and xnand */
 /* Data Memory Barrier */
-#define dmb() __asm__ __volatile__ ("dmb" : : : "memory")
 #define SYNCHRONIZE_IO dmb()
 
 void XIo_Out32(u32 OutAddress, u32 Value)
@@ -85,7 +60,7 @@ void init_nor_flash(void)
                        (0x7 << 4) |  /* Set_t1 t_wc from sram_cycles */
                        (0x7);        /* Set_t0 t_rc from sram_cycles */
 
-  Out32(PARPORT_CRTL_BASEADDR + PARPORT_MC_SET_CYCLES, set_cycles_reg);
+  out_le32(PARPORT_CRTL_BASEADDR + PARPORT_MC_SET_CYCLES, set_cycles_reg);
 
   /* write operation mode to set_opmode registers */
   u32 set_opmode_reg = (0x1 << 13) | /* set_burst_align, see to 32 beats */
@@ -97,7 +72,7 @@ void init_nor_flash(void)
                        (0x0 << 3) |  /* set_rd_bl, read brust lenght, set to 0 */
                        (0x0 << 2) |  /* set_rd_sync, set to 0 */
                        (0x0 );       /* set_mw, memory width, 16bits width*/
-  Out32(PARPORT_CRTL_BASEADDR + PARPORT_MC_SET_OPMODE, set_opmode_reg);
+  out_le32(PARPORT_CRTL_BASEADDR + PARPORT_MC_SET_OPMODE, set_opmode_reg);
 
   /*
    * Issue a direct_cmd by writing to direct_cmd register
@@ -108,18 +83,15 @@ void init_nor_flash(void)
                        (0x2 << 21) | /* UpdateRegs operation, to update the two reg we wrote earlier*/
                        (0x0 << 20) | /* cre */
                        (0x0);        /* addr, not use in UpdateRegs */
-  Out32(PARPORT_CRTL_BASEADDR + PARPORT_MC_DIRECT_CMD, direct_cmd_reg);
+  out_le32(PARPORT_CRTL_BASEADDR + PARPORT_MC_DIRECT_CMD, direct_cmd_reg);
 
   /* reset the flash itself so that it's ready to be accessed */
 
-  Out8(NOR_FLASH_BASEADDR + 0xAAA, 0xAA);
-  Out8(NOR_FLASH_BASEADDR + 0x555, 0x55);
-  Out8(NOR_FLASH_BASEADDR,         0xF0);
+  out_8(NOR_FLASH_BASEADDR + 0xAAA, 0xAA);
+  out_8(NOR_FLASH_BASEADDR + 0x555, 0x55);
+  out_8(NOR_FLASH_BASEADDR,         0xF0);
 }
 #endif
-
-#define Xil_Out32 Out32
-#define Xil_In32 In32
 
 #ifdef CONFIG_FPGA
 Xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
@@ -130,16 +102,16 @@ int board_init(void)
 	/* temporary hack to clear pending irqs before Linux as it 
 	   will hang Linux */
 
-	Xil_Out32(0xe0001014, 0x26d);
+	out_le32(0xe0001014, 0x26d);
 
 	/* temporary hack to take USB out of reset til the is fixed
 	   in Linux */
 
-	Xil_Out32(0xe000a204, 0x80);
-	Xil_Out32(0xe000a208, 0x80);
-	Xil_Out32(0xe000a040, 0x80);
-	Xil_Out32(0xe000a040, 0x00);
-	Xil_Out32(0xe000a040, 0x80);
+	out_le32(0xe000a204, 0x80);
+	out_le32(0xe000a208, 0x80);
+	out_le32(0xe000a040, 0x80);
+	out_le32(0xe000a040, 0x00);
+	out_le32(0xe000a040, 0x80);
 
 	icache_enable();
 #ifndef CONFIG_SYS_NO_FLASH
@@ -158,7 +130,7 @@ int board_late_init (void)
 {
 	u32 boot_mode;
 
-	boot_mode = (In32(BOOT_MODE_REG) & BOOT_MODES_MASK);
+	boot_mode = (in_le32(BOOT_MODE_REG) & BOOT_MODES_MASK);
 	switch(boot_mode) {
 	case QSPI_MODE:
 		setenv("modeboot", "run qspiboot");
@@ -216,14 +188,10 @@ int dram_init(void)
  */
 void reset_cpu(ulong addr)
 {
-	u32 *slcr_p;
-
-	slcr_p = (u32*)XPSS_SYS_CTRL_BASEADDR;
-
 	/* unlock SLCR */
-	*(slcr_p + 2) = 0xDF0D;
+	out_le32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK, XPSS_SLCR_UNLOCK_KEY);
 	/* Tickle soft reset bit */
-	*(slcr_p + 128) = 1;
+	out_le32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_PSS_RST_CTRL, 1);
 
 	while(1) {;}
 }
