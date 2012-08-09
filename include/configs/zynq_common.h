@@ -87,9 +87,9 @@
 /* CONFIG_SYS_MONITOR_BASE? */
 /* CONFIG_SYS_MONITOR_LEN? */
 
-/* Keep L2 Cache Disabled */
-#define CONFIG_L2_OFF
 #define CONFIG_SYS_CACHELINE_SIZE	32
+#define CONFIG_SYS_L2_PL310
+#define CONFIG_SYS_PL310_BASE		0xF8F02000
 
 /*
  * Physical Memory map
