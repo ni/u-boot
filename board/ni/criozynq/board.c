@@ -95,7 +95,24 @@ int board_mmc_init(bd_t *bd)
 #ifdef CONFIG_CMD_NAND
 int board_nand_init(struct nand_chip *nand_chip)
 {
-	return zynq_nand_init(nand_chip);
+	loff_t off;
+	loff_t size;
+	int ret;
+
+	ret = zynq_nand_init(nand_chip);
+	if (ret)
+		return ret;
+
+	/*
+	 * This is crappy (using 0 as the device), but this is what the Zynq
+	 * NAND driver does, so we do it too to make sure we get the same device
+	 */
+	off = CONFIG_ENV_OFFSET;
+	size = nand_info[0].size - off;
+
+	nand_unlock(&nand_info[0], off, size, 0);
+
+	return ret;
 }
 #endif
 
