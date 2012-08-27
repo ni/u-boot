@@ -79,7 +79,7 @@
 #define CONFIG_SYS_BAUDRATE_TABLE { 9600, 38400, 115200 }
 #define CONFIG_BOOTDELAY	3 /* -1 to Disable autoboot */
 
-#define	CONFIG_PSS_SERIAL
+#define	CONFIG_ZYNQ_SERIAL
 #define	CONFIG_RTC_XPSSRTC
 
 #define CONFIG_SYS_PROMPT	"zynq-uboot> "

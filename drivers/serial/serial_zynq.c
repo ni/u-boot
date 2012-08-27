@@ -5,7 +5,7 @@
 
 #include <common.h>
 
-#include "serial_xpsuart.h"
+#include "serial_zynq.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
