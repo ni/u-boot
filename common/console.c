@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <stdio_dev.h>
 #include <exports.h>
+#include <serial.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -550,6 +551,7 @@ int console_assign(int file, const char *devname)
 {
 	int flag;
 	struct stdio_dev *dev;
+	const char *realdevname;
 
 	/* Check for valid file */
 	switch (file) {
@@ -565,8 +567,14 @@ int console_assign(int file, const char *devname)
 	}
 
 	/* Check for valid device name */
+#ifdef CONFIG_SERIAL_MULTI
+	if (strcmp(devname, "serial") == 0)
+		realdevname = default_serial_console()->name;
+	else
+#endif
+		realdevname = devname;
 
-	dev = search_device(flag, devname);
+	dev = search_device(flag, realdevname);
 
 	if (dev)
 		return console_setfile(file, dev);
@@ -657,13 +665,28 @@ int console_init_r(void)
 	}
 	/* if the devices are overwritten or not found, use default device */
 	if (inputdev == NULL) {
-		inputdev  = search_device(DEV_FLAGS_INPUT,  "serial");
+#ifdef CONFIG_SERIAL_MULTI
+		inputdev = search_device(DEV_FLAGS_INPUT,
+			default_serial_console()->name);
+#else
+		inputdev  = search_device(DEV_FLAGS_INPUT, "serial");
+#endif
 	}
 	if (outputdev == NULL) {
+#ifdef CONFIG_SERIAL_MULTI
+		outputdev = search_device(DEV_FLAGS_OUTPUT,
+			default_serial_console()->name);
+#else
 		outputdev = search_device(DEV_FLAGS_OUTPUT, "serial");
+#endif
 	}
 	if (errdev == NULL) {
+#ifdef CONFIG_SERIAL_MULTI
+		errdev = search_device(DEV_FLAGS_OUTPUT,
+			default_serial_console()->name);
+#else
 		errdev    = search_device(DEV_FLAGS_OUTPUT, "serial");
+#endif
 	}
 	/* Initializes output console first */
 	if (outputdev != NULL) {
@@ -722,8 +745,20 @@ int console_init_r(void)
 	 */
 	if (getenv("splashimage") != NULL) {
 		if (!(gd->flags & GD_FLG_SILENT))
+#ifdef CONFIG_SERIAL_MULTI
+			outputdev = search_device(DEV_FLAGS_OUTPUT,
+				default_serial_console()->name);
+#else
 			outputdev = search_device (DEV_FLAGS_OUTPUT, "serial");
+#endif
 	}
+#endif
+
+#ifdef CONFIG_SERIAL_MULTI
+	outputdev = search_device(DEV_FLAGS_OUTPUT,
+		default_serial_console()->name);
+	inputdev = search_device(DEV_FLAGS_INPUT,
+		default_serial_console()->name);
 #endif
 
 	/* Scan devices looking for input and output devices */
@@ -760,12 +795,12 @@ int console_init_r(void)
 
 	gd->flags |= GD_FLG_DEVINIT;	/* device initialization completed */
 
-	stdio_print_current_devices();
-
 	/* Setting environment variables */
 	for (i = 0; i < 3; i++) {
 		setenv(stdio_names[i], stdio_devices[i]->name);
 	}
+
+	stdio_print_current_devices();
 
 #if 0
 	/* If nothing usable installed, use only the initial console */

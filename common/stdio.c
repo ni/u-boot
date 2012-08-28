@@ -24,6 +24,7 @@
 #include <config.h>
 #include <common.h>
 #include <stdarg.h>
+#include <linux/compiler.h>
 #include <malloc.h>
 #include <stdio_dev.h>
 #include <serial.h>
@@ -70,8 +71,9 @@ int nulldev_input(void)
 
 static void drv_system_init (void)
 {
-	struct stdio_dev dev;
+	__maybe_unused struct stdio_dev dev;
 
+#ifndef CONFIG_SERIAL_MULTI
 	memset (&dev, 0, sizeof (dev));
 
 	strcpy (dev.name, "serial");
@@ -81,6 +83,7 @@ static void drv_system_init (void)
 	dev.getc = serial_getc;
 	dev.tstc = serial_tstc;
 	stdio_register (&dev);
+#endif
 
 #ifdef CONFIG_SYS_DEVICE_NULLDEV
 	memset (&dev, 0, sizeof (dev));
