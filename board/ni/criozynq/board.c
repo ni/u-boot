@@ -9,6 +9,7 @@
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <serial.h>
 #include <zynqpl.h>
 #include <usb/ulpi.h>
 
@@ -42,6 +43,11 @@ u32 XIo_In32(u32 InAddress)
 #ifdef CONFIG_FPGA
 Xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
 #endif
+
+struct serial_device *default_serial_console(void)
+{
+	return &null_serial_device;
+}
 
 int board_init(void)
 {

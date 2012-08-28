@@ -73,6 +73,15 @@
 #define CONFIG_CMD_FPGA
 
 /* HW to use */
+#define CONFIG_SERIAL_MULTI
+#define CONFIG_SYS_NS16550
+#define CONFIG_SYS_NS16550_SERIAL
+#define CONFIG_SYS_NS16550_CLK 58824000
+#define CONFIG_SYS_NS16550_REG_SIZE 1
+#define CONFIG_SYS_NS16550_COM1 0x80000000
+#define CONFIG_SYS_NS16550_COM2 0x80000010
+#define CONFIG_SYS_NS16550_COM3 0x80000020
+#define CONFIG_CONS_INDEX 1 /* not actually used */
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_NET_MULTI
 #define CONFIG_XGMAC_PHY_ADDR 0
@@ -145,7 +154,7 @@
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
-	"consolecmd=setenv console ttyPS0,$baudrate\0" \
+	"consolecmd=setenv console ttyS0,$baudrate\0" \
 	"ncoutport=7865\0" \
 	"ncinport=8473\0" \
 	"ncip=255.255.255.255\0" \
@@ -390,13 +399,13 @@
 		"fi; " \
 		"if test -n \\\"$isconsoleout\\\"; then " \
 			"setenv silent; " \
+			"setenv stderr eserial0; " \
+			"setenv stdin eserial0; " \
+			"setenv stdout eserial0; " \
 			"run consolecmd; " \
 			"setenv consoleparam console=$console earlyprintk; " \
 		"else " \
 			"setenv consoleparam console= quiet; " \
-			"setenv stderr nulldev; " \
-			"setenv stdin nulldev; " \
-			"setenv stdout nulldev; " \
 			"setenv bootdelay -2; " \
 		"fi; " \
 		"run readbootmode; " \
