@@ -9,6 +9,7 @@
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <serial.h>
 #include <zynqpl.h>
 #include <usb/ulpi.h>
 
@@ -24,6 +25,13 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_FPGA
 xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
+#endif
+
+#ifndef CONFIG_DM_SERIAL
+struct serial_device *default_serial_console(void)
+{
+	return &null_serial_device;
+}
 #endif
 
 int board_init(void)
