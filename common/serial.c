@@ -240,6 +240,14 @@ void serial_initialize(void)
 	serial_register(&uartlite_serial3_device);
 # endif /* XILINX_UARTLITE_BASEADDR3 */
 #endif /* CONFIG_XILINX_UARTLITE */
+#if defined(CONFIG_ZYNQ_SERIAL)
+#if defined(CONFIG_ZYNQ_UART0)
+	serial_register(&zynq_serial0_device);
+#endif
+#if defined(CONFIG_ZYNQ_UART1)
+	serial_register(&zynq_serial1_device);
+#endif
+#endif
 	serial_assign(default_serial_console()->name);
 }
 

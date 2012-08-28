@@ -4,10 +4,41 @@
  */
 
 #include <common.h>
+#include <serial.h>
 
 #include "serial_zynq.h"
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#if defined(CONFIG_SERIAL_MULTI)
+
+/* Multi serial device functions */
+#define DECLARE_ZYNQ_SERIAL_FUNCTIONS(port) \
+    int  zynq_serial##port##_init (void) {\
+	return zynq_serial_init(port);}\
+    void zynq_serial##port##_setbrg (void) {\
+	zynq_serial_setbrg(port);}\
+    int  zynq_serial##port##_getc (void) {\
+	return zynq_serial_getc(port);}\
+    int  zynq_serial##port##_tstc (void) {\
+	return zynq_serial_tstc(port);}\
+    void zynq_serial##port##_putc (const char c) {\
+	zynq_serial_putc(port, c);}\
+    void zynq_serial##port##_puts (const char *s) {\
+	zynq_serial_puts(port, s);}
+
+/* Serial device descriptor */
+#define INIT_ZYNQ_SERIAL_STRUCTURE(port, name) {\
+	name,\
+	zynq_serial##port##_init,\
+	NULL,\
+	zynq_serial##port##_setbrg,\
+	zynq_serial##port##_getc,\
+	zynq_serial##port##_tstc,\
+	zynq_serial##port##_putc,\
+	zynq_serial##port##_puts, }
+
+#endif /* CONFIG_SERIAL_MULTI */
 
 /* Set up the baud rate in gd struct */
 static void _zynq_serial_setbrg(int base)
@@ -100,6 +131,65 @@ static int _zynq_serial_getc(int base)
 	return zynq_uart_readl(base, FIFO);
 }
 
+#if defined(CONFIG_SERIAL_MULTI)
+void zynq_serial_setbrg(int port)
+{
+	if (port == 0)
+		_zynq_serial_setbrg(ZYNQUART0_BASE);
+	if (port == 1)
+		_zynq_serial_setbrg(ZYNQUART1_BASE);
+}
+int zynq_serial_init(int port)
+{
+	if (port == 0)
+		return _zynq_serial_init(ZYNQUART0_BASE);
+	if (port == 1)
+		return _zynq_serial_init(ZYNQUART1_BASE);
+	return 0;
+}
+void zynq_serial_putc(int port, char c)
+{
+	if (port == 0)
+		_zynq_serial_putc(ZYNQUART0_BASE, c);
+	if (port == 1)
+		_zynq_serial_putc(ZYNQUART1_BASE, c);
+}
+void zynq_serial_puts(int port, const char *s)
+{
+	if (port == 0)
+		_zynq_serial_puts(ZYNQUART0_BASE, s);
+	if (port == 1)
+		_zynq_serial_puts(ZYNQUART1_BASE, s);
+}
+int zynq_serial_getc(int port)
+{
+	if (port == 0)
+		return _zynq_serial_getc(ZYNQUART0_BASE);
+	if (port == 1)
+		return _zynq_serial_getc(ZYNQUART1_BASE);
+	return 0;
+}
+int zynq_serial_tstc(int port)
+{
+	if (port == 0)
+		return _zynq_serial_tstc(ZYNQUART0_BASE);
+	if (port == 1)
+		return _zynq_serial_tstc(ZYNQUART1_BASE);
+	return 0;
+}
+
+#ifdef CONFIG_ZYNQ_UART0
+DECLARE_ZYNQ_SERIAL_FUNCTIONS(0);
+struct serial_device zynq_serial0_device =
+	INIT_ZYNQ_SERIAL_STRUCTURE(0, "zynquart0");
+#endif
+#ifdef CONFIG_ZYNQ_UART1
+DECLARE_ZYNQ_SERIAL_FUNCTIONS(1);
+struct serial_device zynq_serial1_device =
+	INIT_ZYNQ_SERIAL_STRUCTURE(1, "zynquart1");
+#endif
+
+#else
 void serial_setbrg(void)
 {
 	_zynq_serial_setbrg(ZYNQUART_BASE);
@@ -124,3 +214,4 @@ int serial_tstc(void)
 {
 	return _zynq_serial_tstc(ZYNQUART_BASE);
 }
+#endif

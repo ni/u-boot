@@ -16,8 +16,8 @@
 #define ZYNQUART_BASE ZYNQUART0_BASE
 #elif defined (CONFIG_ZYNQ_UART1)
 #define ZYNQUART_BASE ZYNQUART1_BASE
-#else
-#error CONFIG_ZYNQ_UART_DEFAULT must choose 0 or 1
+#elif !defined(CONFIG_SERIAL_MULTI)
+#error Must define CONFIG_ZYNQ_UART0 or CONFIG_ZYNQ_UART1
 #endif
 
 /* UART register offsets */

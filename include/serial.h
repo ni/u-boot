@@ -82,6 +82,11 @@ extern struct serial_device zoom2_serial_device2;
 extern struct serial_device zoom2_serial_device3;
 #endif
 
+#if defined(CONFIG_ZYNQ_SERIAL)
+extern struct serial_device zynq_serial0_device;
+extern struct serial_device zynq_serial1_device;
+#endif
+
 extern struct serial_device serial_ffuart_device;
 extern struct serial_device serial_btuart_device;
 extern struct serial_device serial_stuart_device;
