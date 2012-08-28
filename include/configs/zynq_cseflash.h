@@ -102,6 +102,7 @@
 #define CONFIG_SKIP_LOWLEVEL_INIT
 
 /* HW to use */
+#define CONFIG_ZYNQ_UART1
 #define CONFIG_TTC0
 //#define CONFIG_GEM0
 

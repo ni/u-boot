@@ -72,7 +72,7 @@
 #endif
 
 /* HW to use */
-# define CONFIG_UART0
+#define CONFIG_ZYNQ_UART0
 #define CONFIG_TTC0
 #define CONFIG_GEM0
 #define CONFIG_ZYNQ_GEM

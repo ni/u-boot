@@ -84,9 +84,9 @@
 
 #if defined(CONFIG_ZC770_XM010) || defined(CONFIG_ZC770_XM011) \
 	|| defined(CONFIG_ZC770_XM012)
-#define CONFIG_UART1
+#define CONFIG_ZYNQ_UART1
 #else
-#define CONFIG_UART0
+#define CONFIG_ZYNQ_UART0
 #endif
 
 /*
