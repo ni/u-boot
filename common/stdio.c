@@ -46,7 +46,7 @@ char *stdio_names[MAX_FILES] = { "stdin", "stdout", "stderr" };
 #endif
 
 
-#ifdef CONFIG_SYS_DEVICE_NULLDEV
+#if defined(CONFIG_SYS_DEVICE_NULLDEV) && !defined(CONFIG_SERIAL_MULTI)
 void nulldev_putc(const char c)
 {
 	/* nulldev is empty! */
@@ -83,7 +83,6 @@ static void drv_system_init (void)
 	dev.getc = serial_getc;
 	dev.tstc = serial_tstc;
 	stdio_register (&dev);
-#endif
 
 #ifdef CONFIG_SYS_DEVICE_NULLDEV
 	memset (&dev, 0, sizeof (dev));
@@ -96,6 +95,7 @@ static void drv_system_init (void)
 	dev.tstc = nulldev_input;
 
 	stdio_register (&dev);
+#endif
 #endif
 }
 

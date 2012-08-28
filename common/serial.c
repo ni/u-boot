@@ -32,6 +32,47 @@ DECLARE_GLOBAL_DATA_PTR;
 static struct serial_device *serial_devices;
 static struct serial_device *serial_current;
 
+#if defined(CONFIG_SYS_DEVICE_NULLDEV)
+int nulldev_init(void)
+{
+	/* nulldev is empty! */
+	return 0;
+}
+
+void nulldev_setbrg(void)
+{
+	/* nulldev is empty! */
+}
+
+void nulldev_putc(const char c)
+{
+	/* nulldev is empty! */
+}
+
+void nulldev_puts(const char *s)
+{
+	/* nulldev is empty! */
+}
+
+int nulldev_input(void)
+{
+	/* nulldev is empty! */
+	return 0;
+}
+
+struct serial_device null_serial_device = {
+	"nulldev",
+	nulldev_init,
+	NULL,
+	nulldev_setbrg,
+	nulldev_input,
+	nulldev_input,
+	nulldev_putc,
+	nulldev_puts,
+};
+#endif
+
+
 void serial_register(struct serial_device *dev)
 {
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
@@ -49,6 +90,9 @@ void serial_register(struct serial_device *dev)
 
 void serial_initialize(void)
 {
+#if defined(CONFIG_SYS_DEVICE_NULLDEV)
+	serial_register(&null_serial_device);
+#endif
 #if defined(CONFIG_8xx_CONS_SMC1) || defined(CONFIG_8xx_CONS_SMC2)
 	serial_register(&serial_smc_device);
 #endif

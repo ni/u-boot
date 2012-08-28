@@ -21,6 +21,10 @@ struct serial_device {
 	struct serial_device *next;
 };
 
+#if defined(CONFIG_SYS_DEVICE_NULLDEV)
+extern struct serial_device null_serial_device;
+#endif
+
 extern struct serial_device serial_smc_device;
 extern struct serial_device serial_scc_device;
 extern struct serial_device *default_serial_console(void);
