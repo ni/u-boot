@@ -28,6 +28,7 @@ struct fdtview_params {
 	int lflag;
 	int oflag;
 	int pflag;
+	int iflag;
 } params;
 
 /*
@@ -253,6 +254,7 @@ int main (int argc, char **argv)
 	params.lflag = 0;
 	params.oflag = 0;
 	params.pflag = 0;
+	params.iflag = 0;
 
 	while (--argc > 0 && **++argv == '-') {
 		while (*++*argv) {
@@ -299,6 +301,11 @@ int main (int argc, char **argv)
 				}
 				params.pflag = 1;
 				goto NXTARG;
+			case 'i':
+				if (argc <= 1)
+					usage();
+				params.iflag = 1;
+				goto NXTARG;
 			default:
 				usage();
 			}
@@ -309,12 +316,12 @@ NXTARG:		;
 	if (argc != 1)
 		usage();
 
-	if (!params.lflag && !params.oflag && !params.pflag)
+	if (!params.lflag && !params.oflag && !params.pflag && !params.iflag)
 		usage();
 
 	params.imagefile = *argv;
 
-	ifd = open (params.imagefile, O_RDONLY|O_BINARY|O_SYNC);
+	ifd = open(params.imagefile, O_RDONLY|O_BINARY|O_SYNC);
 
 	if (ifd < 0) {
 		fprintf(stderr, "%s: Can't open %s: %s\n",
@@ -377,10 +384,13 @@ NXTARG:		;
 			retval = readsize;
 			goto error;
 		}
-		if ((retval = fdt_check_header((void *) working_fdt)) < 0) {
-			fprintf(stderr, "%s: Invalid image %s\n",
-				params.cmdname, params.imagefile);
-			goto error;
+		if ((retval = fdt_check_header((void *)working_fdt)) < 0) {
+			if (!params.iflag || !image_check_magic(
+			    (image_header_t *)working_fdt)) {
+				fprintf(stderr, "%s: Invalid image %s\n",
+					params.cmdname, params.imagefile);
+				goto error;
+			}
 		}
 		totalsize = fdt_totalsize(working_fdt);
 		if (totalsize < 0) {
@@ -407,10 +417,13 @@ NXTARG:		;
 		}
 	}
 
-	if ((retval = fdt_check_header((void *) working_fdt)) < 0) {
-		fprintf(stderr, "%s: Invalid image %s\n",
-			params.cmdname, params.imagefile);
-		goto error;
+	if ((retval = fdt_check_header((void *)working_fdt)) < 0) {
+		if (!params.iflag || !image_check_magic(
+		    (image_header_t *)working_fdt)) {
+			fprintf(stderr, "%s: Invalid image %s\n",
+				params.cmdname, params.imagefile);
+			goto error;
+		}
 	}
 
 	if (params.oflag) {
@@ -426,11 +439,8 @@ NXTARG:		;
 			retval = offset;
 			goto error;
 		}
-	}
-	else if (params.lflag || params.pflag)
-	{
+	} else if (params.lflag || params.pflag) {
 		int depth = MAX_LEVEL;	/* how deep to print */
-		int  ret;		/* return value */
 		static char root[2] = "/";
 
 		/*
@@ -446,12 +456,42 @@ NXTARG:		;
 		if (params.path == NULL)
 			params.path = root;
 
-		ret = fdt_print(working_fdt, params.path, params.propname, depth);
-		if (ret != 0)
-			return ret;
-	}
-	else
-	{
+		retval = fdt_print(working_fdt, params.path, params.propname, depth);
+	} else if (params.iflag) {
+		if (retval) {
+			void *hdr = working_fdt;
+
+			retval = 0;
+			puts("   Legacy image found\n");
+
+			if (!image_check_hcrc(hdr)) {
+				puts("   Bad Header Checksum\n");
+				retval = 1;
+			} else {
+				image_print_contents(hdr);
+
+				puts("   Verifying Checksum ... ");
+				if (!image_check_dcrc(hdr)) {
+					puts("   Bad Data CRC\n");
+					retval = 1;
+				}
+			}
+		} else {
+			puts("   FIT image found\n");
+
+			if (!fit_check_format(working_fdt)) {
+				puts("Bad FIT image format!\n");
+				retval = 1;
+			} else {
+				fit_print_contents(working_fdt);
+
+				if (!fit_all_image_check_hashes(working_fdt)) {
+					puts("Bad hash in FIT image!\n");
+					retval = 1;
+				}
+			}
+		}
+	} else {
 	/*
 		int depth = 0;
 		int offset;
@@ -490,10 +530,11 @@ error:
 
 static void usage ()
 {
-	fprintf (stderr, "       %s [-l [path [propname]] | -o path propname | -p [path [propname]]] image\n"
+	fprintf (stderr, "       %s [-l [path [propname]] | -o path propname | -p [path [propname]] | -i] image\n"
 			 "          -l ==> Print one level starting at <path>\n"
 			 "          -o ==> print the offset and size of a property\n"
-			 "          -p ==> Recursive print starting at <path>\n",
+			 "          -p ==> Recursive print starting at <path>\n"
+			 "          -i ==> Print Image Info and validate hashes in u-boot image file\n",
 		params.cmdname);
 
 	exit (EXIT_FAILURE);
