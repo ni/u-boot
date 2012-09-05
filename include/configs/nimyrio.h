@@ -1,18 +1,20 @@
 /*
- * Hacked together,
- * hopefully functional.
- *
  * See zynq_common.h for Zynq common configs
  */
 
-#ifndef __CONFIG_NIZYNQPROTO_H
-#define __CONFIG_NIZYNQPROTO_H
+#ifndef __CONFIG_NIMYRIO_H
+#define __CONFIG_NIMYRIO_H
 
 /*
  * High Level Configuration Options
  */
-#define CONFIG_NIZYNQPROTO /* Board */
-#define CONFIG_DEVICE_CODE 7659
+#define CONFIG_NIMYRIO /* Board */
+#ifdef CONFIG_BOARD_ONLY
+#define CONFIG_DEVICE_CODE "76D3"
+#else
+#define CONFIG_DEVICE_CODE "762F"
+#endif
+#endif
 
 #include <configs/zynq_common.h>
 
@@ -51,12 +53,12 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
-#define CONFIG_IDENT_STRING	"\nNational Instruments Zynq Prototype"
+#define CONFIG_IDENT_STRING	"\nNational Instruments myRIO"
 
 #undef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT	"ni-zynq> "
+#define CONFIG_SYS_PROMPT	"U-Boot> "
 
-#define CONFIG_DEFAULT_HOSTNAME_BASE	"zynq-"
+#define CONFIG_DEFAULT_HOSTNAME_BASE	"myRIO-"
 
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
@@ -81,13 +83,10 @@
 
 /* HW to use */
 #define CONFIG_ZYNQ_UART1
-#define CONFIG_ZYNQ_GEM
-#define CONFIG_NET_MULTI
-#define CONFIG_XGMAC_PHY_ADDR 0
-#define CONFIG_CMD_MII
-#define CONFIG_MII
+
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_LINK_LOCAL
+#define CONFIG_BOOTP_MAY_FAIL
 #define CONFIG_BOOTP_SERVERIP
 #define CONFIG_BOOTP_SUBNETMASK
 #define CONFIG_BOOTP_GATEWAY
@@ -163,7 +162,7 @@
 	"initrd_high=0x17ffffff\0" \
 	"TargetClass=cRIO\0" \
 	"DeviceDesc=cRIO-Zynq\0" \
-	"DeviceCode=0x" MK_STR(CONFIG_DEVICE_CODE) "\0" \
+	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"verifyaddr=0x10000000\0" \
@@ -302,7 +301,7 @@
 		"setexpr.b cpld.ipreset *$loadaddr \\\\& 0x02; " \
 		"setexpr.b cpld.consoleout *$loadaddr \\\\& 0x04; " \
 		"setexpr.b cpld.softboot *$loadaddr \\\\& 0x20; " \
-		"i2c read 0x40 2 1 $loadaddr; " \
+		"i2c read 0x40 4 1 $loadaddr; " \
 		"setexpr.b cpld.resetbybutton *$loadaddr \\\\& 0x01;\0" \
 	"evaldip=" \
 		"if test ${cpld.safemode} -ne 0 -o " \
@@ -378,7 +377,6 @@
 	"fi"
 
 #define CONFIG_PREBOOT \
-	"setenv silent 1; " \
 	"dcache on; " \
 	"ubi part boot-config; " \
 	"run readsoftdip; " \
@@ -412,4 +410,4 @@
 		"fi; " \
 	"fi;"
 
-#endif /* __CONFIG_NIZYNQPROTO_H */
+#endif /* __CONFIG_NIMYRIO_H */
