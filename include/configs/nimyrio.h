@@ -90,7 +90,7 @@
 /*
  * Physical Memory map
  */
-#define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
+#define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_SYS_MEMTEST_SCRATCH 0xFFFFF000
 #define CONFIG_CMD_CACHE
@@ -127,7 +127,7 @@
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
 #undef CONFIG_SYS_LOAD_ADDR
-#define CONFIG_SYS_LOAD_ADDR 0x8000000
+#define CONFIG_SYS_LOAD_ADDR 0x4000000
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
@@ -140,14 +140,14 @@
 	"ncip=255.255.255.255\0" \
 	"nc=setenv stdout nc;setenv stdin nc\0" \
 	"sc=setenv stdout serial;setenv stdin serial\0" \
-	"fdt_high=0x17ffffff\0" \
-	"initrd_high=0x17ff7fff\0" \
+	"fdt_high=0x7ffffff\0" \
+	"initrd_high=0x7ff7fff\0" \
 	"TargetClass=cRIO\0" \
 	"DeviceDesc=cRIO-Zynq\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
-	"verifyaddr=0x10000000\0" \
+	"verifyaddr=0x8000000\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
