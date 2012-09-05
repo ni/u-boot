@@ -5,10 +5,18 @@ choice
 config TARGET_NI_CRIO9068
 	bool "NI cRIO-9068"
 
+config TARGET_NIMYRIO
+	bool "NI myRIO"
+
+config TARGET_NIMYRIO_BO
+	bool "NI myRIO board only"
+	select MYRIO
+
 endchoice
 
 config SYS_BOARD
-	default "criozynq"
+	default "criozynq" if TARGET_NIZYNQ_CRIO9068
+	default "myrio" if TARGET_NIMYRIO
 
 config SYS_VENDOR
 	default "ni"
@@ -18,5 +26,6 @@ config SYS_SOC
 
 config SYS_CONFIG_NAME
 	default "nicriozynq" if TARGET_NI_CRIO9068
+	default "nimyrio" if TARGET_NIMYRIO
 
 endif
