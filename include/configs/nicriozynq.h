@@ -211,7 +211,11 @@
 				"ubifsload $loadaddr user.bit.bin && " \
 				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
 			"then " \
-				"configfpga=1; " \
+				"if fpga load 0 $loadaddr $filesize; then " \
+				"else " \
+					"echo $fpga_err..(user) ; " \
+					"loaddefaultbit=1; " \
+				"fi; " \
 			"else " \
 				"loaddefaultbit=1; " \
 			"fi; " \
@@ -225,7 +229,16 @@
 			"fi; " \
 		"fi; " \
 		"if test -n \\\"$configfpga\\\"; then " \
-			"fpga load 0 $loadaddr $filesize; " \
+			"if fpga load 0 $loadaddr $filesize; then " \
+			"else " \
+				"echo $fpga_err; " \
+				"run recoverycmd; " \
+				"run recoverybootcmd;" \
+			"fi; " \
+		"else; " \
+			"echo $fpga_err; " \
+			"run recoverycmd; " \
+			"run recoverybootcmd;" \
 		"fi; " \
 		"run markhardbootcomplete;\0" \
 	"ipresetcmd=echo Resetting primary Ethernet configuration; " \
@@ -333,6 +346,7 @@
 		"setenv cpld.softboot; " \
 		"setenv cpld.resetbybutton;\0" \
 	"safemode_err=Failed to find a valid safemode image.\0" \
+	"fpga_err=Failed to load an FPGA image.\0" \
 	"updateenv=env export -b $loadaddr; " \
 		"env default -f; " \
 		"env import -b $loadaddr;\0" \
