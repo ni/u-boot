@@ -153,7 +153,7 @@
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
 		"source $loadaddr:bootscript;\0" \
 	"boot_safemode=" \
-		"if ubifsload $loadaddr linux_safemode.itb && " \
+		"if ubifsload $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
 			"source $loadaddr:bootscript; " \
