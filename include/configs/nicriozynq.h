@@ -217,8 +217,8 @@
 			"fi; " \
 		"fi; " \
 		"if test -n \\\"$loaddefaultbit\\\"; then " \
-			"if ubifsload $verifyaddr default.bit.crc && " \
-				"ubifsload $loadaddr default.bit.bin && " \
+			"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
+				"ubifsload $loadaddr .defbit/default.bit.bin && " \
 				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
 			"then " \
 				"configfpga=1; " \
