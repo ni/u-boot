@@ -587,6 +587,17 @@ static int Xgmac_write_hwaddr(struct eth_device *dev)
 	return 0;
 }
 
+int zynq_gem_get_phyaddr(const char *devname)
+{
+	struct eth_device *dev;
+	XEmacPss *EmacPssInstancePtr;
+
+	dev = eth_get_dev_by_name(devname);
+	EmacPssInstancePtr = (XEmacPss *)dev->priv;
+
+	return EmacPssInstancePtr->Config.PhyAddress;
+}
+
 int zynq_gem_initialize(bd_t *bis)
 {
 	int i;
