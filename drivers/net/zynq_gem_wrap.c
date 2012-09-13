@@ -73,7 +73,7 @@ static int Xgmac_phy_mgmt_idle(XEmacPss * EmacPssInstancePtr)
 		 & XEMACPSS_NWSR_MDIOIDLE_MASK) == XEMACPSS_NWSR_MDIOIDLE_MASK);
 }
 
-#if defined(CONFIG_CMD_MII) && !defined(CONFIG_BITBANGMII)
+#if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
 static int Xgmac_mii_read(const char *devname, unsigned char addr,
 		unsigned char reg, unsigned short *value)
 {
@@ -305,20 +305,6 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	tmp |= (1 << 7);	/* RGMII receive timing internally delayed */
 	tmp |= (1 << 1);	/* RGMII transmit clock internally delayed */
 	phy_wr(EmacPssInstancePtr, 20, tmp);
-#else
-	/* Copper specific control register 1 */
-	tmp = phy_rd(EmacPssInstancePtr, 16);
-	tmp |= (7 << 12);	/* max number of gigabit attempts */
-	tmp |= (1 << 11);	/* enable downshift */
-	phy_wr(EmacPssInstancePtr, 16, tmp);
-
-	/* Control register - MAC */
-	phy_wr(EmacPssInstancePtr, 22, 2);	/* page 2 */
-	tmp = phy_rd(EmacPssInstancePtr, 21);
-	tmp |= (1 << 5);	/* RGMII receive timing transition when data stable */
-	tmp |= (1 << 4);	/* RGMII transmit clock internally delayed */
-	phy_wr(EmacPssInstancePtr, 21, tmp);
-	phy_wr(EmacPssInstancePtr, 22, 0);	/* page 0 */
 #endif
 
 	/* Control register */
@@ -626,7 +612,7 @@ int zynq_gem_initialize(bd_t *bis)
 
 		eth_register(dev);
 
-#if defined(CONFIG_CMD_MII) && !defined(CONFIG_BITBANGMII)
+#if defined(CONFIG_MII) || defined(CONFIG_CMD_MII)
 		if (EmacPssInstances[i].Config.CreateMii)
 			miiphy_register(dev->name,
 				Xgmac_mii_read, Xgmac_mii_write);

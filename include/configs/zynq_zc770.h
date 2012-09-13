@@ -95,6 +95,7 @@
 #if defined(CONFIG_ZC770_XM010) || defined(CONFIG_ZC770_XM013)
 #define CONFIG_CMD_PING
 #define CONFIG_NET_MULTI
+#define CONFIG_CMD_MII
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_ZYNQ_GEM_COUNT          1
 #define CONFIG_ZYNQ_GEM0_PHY_ADDR      0x7

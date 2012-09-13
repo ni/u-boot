@@ -6,6 +6,7 @@
 #include <asm/arch/nand.h>
 #include <asm/arch/sdhci.h>
 #include <asm/io.h>
+#include <miiphy.h>
 #include <netdev.h>
 #include <zynqpl.h>
 
@@ -158,7 +159,36 @@ int board_late_init (void)
 #ifdef CONFIG_CMD_NET
 int board_eth_init(bd_t *bis)
 {
-	return zynq_gem_initialize(bis);
+	int retval;
+	int phy_addr;
+	const char *name = "zynq_gem0";
+	u16 regval;
+
+	retval = zynq_gem_initialize(bis);
+
+	/* Boards have Marvell Gigabit PHY on gem0 */
+	phy_addr = zynq_gem_get_phyaddr(name);
+
+	/* Page 2 */
+	miiphy_write(name, phy_addr, 22, 2);
+
+	/* Control register - MAC */
+	miiphy_read(name, phy_addr, 21, &regval);
+	/* RGMII receive timing transition when data stable */
+	regval |= (1 << 5);
+	regval |= (1 << 4); /* RGMII transmit clock internally delayed */
+	miiphy_write(name, phy_addr, 21, regval);
+
+	/* Page 0 */
+	miiphy_write(name, phy_addr, 22, 0);
+
+	/* Copper specific control register 1 */
+	miiphy_read(name, phy_addr, 16, &regval);
+	regval |= (7 << 12); /* max number of gigabit attempts */
+	regval |= (1 << 11); /* enable downshift */
+	miiphy_write(name, phy_addr, 16, regval);
+
+	return retval;
 }
 #endif
 
