@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <miiphy.h>
 #include <net.h>
+#include <linux/mii.h>
 
 #include "zynq_gem.h"
 
@@ -24,8 +25,11 @@ static int Xgmac_make_rxbuff_mem(XEmacPss *EmacPssInstancePtr,
 			void *rx_buf_start, u32 rx_buffsize);
 static int Xgmac_next_rx_buf(XEmacPss *EmacPssInstancePtr);
 static int Xgmac_phy_mgmt_idle(XEmacPss *EmacPssInstancePtr);
+
+#ifdef CONFIG_EP107
 static void Xgmac_set_eth_advertise(XEmacPss *EmacPssInstancePtr,
 			int link_speed);
+#endif
 
 /*************************** Constant Definitions ***************************/
 
@@ -125,11 +129,11 @@ static void phy_rst(XEmacPss * e)
 	int tmp;
 
 	puts("Resetting PHY...\n");
-	tmp = phy_rd(e, 0);
-	tmp |= 0x8000;
-	phy_wr(e, 0, tmp);
+	tmp = phy_rd(e, MII_BMCR);
+	tmp |= BMCR_RESET;
+	phy_wr(e, MII_BMCR, tmp);
 
-	while (phy_rd(e, 0) & 0x8000) {
+	while (phy_rd(e, MII_BMCR) & BMCR_RESET) {
 		udelay(10000);
 		tmp++;
 		if (tmp > 1000) { /* stalled if reset unfinished after 10 seconds */
@@ -276,18 +280,22 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 
 	/*************************** PHY Setup ***************************/
 
+#ifdef CONFIG_EP107
 	phy_wr(EmacPssInstancePtr, 22, 0);	/* page 0 */
+#endif
 
-	tmp = phy_rd(EmacPssInstancePtr, 2);
+	tmp = phy_rd(EmacPssInstancePtr, MII_PHYSID1);
 	printf("Phy ID: %04X", tmp);
-	tmp = phy_rd(EmacPssInstancePtr, 3);
+	tmp = phy_rd(EmacPssInstancePtr, MII_PHYSID2);
 	printf("%04X\n", tmp);
 
+#ifdef CONFIG_EP107
 	/* Auto-negotiation advertisement register */
-	tmp = phy_rd(EmacPssInstancePtr, 4);
-	tmp |= (1 << 11);	/* asymmetric pause */
-	tmp |= (1 << 10);	/* MAC pause implemented */
-	phy_wr(EmacPssInstancePtr, 4, tmp);
+	tmp = phy_rd(EmacPssInstancePtr, MII_ADVERTISE);
+	tmp |= ADVERTISE_PAUSE_ASYM;	/* asymmetric pause */
+	tmp |= ADVERTISE_PAUSE_CAP;	/* MAC pause implemented */
+	phy_wr(EmacPssInstancePtr, MII_ADVERTISE, tmp);
+#endif
 
 #ifdef CONFIG_EP107
 	/* Extended PHY specific control register */
@@ -314,18 +322,16 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 #endif
 
 	/* Control register */
-	tmp = phy_rd(EmacPssInstancePtr, 0);
-	tmp |= (1 << 12);	/* auto-negotiation enable */
-	tmp |= (1 << 8);	/* enable full duplex */
-	phy_wr(EmacPssInstancePtr, 0, tmp);
-
-	/***** Try to establish a link at the highest speed possible  *****/
+	tmp = phy_rd(EmacPssInstancePtr, MII_BMCR);
+	tmp |= BMCR_ANENABLE;	/* auto-negotiation enable */
 #ifdef CONFIG_EP107
+	tmp |= BMCR_FULLDPLX;	/* enable full duplex */
+#endif
+	phy_wr(EmacPssInstancePtr, MII_BMCR, tmp);
+
+#ifdef CONFIG_EP107
+	/***** Try to establish a link at the highest speed possible  *****/
 	/* CR-659040 */
-	Xgmac_set_eth_advertise(EmacPssInstancePtr, 1000);
-#else
-	/* CR-659040 */
-	/* Could be 1000 if an unknown bug is fixed */
 	Xgmac_set_eth_advertise(EmacPssInstancePtr, 1000);
 #endif
 	phy_rst(EmacPssInstancePtr);
@@ -333,7 +339,7 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	/* Attempt auto-negotiation */
 	puts("Waiting for PHY to complete auto-negotiation...\n");
 	tmp = 0; /* delay counter */
-	while (!(phy_rd(EmacPssInstancePtr, 1) & (1 << 5))) {
+	while (!(phy_rd(EmacPssInstancePtr, MII_BMSR) & BMSR_ANEGCOMPLETE)) {
 		udelay(10000);
 		tmp++;
 		if (tmp > 1000) { /* stalled if no link after 10 seconds */
@@ -343,27 +349,39 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	}
 
 	/* Check if the link is up */
-	tmp = phy_rd(EmacPssInstancePtr, 17);
-	if (  ((tmp >> 10) & 1) ) {
-		/* Check for an auto-negotiation error */
-		tmp = phy_rd(EmacPssInstancePtr, 19);
-		if ( (tmp >> 15) & 1 ) {
-			puts("***Error: Auto-negotiation error is present.\n");
-			return -1;
-		}
+	tmp = phy_rd(EmacPssInstancePtr, MII_BMSR);
+	/* Read twice to ensure valid current link status */
+	tmp = phy_rd(EmacPssInstancePtr, MII_BMSR);
+	if (tmp & BMSR_LSTATUS) {
+		/* Link is up */
 	} else {
 		puts("***Error: Link is not up.\n");
 		return -1;
 	}
 
 	/********************** Determine link speed **********************/
-	tmp = phy_rd(EmacPssInstancePtr, 17);
-	if ( ((tmp >> 14) & 3) == 2)		/* 1000Mbps */
+
+	/* Same method used by Linux kernel generic PHY driver: mask our
+	   capabilities with the link partner capabilities and pick the
+	   highest common denominator. */
+
+	/* 1000BASE-T Status */
+	tmp = phy_rd(EmacPssInstancePtr, MII_STAT1000);
+	/* 1000BASE-T Control */
+	tmp &= (phy_rd(EmacPssInstancePtr, MII_CTRL1000) << 2);
+	if ((LPA_1000FULL | LPA_1000HALF) & tmp)
 		link_speed = 1000;
-	else if ( ((tmp >> 14) & 3) == 1)	/* 100Mbps */
-		link_speed = 100;
-	else					/* 10Mbps */
-		link_speed = 10;
+	else {
+		/* Link Partner Ability */
+		tmp = phy_rd(EmacPssInstancePtr, MII_LPA);
+		/* Auto-Negotiation Advertisement */
+		tmp &= phy_rd(EmacPssInstancePtr, MII_ADVERTISE);
+
+		if ((LPA_100FULL | LPA_100HALF) & tmp)
+			link_speed = 100;
+		else
+			link_speed = 10;
+	}
 
 	/*************************** MAC Setup ***************************/
 	tmp = XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
@@ -763,6 +781,7 @@ int Xgmac_next_rx_buf(XEmacPss * EmacPssInstancePtr)
 	return 0;
 }
 
+#ifdef CONFIG_EP107
 void Xgmac_set_eth_advertise(XEmacPss *EmacPssInstancePtr, int link_speed)
 {
 	int tmp;
@@ -809,4 +828,4 @@ void Xgmac_set_eth_advertise(XEmacPss *EmacPssInstancePtr, int link_speed)
 	phy_wr(EmacPssInstancePtr, 9, tmp);
 
 }
-
+#endif
