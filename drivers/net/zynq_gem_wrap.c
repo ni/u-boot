@@ -105,7 +105,7 @@ static int Xgmac_mii_write(const char *devname, unsigned char addr,
 }
 #endif
 
-static u32 phy_rd(XEmacPss * e, u32 a)
+static u32 phy_rd(XEmacPss *e, u32 a)
 {
 	u16 PhyData;
 
@@ -116,7 +116,7 @@ static u32 phy_rd(XEmacPss * e, u32 a)
 	return PhyData;
 }
 
-static void phy_wr(XEmacPss * e, u32 a, u32 v)
+static void phy_wr(XEmacPss *e, u32 a, u32 v)
 {
 	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
 	XEmacPss_PhyWrite(&EmacPssInstances[e->Config.MiiGem],
@@ -124,7 +124,7 @@ static void phy_wr(XEmacPss * e, u32 a, u32 v)
 	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
 }
 
-static void phy_rst(XEmacPss * e)
+static void phy_rst(XEmacPss *e)
 {
 	int tmp;
 
@@ -245,7 +245,7 @@ int Xgmac_one_time_init(void)
 	return 0;
 }
 
-int Xgmac_init(struct eth_device *dev, bd_t * bis)
+int Xgmac_init(struct eth_device *dev, bd_t *bis)
 {
 	int tmp;
 	int link_speed;
@@ -627,7 +627,7 @@ int zynq_gem_initialize(bd_t *bis)
  *
  * return's 0 if OK, -1 on error
  */
-int Xgmac_process_rx(XEmacPss * EmacPssInstancePtr)
+int Xgmac_process_rx(XEmacPss *EmacPssInstancePtr)
 {
 	uchar *buffer = data_buffer;
 	u32 rx_status, hwbuf;
@@ -671,7 +671,7 @@ int Xgmac_process_rx(XEmacPss * EmacPssInstancePtr)
 	return (0);
 }
 
-int Xgmac_init_rxq(XEmacPss * EmacPssInstancePtr, void *bd_start, int num_elem)
+int Xgmac_init_rxq(XEmacPss *EmacPssInstancePtr, void *bd_start, int num_elem)
 {
 	XEmacPss_BdRing *r;
 	int loop = 0;
@@ -699,7 +699,7 @@ int Xgmac_init_rxq(XEmacPss * EmacPssInstancePtr, void *bd_start, int num_elem)
 	return 0;
 }
 
-int Xgmac_make_rxbuff_mem(XEmacPss * EmacPssInstancePtr, void *rx_buf_start,
+int Xgmac_make_rxbuff_mem(XEmacPss *EmacPssInstancePtr, void *rx_buf_start,
 			  u32 rx_buffsize)
 {
 	XEmacPss_BdRing *r;
@@ -742,7 +742,7 @@ int Xgmac_make_rxbuff_mem(XEmacPss * EmacPssInstancePtr, void *rx_buf_start,
 	return assigned_bufs;
 }
 
-int Xgmac_next_rx_buf(XEmacPss * EmacPssInstancePtr)
+int Xgmac_next_rx_buf(XEmacPss *EmacPssInstancePtr)
 {
 	XEmacPss_BdRing *r;
 	u32 prev_stat = 0;
