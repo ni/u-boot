@@ -103,8 +103,8 @@ int XEmacPss_CfgInitialize(XEmacPss *InstancePtr, XEmacPss_Config * CfgPtr,
 	XASSERT_NONVOID(InstancePtr != NULL);
 	XASSERT_NONVOID(CfgPtr != NULL);
 
-	/* Set device base address and ID */
-	InstancePtr->Config.DeviceId = CfgPtr->DeviceId;
+	/* Set device configuration */
+	InstancePtr->Config = *CfgPtr;
 	InstancePtr->Config.BaseAddress = EffectiveAddress;
 
 	/* Set callbacks to an initial stub routine */

@@ -456,8 +456,8 @@ typedef void (*XEmacPss_ErrHandler) (void *CallBackRef, u8 Direction,
  * This typedef contains configuration information for a device.
  */
 typedef struct {
-	u16 DeviceId;	/**< Unique ID  of device */
 	u32 BaseAddress;/**< Physical base address of IPIF registers */
+	u8  PhyAddress;	/**< PHY address */
 } XEmacPss_Config;
 
 
@@ -471,6 +471,7 @@ typedef struct XEmacPss {
 	u32 IsStarted;		/* Device is currently started */
 	u32 IsReady;		/* Device is initialized and ready */
 	u32 Options;		/* Current options word */
+	u8 Initialized;		/* Initialized or not */
 
 	XEmacPss_BdRing TxBdRing;	/* Transmit BD ring */
 	XEmacPss_BdRing RxBdRing;	/* Receive BD ring */

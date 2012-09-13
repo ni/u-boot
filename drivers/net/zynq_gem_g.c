@@ -82,13 +82,15 @@
  * The configuration table for emacps device
  */
 
-XEmacPss_Config XEmacPss_ConfigTable[XPAR_XEMACPSS_NUM_INSTANCES] = {
+XEmacPss_Config XEmacPss_ConfigTable[CONFIG_ZYNQ_GEM_COUNT] = {
 	{
-	 XPAR_XEMACPSS_0_DEVICE_ID,  /* Device ID */
-	 XPAR_XEMACPSS_0_BASEADDR    /* Device base address */
+	 CONFIG_ZYNQ_GEM0_BASE_ADDR,	/* Device base address */
+	 CONFIG_ZYNQ_GEM0_PHY_ADDR,	/* PHY address */
 	},
+#if CONFIG_ZYNQ_GEM_COUNT > 1
 	{
-	 XPAR_XEMACPSS_1_DEVICE_ID,  /* Device ID */
-	 XPAR_XEMACPSS_1_BASEADDR    /* Device base address */
+	 CONFIG_ZYNQ_GEM1_BASE_ADDR,	/* Device base address */
+	 CONFIG_ZYNQ_GEM1_PHY_ADDR,	/* PHY address */
 	}
+#endif
 };

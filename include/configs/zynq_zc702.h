@@ -47,10 +47,11 @@
 /* HW to use */
 #define CONFIG_ZYNQ_UART1
 #define CONFIG_TTC0
-#define CONFIG_GEM0
-#define CONFIG_ZYNQ_GEM
 #define CONFIG_NET_MULTI
-#define CONFIG_XGMAC_PHY_ADDR 0x7
+#define CONFIG_ZYNQ_GEM
+#define CONFIG_ZYNQ_GEM_COUNT          1
+#define CONFIG_ZYNQ_GEM0_BASE_ADDR     XPSS_GEM0_BASEADDR
+#define CONFIG_ZYNQ_GEM0_PHY_ADDR      0x7
 
 /*
  * Physical Memory map

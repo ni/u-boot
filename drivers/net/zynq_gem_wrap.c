@@ -22,7 +22,6 @@ static void Xgmac_set_eth_advertise(XEmacPss *EmacPssInstancePtr,
 
 /*************************** Constant Definitions ***************************/
 
-#define EMACPSS_DEVICE_ID   0
 #define RXBD_CNT       8	/* Number of RxBDs to use */
 #define TXBD_CNT       8	/* Number of TxBDs to use */
 
@@ -48,11 +47,9 @@ static char RxBuffers[RXBD_CNT * XEMACPSS_RX_BUF_SIZE];
 static uchar data_buffer[XEMACPSS_RX_BUF_SIZE];
 #endif
 
-static struct {
-	u8 initialized;
-} ethstate = {0};
+#define XEMACPSS_DRIVER_NAME "zynq_gem"
 
-XEmacPss EmacPssInstance;
+XEmacPss EmacPssInstances[CONFIG_ZYNQ_GEM_COUNT];
 
 /*****************************************************************************/
 /*
@@ -69,18 +66,30 @@ static int Xgmac_phy_mgmt_idle(XEmacPss * EmacPssInstancePtr)
 static int Xgmac_mii_read(const char *devname, unsigned char addr,
 		unsigned char reg, unsigned short *value)
 {
-	phy_spinwait(&EmacPssInstance);
-	XEmacPss_PhyRead(&EmacPssInstance, addr, reg, value);
-	phy_spinwait(&EmacPssInstance);
+	struct eth_device *dev;
+	XEmacPss *EmacPssInstancePtr;
+
+	dev = eth_get_dev_by_name(devname);
+	EmacPssInstancePtr = (XEmacPss *)dev->priv;
+
+	phy_spinwait(EmacPssInstancePtr);
+	XEmacPss_PhyRead(EmacPssInstancePtr, addr, reg, value);
+	phy_spinwait(EmacPssInstancePtr);
 	return 0;
 }
 
 static int Xgmac_mii_write(const char *devname, unsigned char addr,
 		unsigned char reg, unsigned short value)
 {
-	phy_spinwait(&EmacPssInstance);
-	XEmacPss_PhyWrite(&EmacPssInstance, addr, reg, value);
-	phy_spinwait(&EmacPssInstance);
+	struct eth_device *dev;
+	XEmacPss *EmacPssInstancePtr;
+
+	dev = eth_get_dev_by_name(devname);
+	EmacPssInstancePtr = (XEmacPss *)dev->priv;
+
+	phy_spinwait(EmacPssInstancePtr);
+	XEmacPss_PhyWrite(EmacPssInstancePtr, addr, reg, value);
+	phy_spinwait(EmacPssInstancePtr);
 	return 0;
 }
 #endif
@@ -90,7 +99,7 @@ static u32 phy_rd(XEmacPss * e, u32 a)
 	u16 PhyData;
 
 	phy_spinwait(e);
-	XEmacPss_PhyRead(e, CONFIG_XGMAC_PHY_ADDR, a, &PhyData);
+	XEmacPss_PhyRead(e, e->Config.PhyAddress, a, &PhyData);
 	phy_spinwait(e);
 	return PhyData;
 }
@@ -98,7 +107,7 @@ static u32 phy_rd(XEmacPss * e, u32 a)
 static void phy_wr(XEmacPss * e, u32 a, u32 v)
 {
 	phy_spinwait(e);
-	XEmacPss_PhyWrite(e, CONFIG_XGMAC_PHY_ADDR, a, v);
+	XEmacPss_PhyWrite(e, e->Config.PhyAddress, a, v);
 	phy_spinwait(e);
 }
 
@@ -132,90 +141,94 @@ static void Out32(u32 OutAddress, u32 Value)
 
 int Xgmac_one_time_init(void)
 {
+	int i;
 	int tmp;
 	int Status;
 	XEmacPss_Config *Config;
-	XEmacPss *EmacPssInstancePtr = &EmacPssInstance;
+	XEmacPss *EmacPssInstancePtr;
 	XEmacPss_Bd BdTemplate;
 
-	Config = XEmacPss_LookupConfig(EMACPSS_DEVICE_ID);
+	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; ++i) {
+		Config = XEmacPss_LookupConfig(i);
+		EmacPssInstancePtr = &EmacPssInstances[i];
 
-	Status =
-	    XEmacPss_CfgInitialize(EmacPssInstancePtr, Config,
-				   Config->BaseAddress);
-	if (Status != 0) {
-		puts("Error in initialize");
-		return 0;
+		Status =
+		    XEmacPss_CfgInitialize(EmacPssInstancePtr, Config,
+					   Config->BaseAddress);
+		if (Status != 0) {
+			puts("Error in initialize");
+			return -1;
+		}
+
+		/*
+		 * Setup RxBD space.
+		 */
+
+		if (Xgmac_init_rxq(EmacPssInstancePtr, &RxBdSpace, RXBD_CNT)) {
+			puts("Xgmac_init_rxq failed!\n");
+			return -1;
+		}
+
+		/*
+		 * Create the RxBD ring
+		 */
+		tmp =
+		    Xgmac_make_rxbuff_mem(EmacPssInstancePtr, &RxBuffers,
+					  sizeof(RxBuffers));
+		if (tmp == 0 || tmp == -1) {
+			printf("Xgmac_make_rxbuff_mem failed! (%i)\n", tmp);
+			return -1;
+		}
+
+		/*
+		 * Setup TxBD space.
+		 */
+
+		XEmacPss_BdClear(&BdTemplate);
+		XEmacPss_BdSetStatus(&BdTemplate, XEMACPSS_TXBUF_USED_MASK);
+
+		/*
+		 * Create the TxBD ring
+		 */
+		Status = XEmacPss_BdRingCreate(
+			&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
+			(u32)&TxBdSpace, (u32)&TxBdSpace,
+			XEMACPSS_BD_ALIGNMENT, TXBD_CNT);
+		if (Status != 0) {
+			puts("Error setting up TxBD space, BdRingCreate");
+			return -1;
+		}
+
+		Status = XEmacPss_BdRingClone(
+			&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
+			&BdTemplate, XEMACPSS_SEND);
+		if (Status != 0) {
+			puts("Error setting up TxBD space, BdRingClone");
+			return -1;
+		}
+
+		XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
+				  XEMACPSS_TXQBASE_OFFSET,
+				  EmacPssInstancePtr->TxBdRing.BaseBdAddr);
+
+		/************************* MAC Setup *************************/
+		tmp = (3 << 18); /* MDC clock division (48 for up to 120MHz) */
+		tmp |= (1 << 17); /* set for FCS removal */
+		tmp |= (1 << 10); /* enable gigabit */
+		tmp |= (1 << 4); /* copy all frames */
+		tmp |= (1 << 1); /* enable full duplex */
+
+		XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
+				  XEMACPSS_NWCFG_OFFSET, tmp);
+
+		/* MDIO enable */
+		tmp =
+		    XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
+				     XEMACPSS_NWCTRL_OFFSET);
+		tmp |= XEMACPSS_NWCTRL_MDEN_MASK;
+		XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
+				  XEMACPSS_NWCTRL_OFFSET, tmp);
 	}
-
-	/*
-	 * Setup RxBD space.
-	 */
-
-	if (Xgmac_init_rxq(EmacPssInstancePtr, &RxBdSpace, RXBD_CNT)) {
-		puts("Xgmac_init_rxq failed!\n");
-		return -1;
-	}
-
-	/*
-	 * Create the RxBD ring
-	 */
-	tmp =
-	    Xgmac_make_rxbuff_mem(EmacPssInstancePtr, &RxBuffers,
-				  sizeof(RxBuffers));
-	if (tmp == 0 || tmp == -1) {
-		printf("Xgmac_make_rxbuff_mem failed! (%i)\n", tmp);
-		return -1;
-	}
-
-	/*
-	 * Setup TxBD space.
-	 */
-
-	XEmacPss_BdClear(&BdTemplate);
-	XEmacPss_BdSetStatus(&BdTemplate, XEMACPSS_TXBUF_USED_MASK);
-
-	/*
-	 * Create the TxBD ring
-	 */
-	Status =
-	    XEmacPss_BdRingCreate(&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
-				  (u32) & TxBdSpace, (u32) & TxBdSpace,
-				  XEMACPSS_BD_ALIGNMENT, TXBD_CNT);
-	if (Status != 0) {
-		puts("Error setting up TxBD space, BdRingCreate");
-		return -1;
-	}
-
-	Status = XEmacPss_BdRingClone(&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
-				      &BdTemplate, XEMACPSS_SEND);
-	if (Status != 0) {
-		puts("Error setting up TxBD space, BdRingClone");
-		return -1;
-	}
-
-	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
-			  XEMACPSS_TXQBASE_OFFSET,
-			  EmacPssInstancePtr->TxBdRing.BaseBdAddr);
-
-	/*************************** MAC Setup ***************************/
-	tmp = (3 << 18);	/* MDC clock division (48 for up to 120MHz) */
-	tmp |= (1 << 17);	/* set for FCS removal */
-	tmp |= (1 << 10);	/* enable gigabit */
-	tmp |= (1 << 4);	/* copy all frames */
-	tmp |= (1 << 1);	/* enable full duplex */
-
-	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
-			  XEMACPSS_NWCFG_OFFSET, tmp);
-
-	/* MDIO enable */
-	tmp =
-	    XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
-			     XEMACPSS_NWCTRL_OFFSET);
-	tmp |= XEMACPSS_NWCTRL_MDEN_MASK;
-	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
-			  XEMACPSS_NWCTRL_OFFSET, tmp);
-
 	return 0;
 }
 
@@ -223,15 +236,17 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 {
 	int tmp;
 	int link_speed;
-	XEmacPss *EmacPssInstancePtr = &EmacPssInstance;
+	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
+	u32 slcr_gem_rx_clk;
+	u32 slcr_gem_tx_clk;
 
-	if (ethstate.initialized)
+	if (EmacPssInstancePtr->Initialized)
 		return 1;
 
 	/*
 	 * Setup the ethernet.
 	 */
-	printf("Trying to set up GEM link...\n");
+	printf("Trying to set up link on %s\n", dev->name);
 
 	/* Configure DMA */
 	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
@@ -354,28 +369,46 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
 			  XEMACPSS_NWCFG_OFFSET, tmp);
 
+	if (EmacPssInstancePtr->Config.BaseAddress == XPSS_GEM0_BASEADDR) {
+		slcr_gem_rx_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_RCLK_CTRL;
+		slcr_gem_tx_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_CLK_CTRL;
+	} else {
+		slcr_gem_rx_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_RCLK_CTRL;
+		slcr_gem_tx_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_CLK_CTRL;
+	}
+
 	/************************* GEM0_CLK Setup *************************/
 	/* SLCR unlock */
 	Out32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK, XPSS_SLCR_UNLOCK_KEY);
 
-	/* Configure GEM0_RCLK_CTRL */
-	Out32(0xF8000138, ((0 << 4) | (1 << 0)));
+	Out32(slcr_gem_rx_clk, XPSS_SLCR_GEMn_RCLK_CTRL_MIO);
 
-	/* Set divisors for appropriate frequency in GEM0_CLK_CTRL */
+	/* Set divisors for appropriate Tx frequency */
 #ifdef CONFIG_EP107
 	if (link_speed == 1000)		/* 125MHz */
-		Out32(0xF8000140, ((1 << 20) | (48 << 8) | (1 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((1 << 20) | (48 << 8) | (1 << 4) | (1 << 0)));
 	else if (link_speed == 100)	/* 25 MHz */
-		Out32(0xF8000140, ((1 << 20) | (48 << 8) | (0 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((1 << 20) | (48 << 8) | (0 << 4) | (1 << 0)));
 	else				/* 2.5 MHz */
-		Out32(0xF8000140, ((1 << 20) | (48 << 8) | (3 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((1 << 20) | (48 << 8) | (3 << 4) | (1 << 0)));
 #else
+	/* Assumes IO PLL clock is 1000 MHz */
 	if (link_speed == 1000)		/* 125MHz */
-		Out32(0xF8000140, ((1 << 20) | (8 << 8) | (0 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((1 << 20) | (8 << 8) | (0 << 4) | (1 << 0)));
 	else if (link_speed == 100)	/* 25 MHz */
-		Out32(0xF8000140, ((1 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((1 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
 	else				/* 2.5 MHz */
-		Out32(0xF8000140, ((10 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
+		Out32(slcr_gem_tx_clk,
+			((10 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
 #endif
 
 	/* SLCR lock */
@@ -383,7 +416,7 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 
 	printf("Link is now at %dMbps!\n", link_speed);
 
-	ethstate.initialized = 1;
+	EmacPssInstancePtr->Initialized = 1;
 	return 0;
 }
 
@@ -396,15 +429,15 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 {
 	volatile int Status;
 	XEmacPss_Bd *BdPtr;
-	XEmacPss *EmacPssInstancePtr = &EmacPssInstance;
+	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
 
-	if (!ethstate.initialized) {
+	if (!EmacPssInstancePtr->Initialized) {
 		puts("Error GMAC not initialized");
 		return 0;
 	}
 
 	Status =
-	    XEmacPss_BdRingAlloc(&(XEmacPss_GetTxRing(&EmacPssInstance)), 1,
+	    XEmacPss_BdRingAlloc(&(XEmacPss_GetTxRing(EmacPssInstancePtr)), 1,
 				 &BdPtr);
 	if (Status != 0) {
 		puts("Error allocating TxBD");
@@ -423,7 +456,7 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 	 * Enqueue to HW
 	 */
 	Status =
-	    XEmacPss_BdRingToHw(&(XEmacPss_GetTxRing(&EmacPssInstance)), 1,
+	    XEmacPss_BdRingToHw(&(XEmacPss_GetTxRing(EmacPssInstancePtr)), 1,
 				BdPtr);
 	if (Status != 0) {
 		puts("Error committing TxBD to HW");
@@ -434,8 +467,7 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 	XEmacPss_Transmit(EmacPssInstancePtr);
 
 	/* Read the status register to know if the packet has been Transmitted. */
-	Status =
-	    XEmacPss_ReadReg(EmacPssInstance.Config.BaseAddress,
+	Status = XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
 			     XEMACPSS_TXSR_OFFSET);
 	if (Status &
 	    (XEMACPSS_TXSR_HRESPNOK_MASK | XEMACPSS_TXSR_URUN_MASK |
@@ -451,8 +483,9 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 		/*
 		 * Now that the frame has been sent, post process our TxBDs.
 		 */
-		if (XEmacPss_BdRingFromHwTx
-		    (&(XEmacPss_GetTxRing(&EmacPssInstance)), 1, &BdPtr) == 0) {
+		if (XEmacPss_BdRingFromHwTx(
+		    &(XEmacPss_GetTxRing(EmacPssInstancePtr)),
+		    1, &BdPtr) == 0) {
 			puts("TxBDs were not ready for post processing");
 			return 0;
 		}
@@ -460,16 +493,15 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 		/*
 		 * Free the TxBD.
 		 */
-		Status =
-		    XEmacPss_BdRingFree(&(XEmacPss_GetTxRing(&EmacPssInstance)),
-					1, BdPtr);
+		Status = XEmacPss_BdRingFree(
+			&(XEmacPss_GetTxRing(EmacPssInstancePtr)), 1, BdPtr);
 		if (Status != 0) {
 			puts("Error freeing up TxBDs");
 			return 0;
 		}
 	}
 	/* Clear Tx status register before leaving . */
-	XEmacPss_WriteReg(EmacPssInstance.Config.BaseAddress,
+	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
 			  XEMACPSS_TXSR_OFFSET, Status);
 	return 1;
 
@@ -478,7 +510,7 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 int Xgmac_rx(struct eth_device *dev)
 {
 	u32 status, retval;
-	XEmacPss *EmacPssInstancePtr = &EmacPssInstance;
+	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
 
 	status =
 	    XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
@@ -510,31 +542,36 @@ static int Xgmac_write_hwaddr(struct eth_device *dev)
 
 int zynq_gem_initialize(bd_t *bis)
 {
+	int i;
 	struct eth_device *dev;
-	dev = malloc(sizeof(*dev));
-	if (dev == NULL)
-		return 1;
-
-	memset(dev, 0, sizeof(*dev));
-	sprintf(dev->name, "zynq_gem");
 
 	if (Xgmac_one_time_init() < 0) {
 		printf("zynq_gem init failed!");
 		return -1;
 	}
-	dev->iobase = EmacPssInstance.Config.BaseAddress;
-	dev->priv = &EmacPssInstance;
-	dev->init = Xgmac_init;
-	dev->halt = Xgmac_halt;
-	dev->send = Xgmac_send;
-	dev->recv = Xgmac_rx;
-	dev->write_hwaddr = Xgmac_write_hwaddr;
 
-	eth_register(dev);
+	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; ++i) {
+		dev = malloc(sizeof(*dev));
+		if (dev == NULL)
+			return 1;
+
+		memset(dev, 0, sizeof(*dev));
+		sprintf(dev->name, XEMACPSS_DRIVER_NAME "%d", i);
+
+		dev->iobase = EmacPssInstances[i].Config.BaseAddress;
+		dev->priv = &EmacPssInstances[i];
+		dev->init = Xgmac_init;
+		dev->halt = Xgmac_halt;
+		dev->send = Xgmac_send;
+		dev->recv = Xgmac_rx;
+		dev->write_hwaddr = Xgmac_write_hwaddr;
+
+		eth_register(dev);
 
 #if defined(CONFIG_CMD_MII) && !defined(CONFIG_BITBANGMII)
-	miiphy_register(dev->name, Xgmac_mii_read, Xgmac_mii_write);
+		miiphy_register(dev->name, Xgmac_mii_read, Xgmac_mii_write);
 #endif
+	}
 	return 0;
 }
 

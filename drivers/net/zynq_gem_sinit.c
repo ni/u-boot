@@ -86,14 +86,9 @@ XEmacPss_Config *XEmacPss_LookupConfig(u16 DeviceId)
 {
 	extern XEmacPss_Config XEmacPss_ConfigTable[];
 	XEmacPss_Config *CfgPtr = NULL;
-	int i;
 
-	for (i = 0; i < XPAR_XEMACPSS_NUM_INSTANCES; i++) {
-		if (XEmacPss_ConfigTable[i].DeviceId == DeviceId) {
-			CfgPtr = &XEmacPss_ConfigTable[i];
-			break;
-		}
-	}
+	if (CONFIG_ZYNQ_GEM_COUNT > DeviceId)
+		CfgPtr = &XEmacPss_ConfigTable[DeviceId];
 
 	return (CfgPtr);
 }
