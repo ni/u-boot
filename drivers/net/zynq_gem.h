@@ -457,6 +457,8 @@ typedef void (*XEmacPss_ErrHandler) (void *CallBackRef, u8 Direction,
  */
 typedef struct {
 	u32 BaseAddress;/**< Physical base address of IPIF registers */
+	int CreateMii;	/**< Create an MII bus on this GEM */
+	int MiiGem;	/**< GEM interface for PHY communication */
 	u8  PhyAddress;	/**< PHY address */
 } XEmacPss_Config;
 

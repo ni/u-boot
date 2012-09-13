@@ -82,14 +82,31 @@
  * The configuration table for emacps device
  */
 
+#ifndef CONFIG_ZYNQ_GEM0_CREATE_MII
+#define CONFIG_ZYNQ_GEM0_CREATE_MII 1
+#endif
+#ifndef CONFIG_ZYNQ_GEM0_MII_GEM
+#define CONFIG_ZYNQ_GEM0_MII_GEM 0
+#endif
+#ifndef CONFIG_ZYNQ_GEM1_CREATE_MII
+#define CONFIG_ZYNQ_GEM1_CREATE_MII 1
+#endif
+#ifndef CONFIG_ZYNQ_GEM1_MII_GEM
+#define CONFIG_ZYNQ_GEM1_MII_GEM 1
+#endif
+
 XEmacPss_Config XEmacPss_ConfigTable[CONFIG_ZYNQ_GEM_COUNT] = {
 	{
 	 CONFIG_ZYNQ_GEM0_BASE_ADDR,	/* Device base address */
+	 CONFIG_ZYNQ_GEM0_CREATE_MII,	/* Create MII bus */
+	 CONFIG_ZYNQ_GEM0_MII_GEM,	/* MII GEM */
 	 CONFIG_ZYNQ_GEM0_PHY_ADDR,	/* PHY address */
 	},
 #if CONFIG_ZYNQ_GEM_COUNT > 1
 	{
 	 CONFIG_ZYNQ_GEM1_BASE_ADDR,	/* Device base address */
+	 CONFIG_ZYNQ_GEM1_CREATE_MII,	/* Create MII bus */
+	 CONFIG_ZYNQ_GEM1_MII_GEM,	/* MII GEM */
 	 CONFIG_ZYNQ_GEM1_PHY_ADDR,	/* PHY address */
 	}
 #endif

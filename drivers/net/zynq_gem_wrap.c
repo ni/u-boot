@@ -105,17 +105,19 @@ static u32 phy_rd(XEmacPss * e, u32 a)
 {
 	u16 PhyData;
 
-	phy_spinwait(e);
-	XEmacPss_PhyRead(e, e->Config.PhyAddress, a, &PhyData);
-	phy_spinwait(e);
+	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
+	XEmacPss_PhyRead(&EmacPssInstances[e->Config.MiiGem],
+		e->Config.PhyAddress, a, &PhyData);
+	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
 	return PhyData;
 }
 
 static void phy_wr(XEmacPss * e, u32 a, u32 v)
 {
-	phy_spinwait(e);
-	XEmacPss_PhyWrite(e, e->Config.PhyAddress, a, v);
-	phy_spinwait(e);
+	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
+	XEmacPss_PhyWrite(&EmacPssInstances[e->Config.MiiGem],
+		e->Config.PhyAddress, a, v);
+	phy_spinwait(&EmacPssInstances[e->Config.MiiGem]);
 }
 
 static void phy_rst(XEmacPss * e)
@@ -596,7 +598,9 @@ int zynq_gem_initialize(bd_t *bis)
 		eth_register(dev);
 
 #if defined(CONFIG_CMD_MII) && !defined(CONFIG_BITBANGMII)
-		miiphy_register(dev->name, Xgmac_mii_read, Xgmac_mii_write);
+		if (EmacPssInstances[i].Config.CreateMii)
+			miiphy_register(dev->name,
+				Xgmac_mii_read, Xgmac_mii_write);
 #endif
 	}
 	return 0;
