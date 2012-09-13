@@ -8,6 +8,13 @@
 
 #include "zynq_gem.h"
 
+#if defined(CONFIG_ZYNQ_GEM0_EMIO) && !defined(CONFIG_ZYNQ_GEM0_FPGA_CLK_REG)
+#error CONFIG_ZYNQ_GEM0_FPGA_CLK_REG must be defined in EMIO mode
+#endif
+#if defined(CONFIG_ZYNQ_GEM1_EMIO) && !defined(CONFIG_ZYNQ_GEM1_FPGA_CLK_REG)
+#error CONFIG_ZYNQ_GEM1_FPGA_CLK_REG must be defined in EMIO mode
+#endif
+
 /************************ Forward function declaration **********************/
 
 static int Xgmac_process_rx(XEmacPss *EmacPssInstancePtr);
@@ -239,6 +246,7 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
 	u32 slcr_gem_rx_clk;
 	u32 slcr_gem_tx_clk;
+	u32 slcr_gem_emio_clk = 0;
 
 	if (EmacPssInstancePtr->Initialized)
 		return 1;
@@ -372,20 +380,39 @@ int Xgmac_init(struct eth_device *dev, bd_t * bis)
 	if (EmacPssInstancePtr->Config.BaseAddress == XPSS_GEM0_BASEADDR) {
 		slcr_gem_rx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_RCLK_CTRL;
+#ifdef CONFIG_ZYNQ_GEM0_EMIO
+		slcr_gem_tx_clk =
+			XPSS_SYS_CTRL_BASEADDR + CONFIG_ZYNQ_GEM0_FPGA_CLK_REG;
+		slcr_gem_emio_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_CLK_CTRL;
+#else
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_CLK_CTRL;
+#endif
 	} else {
 		slcr_gem_rx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_RCLK_CTRL;
+#ifdef CONFIG_ZYNQ_GEM1_EMIO
+		slcr_gem_tx_clk =
+			XPSS_SYS_CTRL_BASEADDR + CONFIG_ZYNQ_GEM1_FPGA_CLK_REG;
+		slcr_gem_emio_clk =
+			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_CLK_CTRL;
+#else
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_CLK_CTRL;
+#endif
 	}
 
 	/************************* GEM0_CLK Setup *************************/
 	/* SLCR unlock */
 	Out32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK, XPSS_SLCR_UNLOCK_KEY);
 
-	Out32(slcr_gem_rx_clk, XPSS_SLCR_GEMn_RCLK_CTRL_MIO);
+	/* Configure Rx and Tx clock control */
+	if (slcr_gem_emio_clk != 0) {
+		Out32(slcr_gem_rx_clk, XPSS_SLCR_GEMn_RCLK_CTRL_EMIO);
+		Out32(slcr_gem_emio_clk, XPSS_SLCR_GEMn_CLK_CTRL_EMIO);
+	} else
+		Out32(slcr_gem_rx_clk, XPSS_SLCR_GEMn_RCLK_CTRL_MIO);
 
 	/* Set divisors for appropriate Tx frequency */
 #ifdef CONFIG_EP107
