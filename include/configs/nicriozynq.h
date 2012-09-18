@@ -119,6 +119,10 @@
 #define CONFIG_ZYNQ_I2C
 #define CONFIG_ZYNQ_I2C_CTLR_0
 
+/* Access USB PHY registers */
+#define CONFIG_USB_ULPI_VIEWPORT
+#define CONFIG_USB_BASE_ADDR XPSS_USB0_BASEADDR
+
 /*
  * Physical Memory map
  */
