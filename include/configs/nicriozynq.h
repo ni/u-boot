@@ -97,6 +97,9 @@
 #define CONFIG_HARD_I2C
 #define CONFIG_ZYNQ_I2C
 
+/* Access USB PHY registers */
+#define CONFIG_USB_ULPI_VIEWPORT
+
 /*
  * Physical Memory map
  */
