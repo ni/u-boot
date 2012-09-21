@@ -70,7 +70,7 @@ int board_late_init (void)
 #ifdef CONFIG_CMD_MMC
 int board_mmc_init(bd_t *bd)
 {
-	return zynq_sdhci_init(XPSS_SDIO0_BASEADDR, 125000000, 0, SDHCI_QUIRK_NO_CD);
+	return zynq_sdhci_init(XPSS_SDIO0_BASEADDR, 100000000, 0, SDHCI_QUIRK_NO_CD);
 }
 #endif
 
