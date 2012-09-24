@@ -13,6 +13,8 @@
  */
 #define CONFIG_EP107 /* Board */
 
+#define CONFIG_CPU_FREQ_HZ	12500000
+
 #include <configs/zynq_common.h>
 
 /* Default environment */
