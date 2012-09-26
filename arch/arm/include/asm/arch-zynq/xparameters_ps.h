@@ -355,6 +355,10 @@ extern "C" {
 #define XPSS_SCU_FILTER_END_OFFSET 		0x044
 #define XPSS_SCU_NON_SECURE_ACCESS_OFFSET 0x054
 
+/* USB Register Offsets */
+#define XPSS_USB_CAPLENGTH			0x0100
+#define XPSS_USB_ULPI_VIEWPORT			0x0170
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
