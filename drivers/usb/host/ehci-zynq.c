@@ -26,8 +26,8 @@
 #include <common.h>
 #include <usb/ulpi.h>
 
-#include "../drivers/usb/host/ehci.h"
-#include "../drivers/usb/host/ehci-core.h"
+#include "ehci.h"
+#include "ehci-core.h"
 
 /*
  * Create the appropriate control structures to manage
