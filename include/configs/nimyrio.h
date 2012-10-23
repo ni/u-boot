@@ -82,7 +82,7 @@
 #define CONFIG_CMD_FPGA
 
 /* HW to use */
-#define CONFIG_ZYNQ_UART1
+#define CONFIG_ZYNQ_UART0
 
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_LINK_LOCAL
