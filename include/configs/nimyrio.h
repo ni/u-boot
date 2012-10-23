@@ -87,6 +87,18 @@
 #define CONFIG_HARD_I2C
 #define CONFIG_ZYNQ_I2C
 
+/* USB Host support */
+#define CONFIG_USB_STORAGE
+#define CONFIG_USB_HOST_ETHER
+#define CONFIG_USB_ETHER_ASIX
+#define CONFIG_USB_ETHER_SMSC95XX
+#define CONFIG_USB_ULPI
+#define CONFIG_USB_ULPI_VIEWPORT
+#define CONFIG_USB_EHCI
+#define CONFIG_USB_EHCI_ZYNQ
+#define CONFIG_USB_EHCI_TXFIFO_THRESH 8
+#define CONFIG_EHCI_IS_TDI
+
 /*
  * Physical Memory map
  */
