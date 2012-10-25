@@ -364,6 +364,9 @@
 		"setenv host_name; " \
 		"setenv primarymac; " \
 		"setenv language; " \
+		"setenv sshd.enabled; " \
+		"setenv ubifs_writeback_centisecs; " \
+		"setenv ubifs_expire_centisecs; " \
 		"setenv cpld.safemode; " \
 		"setenv cpld.ipreset; " \
 		"setenv cpld.consoleout; " \
