@@ -98,6 +98,10 @@ int board_eth_init(bd_t *bis)
 		/* Disable the unused 125 MHz clock from the phy */
 		miiphy_write(name, phy_addr, 16, 0x444E);
 
+		/* Remove the delay on the RXClk for the secondary PHY */
+		if (i == 1)
+			miiphy_write(name, phy_addr, 21, 0x1056);
+
 		/* Override the phys' drive strength */
 		miiphy_write(name, phy_addr, 24, 0xB949);
 
@@ -109,6 +113,10 @@ int board_eth_init(bd_t *bis)
 		regval |= (7 << 12); /* max number of gigabit attempts */
 		regval |= (1 << 11); /* enable downshift */
 		miiphy_write(name, phy_addr, 16, regval);
+
+		/* Soft-reset the secondary phy so RXClk change takes effect */
+		if (i == 1)
+			miiphy_write(name, phy_addr, 0, 0x9140);
 	}
 
 	return retval;
