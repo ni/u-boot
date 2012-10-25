@@ -244,7 +244,7 @@
 				"${comment:-<not-set>}\\\"; " \
 		"done;\0" \
 	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
-		"if test -n \\\"$isnofpgaapp\\\" -o $bootmode = safemode; then " \
+		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode; then " \
 			"loaddefaultbit=1; " \
 		"else " \
 			"if ubifsload $verifyaddr user.bit.crc && " \
@@ -252,6 +252,7 @@
 				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
 			"then " \
 				"if fpga load 0 $loadaddr $filesize; then " \
+					"fpgasuccess=1; " \
 				"else " \
 					"echo $fpga_err..(user) ; " \
 					"loaddefaultbit=1; " \
@@ -260,7 +261,7 @@
 				"loaddefaultbit=1; " \
 			"fi; " \
 		"fi; " \
-		"if test -n \\\"$loaddefaultbit\\\"; then " \
+		"if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
 			"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
 				"ubifsload $loadaddr .defbit/default.bit.bin && " \
 				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
@@ -268,14 +269,12 @@
 				"configfpga=1; " \
 			"fi; " \
 		"fi; " \
-		"if test -n \\\"$configfpga\\\"; then " \
+		"if test -n \\\\\"$configfpga\\\\\"; then " \
 			"if fpga load 0 $loadaddr $filesize; then " \
-			"else " \
-				"echo $fpga_err; " \
-				"run recoverycmd; " \
-				"run recoverybootcmd;" \
+				"fpgasuccess=1; " \
 			"fi; " \
-		"else; " \
+		"fi; " \
+		"if test -z \\\\\"$fpgasuccess\\\\\"; then " \
 			"echo $fpga_err; " \
 			"run recoverycmd; " \
 			"run recoverybootcmd;" \
@@ -350,21 +349,23 @@
 		"setexpr.b cpld.resetbybutton *$loadaddr \\\\& 0x01;\0" \
 	"evaldip=" \
 		"if test ${cpld.safemode} -ne 0 -o " \
-			"\\\"${safemode.enabled}\\\" != false; " \
+			"\\\\\"${safemode.enabled}\\\\\" != false -o " \
+			"\\\\\"${bootmode}\\\\\" = safemode; " \
 		"then " \
 			"issafemode=1; " \
+			"bootmode=safemode; " \
 		"fi; " \
 		"if test ${cpld.ipreset} -ne 0 -o " \
-			"\\\"${ipreset.enabled}\\\" != false; " \
+			"\\\\\"${ipreset.enabled}\\\\\" != false; " \
 		"then " \
 			"isipreset=1; " \
 		"fi; " \
 		"if test ${cpld.consoleout} -ne 0 -o " \
-			"\\\"${consoleout.enabled}\\\" != false; " \
+			"\\\\\"${consoleout.enabled}\\\\\" != false; " \
 		"then " \
 			"isconsoleout=1; " \
 		"fi; " \
-		"if test \\\"${nofpgaapp.enabled}\\\" != false; then " \
+		"if test \\\\\"${nofpgaapp.enabled}\\\\\" != false; then " \
 			"isnofpgaapp=1; " \
 		"fi; " \
 		"if test ${cpld.softboot} -eq 0 -a " \
@@ -428,6 +429,7 @@
 	"ubi part boot-config; " \
 	"run readsoftdip; " \
 	"run readcplddip; " \
+	"run readbootmode; " \
 	"run evaldip; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
@@ -450,10 +452,6 @@
 		"else " \
 			"setenv consoleparam console= quiet; " \
 			"setenv bootdelay -2; " \
-		"fi; " \
-		"run readbootmode; " \
-		"if test -n \\\"$issafemode\\\"; then " \
-			"bootmode=safemode; " \
 		"fi; " \
 	"fi;"
 
