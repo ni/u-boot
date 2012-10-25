@@ -95,6 +95,9 @@ int board_eth_init(bd_t *bis)
 		/* Page 2 */
 		miiphy_write(name, phy_addr, 22, 2);
 
+		/* Disable the unused 125 MHz clock from the phy */
+		miiphy_write(name, phy_addr, 16, 0x444E);
+
 		/* Override the phys' drive strength */
 		miiphy_write(name, phy_addr, 24, 0xB949);
 
