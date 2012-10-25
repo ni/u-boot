@@ -186,7 +186,7 @@
 		"setenv bootdelay $savebootdelay;\0" \
 	"recoverycmd=echo Entering recovery mode!; " \
 		"run markhardbootcomplete; " \
-		"if test -n \\\"$forcedrecovery\\\"; " \
+		"if test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
 			"run ipresetcmd; " \
 		"fi;" \
@@ -256,25 +256,25 @@
 		"savesilent=$silent;setenv silent 1; " \
 		"saveenv; " \
 		"setenv silent $savesilent;\0" \
-	"ipconfigcmd=if test \\\"$dhcpenabled\\\" -ne 0 -a " \
-			"-z \\\"$forcedrecovery\\\";" \
+	"ipconfigcmd=if test \\\\\"$dhcpenabled\\\\\" -ne 0 -a " \
+			"-z \\\\\"$forcedrecovery\\\\\";" \
 		"then " \
 			"dhcpfail=0; " \
 			"dhcp || dhcpfail=1;" \
 		"else " \
 			"dhcpfail=-1;" \
 		"fi;" \
-		"if test \\\"$linklocalenabled\\\" -ne 0 -a " \
-			"\\\"$dhcpfail\\\" -ne 0 -o " \
-			"-n \\\"$forcedrecovery\\\";" \
+		"if test \\\\\"$linklocalenabled\\\\\" -ne 0 -a " \
+			"$dhcpfail -ne 0 -o " \
+			"-n \\\\\"$forcedrecovery\\\\\";" \
 		"then " \
 			"llfail=0;" \
 			"linklocal || llfail=1;" \
 		"else " \
 			"llfail=-1;" \
 		"fi;" \
-		"if test \\\"$llfail\\\" -ne 0 -a " \
-			"\\\"$dhcpfail\\\" -ne 0; " \
+		"if test $llfail -ne 0 -a " \
+			"$dhcpfail -ne 0; " \
 		"then " \
 			"setenv ipaddr $sipaddr; " \
 			"setenv netmask $snetmask; " \
@@ -390,18 +390,18 @@
 	"run readsoftdip; " \
 	"run readcplddip; " \
 	"run evaldip; " \
-	"if test -n \\\"$isforcedrecoverymode\\\"; then " \
-		"if test -n \\\"$isconsoleout\\\"; then " \
+	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"setenv silent; " \
 		"fi; " \
 		"forcedrecovery=1; " \
 		"run recoverycmd; " \
 	"else " \
 		"run fpgaloadcmd; " \
-		"if test -n \\\"$isipreset\\\"; then " \
+		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \
 		"fi; " \
-		"if test -n \\\"$isconsoleout\\\"; then " \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"setenv silent; " \
 			"run consolecmd; " \
 			"setenv consoleparam console=$console earlyprintk; " \
