@@ -98,6 +98,20 @@ int dram_init(void)
 	return 0;
 }
 
+/*
+ * OK, and resets too.
+ */
+void reset_misc(void)
+{
+	u8 tmp;
+
+	/* Reset the target using the CPLD */
+	tmp = 0x80;
+	i2c_write(0x40, 0x02, 1, &tmp, 1);
+
+	while(1) {;}
+}
+
 #if defined(CONFIG_OF_BOARD_SETUP)
 int ft_board_setup(void *blob, bd_t *bd)
 {
