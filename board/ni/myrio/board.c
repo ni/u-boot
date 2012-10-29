@@ -110,10 +110,11 @@ int dram_init(void)
  */
 void reset_cpu(ulong addr)
 {
-	/* unlock SLCR */
-	out_le32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK, XPSS_SLCR_UNLOCK_KEY);
-	/* Tickle soft reset bit */
-	out_le32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_PSS_RST_CTRL, 1);
+	u8 tmp;
+
+	/* Reset the target using the CPLD */
+	tmp = 0x80;
+	i2c_write(0x40, 0x02, 1, &tmp, 1);
 
 	while(1) {;}
 }
