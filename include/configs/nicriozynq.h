@@ -204,7 +204,6 @@
 		"setenv bootcmd \\\"$recoverybootcmd\\\"; " \
 		"savebootdelay=$bootdelay; " \
 		"setenv bootdelay 0; " \
-		"setenv silent; " \
 		"if usb start && " \
 			"fatload usb 0:auto $loadaddr recovery.cfg && " \
 			"iminfo && " \
@@ -216,6 +215,7 @@
 		"else " \
 			"run ipconfigcmd; " \
 			"run nc; " \
+			"setenv silent; " \
 			"while sleep 1; do " \
 				"echo \\\"${DeviceCode:-<not-set>}, " \
 					"${serial#:-<not-set>}, " \
@@ -416,6 +416,17 @@
 	"run readcplddip; " \
 	"run readbootmode; " \
 	"run evaldip; " \
+	"if test -n \\\\\"$isconsoleout\\\\\"; then " \
+		"setenv silent; " \
+		"setenv stderr eserial0; " \
+		"setenv stdin eserial0; " \
+		"setenv stdout eserial0; " \
+		"run consolecmd; " \
+		"setenv consoleparam console=$console earlyprintk; " \
+	"else " \
+		"setenv consoleparam console= quiet; " \
+		"setenv bootdelay -2; " \
+	"fi; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"setenv silent; " \
@@ -426,17 +437,6 @@
 		"run fpgaloadcmd; " \
 		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \
-		"fi; " \
-		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
-			"setenv silent; " \
-			"setenv stderr eserial0; " \
-			"setenv stdin eserial0; " \
-			"setenv stdout eserial0; " \
-			"run consolecmd; " \
-			"setenv consoleparam console=$console earlyprintk; " \
-		"else " \
-			"setenv consoleparam console= quiet; " \
-			"setenv bootdelay -2; " \
 		"fi; " \
 	"fi;"
 
