@@ -190,21 +190,31 @@
 		"then " \
 			"run ipresetcmd; " \
 		"fi;" \
-		"run ipconfigcmd; " \
 		"savebootcmd=$bootcmd; " \
 		"setenv bootcmd \\\"$recoverybootcmd\\\"; " \
 		"savebootdelay=$bootdelay; " \
 		"setenv bootdelay 0; " \
 		"setenv silent; " \
-		"run nc; " \
-		"while sleep 1; do " \
-			"echo \\\"${DeviceCode:-<not-set>}, " \
-				"${serial#:-<not-set>}, " \
-				"${ethaddr:-<not-set>}, " \
-				"${ipaddr:-<not-set>}, " \
-				"${hostname:-<not-set>}, " \
-				"${comment:-<not-set>}\\\"; " \
-		"done;\0" \
+		"if usb start && " \
+			"fatload usb 0:auto $loadaddr recovery.cfg && " \
+			"iminfo && " \
+			"fdt addr $loadaddr && " \
+			"fdt get value recoveryDeviceCode / DeviceCode && " \
+			"test $recoveryDeviceCode = $DeviceCode;" \
+		"then " \
+			"source $loadaddr:recover; " \
+		"else " \
+			"run ipconfigcmd; " \
+			"run nc; " \
+			"while sleep 1; do " \
+				"echo \\\"${DeviceCode:-<not-set>}, " \
+					"${serial#:-<not-set>}, " \
+					"${ethaddr:-<not-set>}, " \
+					"${ipaddr:-<not-set>}, " \
+					"${hostname:-<not-set>}, " \
+					"${comment:-<not-set>}\\\"; " \
+			"done; " \
+		"fi;\0" \
 	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
 		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode; then " \
 			"loaddefaultbit=1; " \
