@@ -117,6 +117,27 @@ int board_eth_init(bd_t *bis)
 		/* Soft-reset the secondary phy so RXClk change takes effect */
 		if (i == 1)
 			miiphy_write(name, phy_addr, 0, 0x9140);
+
+		/* Page 0xFF */
+		miiphy_write(name, phy_addr, 22, 0xFF);
+
+		/* Errata settings */
+		miiphy_write(name, phy_addr, 17, 0x214b);
+		miiphy_write(name, phy_addr, 16, 0x2144);
+		miiphy_write(name, phy_addr, 17, 0x0c28);
+		miiphy_write(name, phy_addr, 16, 0x2146);
+		miiphy_write(name, phy_addr, 17, 0xb233);
+		miiphy_write(name, phy_addr, 16, 0x214d);
+		miiphy_write(name, phy_addr, 17, 0xcc0c);
+		miiphy_write(name, phy_addr, 16, 0x2159);
+
+		/* Page 0xFB */
+		miiphy_write(name, phy_addr, 22, 0xFB);
+
+		miiphy_write(name, phy_addr, 7, 0xc00d);
+
+		/* Page 0 */
+		miiphy_write(name, phy_addr, 22, 0);
 	}
 
 	return retval;
