@@ -198,6 +198,8 @@
 			"fatload usb 0:auto $loadaddr recovery.cfg && " \
 			"iminfo && " \
 			"fdt addr $loadaddr && " \
+			"fdt get value recoverType /images/recover type && " \
+			"test $recoverType = script && " \
 			"fdt get value recoveryDeviceCode / DeviceCode && " \
 			"test $recoveryDeviceCode = $DeviceCode;" \
 		"then " \
