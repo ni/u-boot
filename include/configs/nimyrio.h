@@ -182,6 +182,18 @@
 		"else " \
 			"run boot_safemode; " \
 		"fi;\0" \
+	"consoleoutcmd=" \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
+			"setenv silent; " \
+			"run consolecmd; " \
+			"setenv consoleparam console=$console earlyprintk; " \
+		"else " \
+			"setenv consoleparam console= quiet; " \
+			"setenv stderr nulldev; " \
+			"setenv stdin nulldev; " \
+			"setenv stdout nulldev; " \
+			"setenv bootdelay -2; " \
+		"fi;\0" \
 	"recoverybootcmd=setenv bootcmd $savebootcmd; " \
 		"setenv bootdelay $savebootdelay;\0" \
 	"recoverycmd=echo Entering recovery mode!; " \
@@ -408,17 +420,7 @@
 	"run readcplddip; " \
 	"run readbootmode; " \
 	"run evaldip; " \
-	"if test -n \\\\\"$isconsoleout\\\\\"; then " \
-		"setenv silent; " \
-		"run consolecmd; " \
-		"setenv consoleparam console=$console earlyprintk; " \
-	"else " \
-		"setenv consoleparam console= quiet; " \
-		"setenv stderr nulldev; " \
-		"setenv stdin nulldev; " \
-		"setenv stdout nulldev; " \
-		"setenv bootdelay -2; " \
-	"fi; " \
+	"run consoleoutcmd; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"setenv silent; " \
