@@ -206,6 +206,7 @@ struct p_context {
 	int old_flag;				/* for figuring out valid reserved words */
 	struct p_context *stack;
 	int type;			/* define type of parser : ";$" common or special symbol */
+	pipe_style last_followup; /* PIPE_BG, PIPE_SEQ, PIPE_OR, PIPE_AND */
 	/* How about quoting status? */
 };
 
@@ -2558,7 +2559,7 @@ static int done_command(struct p_context *ctx)
 										) {
 #endif
 		debug_printf("done_command: skipping null command\n");
-		return 0;
+		return 1;
 	} else if (prog) {
 		pi->num_progs++;
 		debug_printf("done_command: num_progs incremented to %d\n",pi->num_progs);
@@ -2592,9 +2593,15 @@ static int done_command(struct p_context *ctx)
 static int done_pipe(struct p_context *ctx, pipe_style type)
 {
 	struct pipe *new_p;
-	done_command(ctx);  /* implicit closure of previous command */
+	int ret;
+
+	ret = done_command(ctx);  /* implicit closure of previous command */
+	/* The current command is null so don't allocate a new one */
+	if (ret && type == PIPE_SEQ)
+		return ret;
 	debug_printf("done_pipe, type %d\n", type);
 	ctx->pipe->followup = type;
+	ctx->last_followup = type;
 	ctx->pipe->r_mode = ctx->w;
 	new_p=new_pipe();
 	ctx->pipe->next = new_p;
@@ -2987,7 +2994,10 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				if (end_trigger != '\0' && ch=='\n')
 					done_pipe(ctx,PIPE_SEQ);
 			}
-			if (ch == end_trigger && !dest->quote && ctx->w==RES_NONE) {
+			if (ch == end_trigger && !dest->quote &&
+			    ctx->w==RES_NONE &&
+			    ctx->last_followup != PIPE_AND &&
+			    ctx->last_followup != PIPE_OR) {
 				debug_printf("leaving parse_stream (triggered)\n");
 				return 0;
 			}
