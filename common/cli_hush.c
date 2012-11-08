@@ -1816,6 +1816,11 @@ static int run_list_real(struct pipe *pi)
 		}
 		rmode = pi->r_mode;
 		debug_printf("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n", rmode, if_code, next_if_code, skip_more_in_this_rmode);
+		if ((pi->followup==PIPE_OR || pi->followup==PIPE_AND) &&
+		    (pi->num_progs == 0 || pi->next->num_progs == 0)) {
+			puts("Pipe syntax error\n");
+			return -1;
+		}
 		if (rmode == skip_more_in_this_rmode && flag_skip) {
 			if (pi->followup == PIPE_SEQ) flag_skip=0;
 			continue;
@@ -2965,6 +2970,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	redir_type redir_style;
 #endif
 	int next;
+	int ret;
 
 	/* Only double-quote state is handled in the state variable dest->quote.
 	 * A single-quote triggers a bypass of the main loop until its mate is
@@ -3081,7 +3087,13 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 #endif
 		case ';':
 			done_word(dest, ctx);
-			done_pipe(ctx,PIPE_SEQ);
+			ret = done_pipe(ctx,PIPE_SEQ);
+			if (ret &&
+			    (ctx->last_followup == PIPE_AND ||
+			    ctx->last_followup == PIPE_OR)) {
+				puts("Pipe syntax error\n");
+				return 1;
+			}
 			break;
 		case '&':
 			done_word(dest, ctx);
