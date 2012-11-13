@@ -119,6 +119,9 @@
 #define CONFIG_HARD_I2C
 #define CONFIG_ZYNQ_I2C
 #define CONFIG_ZYNQ_I2C_CTLR_0
+#undef CONFIG_RTC_XPSSRTC
+#define CONFIG_RTC_DS3231
+#define CONFIG_SYS_I2C_RTC_ADDR 0x68
 
 /* USB Host support */
 #define CONFIG_CMD_USB
