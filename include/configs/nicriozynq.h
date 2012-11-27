@@ -227,7 +227,8 @@
 			"test $recoveryDeviceCode = $DeviceCode;" \
 		"then " \
 			"source $loadaddr:recover; " \
-		"else " \
+		"elif test -n \\\\\"$forcedrecovery\\\\\"; " \
+		"then " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
@@ -239,6 +240,8 @@
 					"${hostname:-<not-set>}, " \
 					"${comment:-<not-set>}\\\"; " \
 			"done; " \
+		"else " \
+			"echo $recovery_err; " \
 		"fi;\0" \
 	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
 		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode; then " \
@@ -388,6 +391,8 @@
 		"setenv cpld.resetbybutton;\0" \
 	"safemode_err=Failed to find a valid safemode image.\0" \
 	"fpga_err=Failed to load an FPGA image.\0" \
+	"recovery_err=Safemode or FPGA is corrupt. " \
+		"Insert recovery USB and reboot.\0" \
 	"updateenv=env export -b $loadaddr; " \
 		"env default -f; " \
 		"env import -b $loadaddr;\0" \
