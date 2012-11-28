@@ -146,7 +146,6 @@
 #define CONFIG_MX_CYCLIC
 
 /* U-Boot general configuration */
-#undef CONFIG_USE_IRQ				/* No IRQ/FIQ in U-Boot */
 #define CONFIG_BOOTFILE		"uImage"	/* Boot file name */
 #define CONFIG_SYS_PROMPT	"cam_enc_4xx> "	/* Monitor Command Prompt */
 #define CONFIG_SYS_CBSIZE	1024		/* Console I/O Buffer Size  */
@@ -191,7 +190,6 @@
 #define CONFIG_TIMESTAMP
 
 /* U-Boot memory configuration */
-#define CONFIG_STACKSIZE		(256 << 10)	/* 256 KiB */
 #define CONFIG_SYS_MALLOC_LEN		(1 << 20)	/* 1 MiB */
 #define CONFIG_SYS_MEMTEST_START	0x80000000	/* physical address */
 #define CONFIG_SYS_MEMTEST_END		0x81000000	/* test 16MB RAM */
@@ -217,10 +215,11 @@
 
 /* Defines for SPL */
 #define CONFIG_SPL
+#define CONFIG_SPL_FRAMEWORK
+#define CONFIG_SPL_BOARD_INIT
 #define CONFIG_SPL_LIBGENERIC_SUPPORT
 #define CONFIG_SPL_NAND_SUPPORT
 #define CONFIG_SPL_NAND_SIMPLE
-#define CONFIG_SPL_NAND_LOAD
 #define CONFIG_SYS_NAND_HW_ECC_OOBFIRST
 #define CONFIG_SPL_SERIAL_SUPPORT
 #define CONFIG_SPL_POST_MEM_SUPPORT
