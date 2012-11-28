@@ -16,6 +16,10 @@
 #endif
 #endif
 
+/* For all myRIOs, pretend to be the packaged myRIO over USB */
+#define CONFIG_NI_USB_PID "0x762F"
+#define CONFIG_NI_USB_VID "0x3923"
+
 #include <configs/zynq_common.h>
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
@@ -178,6 +182,9 @@
 	"TargetClass=cRIO\0" \
 	"DeviceDesc=cRIO-Zynq\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
+	"USBVendorID=" CONFIG_NI_USB_VID "\0" \
+	"USBProductID=" CONFIG_NI_USB_PID "\0" \
+	"USBProduct=NI myRIO\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"verifyaddr=0x8000000\0" \
