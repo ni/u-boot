@@ -66,6 +66,7 @@
 
 #define CONFIG_CMD_SAVEENV	/* Command to save ENV to Flash */
 #define CONFIG_ENV_OVERWRITE
+#define CONFIG_CMD_ENV_FLAGS
 
 #define CONFIG_FPGA
 #define CONFIG_FPGA_XILINX
