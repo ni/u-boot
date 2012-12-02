@@ -249,7 +249,7 @@
 		"else " \
 			"if ubifsload $verifyaddr user.bit.crc && " \
 				"ubifsload $loadaddr user.bit.bin && " \
-				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
+				"md5sum -v $loadaddr $filesize *$verifyaddr; " \
 			"then " \
 				"if fpga load 0 $loadaddr $filesize; then " \
 					"fpgasuccess=1; " \
@@ -264,7 +264,7 @@
 		"if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
 			"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
 				"ubifsload $loadaddr .defbit/default.bit.bin && " \
-				"md5sum -vp $loadaddr $filesize $verifyaddr; " \
+				"md5sum -v $loadaddr $filesize *$verifyaddr; " \
 			"then " \
 				"configfpga=1; " \
 			"fi; " \
@@ -394,7 +394,7 @@
 	"recovery_err=Safemode or FPGA is corrupt. " \
 		"Insert recovery USB and reboot.\0" \
 	"updateenv=env export -b $loadaddr; " \
-		"env default -f; " \
+		"env default -a; " \
 		"env import -b $loadaddr;\0" \
 	"writepartitions=" \
 		"nand erase.part boot-config && " \
