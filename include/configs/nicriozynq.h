@@ -52,15 +52,15 @@
 #undef CONFIG_ENV_IS_IN_FLASH /* zynq-common.h could have defined this */
 #endif
 
-#define CONFIG_ENV_IS_IN_NAND
-#ifdef CONFIG_ENV_OFFSET
-#undef CONFIG_ENV_OFFSET
-#endif
-#define CONFIG_ENV_OFFSET		0xA0000
-#define CONFIG_ENV_OFFSET_REDUND	0xE0000
+#define CONFIG_ENV_IS_IN_UBI
+#define CONFIG_ENV_UBI_PART "boot-config"
+#define CONFIG_ENV_UBI_VOLUME "u-boot-env1"
+#define CONFIG_ENV_UBI_VOLUME_REDUND "u-boot-env2"
 #undef CONFIG_ENV_SIZE
 #define CONFIG_ENV_SIZE			0x20000
-#define CONFIG_ENV_SIZE_REDUND		CONFIG_ENV_SIZE
+/* Old NAND env settings */
+#define CONFIG_ENV_OFFSET		0xA0000
+#define CONFIG_ENV_OFFSET_REDUND	0xE0000
 #define CONFIG_ENV_RANGE		0x40000
 
 #define CONFIG_ENV_OVERWRITE
@@ -133,9 +133,7 @@
 #define MTDPARTS_DEFAULT \
 	"mtdparts=xilinx_nand:" \
 		"128k(fsbl)ro," \
-		"512k(u-boot)ro," \
-		"256k(u-boot-env1)," \
-		"256k(u-boot-env2)," \
+		"1M(u-boot)ro," \
 		"60M(boot-config)," \
 		"-(root)"
 
@@ -407,14 +405,14 @@
 		"nand erase.part root && " \
 		"ubi part root && " \
 		"ubi create rootfs - dynamic;\0" \
-	"writeboot=nand erase 0 " __stringify(CONFIG_ENV_OFFSET) "; " \
-		"nand write $loadaddr 0 " __stringify(CONFIG_ENV_OFFSET) "; " \
-		"nand read $verifyaddr 0 " __stringify(CONFIG_ENV_OFFSET) "; " \
-		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_ENV_OFFSET) ";\0" \
+	"writeboot=nand erase 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
+		"nand write $loadaddr 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
+		"nand read $verifyaddr 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_ENV_OFFSET_REDUND) ";\0" \
 	"writefsbl=nand erase.part fsbl; " \
 		"nand write $loadaddr fsbl; " \
 		"nand read $verifyaddr fsbl; " \
-		"cmp.b $loadaddr $verifyaddr 0x20000;\0" \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_MTD_UBOOT_OFFSET) ";\0" \
 	"writeuboot=nand erase.part u-boot; " \
 		"nand write $loadaddr u-boot; " \
 		"nand read $verifyaddr u-boot; " \
