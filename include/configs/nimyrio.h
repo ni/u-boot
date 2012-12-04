@@ -200,18 +200,24 @@
 			"setenv stdout nulldev; " \
 			"setenv bootdelay -2; " \
 		"fi;\0" \
-	"recoverybootcmd=setenv bootcmd $savebootcmd; " \
-		"setenv bootdelay $savebootdelay;\0" \
+	"recoverybootcmd=" \
+		"if test -n \\\\\"$savebootcmd\\\\\"; " \
+		"then " \
+			"flags=${.flags}; " \
+			"setenv .flags bootcmd; " \
+			"setenv bootcmd \\\\\"$savebootcmd\\\\\"; " \
+			"setenv .flags $flags; " \
+		"fi; " \
+		"if test -n \\\\\"$savebootdelay\\\\\"; " \
+		"then " \
+			"setenv bootdelay $savebootdelay; " \
+		"fi;\0" \
 	"recoverycmd=echo Entering recovery mode!; " \
 		"run markhardbootcomplete; " \
 		"if test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
 			"run ipresetcmd; " \
 		"fi;" \
-		"savebootcmd=$bootcmd; " \
-		"setenv bootcmd \\\"$recoverybootcmd\\\"; " \
-		"savebootdelay=$bootdelay; " \
-		"setenv bootdelay 0; " \
 		"if usb start && " \
 			"fatload usb 0:auto $loadaddr recovery.cfg && " \
 			"iminfo && " \
@@ -224,6 +230,13 @@
 			"source $loadaddr:recover; " \
 		"elif test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
+			"flags=${.flags} && " \
+			"setenv .flags bootcmd && " \
+			"savebootcmd=$bootcmd && " \
+			"setenv bootcmd \\\\\"$recoverybootcmd\\\\\" && " \
+			"setenv .flags $flags && " \
+			"savebootdelay=$bootdelay && " \
+			"setenv bootdelay -2 && " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
