@@ -72,7 +72,6 @@
 #define CONFIG_ENV_OFFSET_REDUND	0xE0000
 #define CONFIG_ENV_RANGE		0x40000
 
-#define CONFIG_ENV_OVERWRITE
 #define CONFIG_CMD_ENV_FLAGS
 
 #define CONFIG_FPGA
@@ -144,6 +143,30 @@
 #undef CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
+
+#define READONLY_DEFAULT_ENV_FLAGS \
+	"consolecmd:so,ncoutport:do,ncinport:do,nc:so,sc:so," \
+	"fdt_high:xo,initrd_high:xo,TargetClass:so,DeviceDesc:so," \
+	"DeviceCode:xo,USBVendorID:xo,USBProductID:xo,USBProduct:so," \
+	"loadaddr:xo,verifyaddr:xo," \
+	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
+	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
+	"ipconfigcmd:so,markhardbootcomplete:so,readbootmode:so," \
+	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
+	"fpga_err:so,recovery_err:so,updateenv:so,writepartitions:so," \
+	"writeboot:so,writefsbl:so,writeuboot:so,bootcmd:so,preboot:so,"
+
+#define READONLY_MFG_ENV_VARS \
+	"serial#:xo,ethaddr:mc,eth1addr:mc,"
+
+#define NET_TYPE_ENV_VARS \
+	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
+	"ncip:i,mtu:d,"
+
+#define CONFIG_ENV_FLAGS_LIST_STATIC \
+	READONLY_DEFAULT_ENV_FLAGS \
+	READONLY_MFG_ENV_VARS \
+	NET_TYPE_ENV_VARS
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
