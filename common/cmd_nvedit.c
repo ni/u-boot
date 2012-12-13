@@ -551,7 +551,8 @@ int do_env_edit(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	else
 		buffer[0] = '\0';
 
-	readline_into_buffer("edit: ", buffer, 0);
+	if (readline_into_buffer("edit: ", buffer, 0) < 0)
+		return 1;
 
 	return setenv(argv[1], buffer);
 }
