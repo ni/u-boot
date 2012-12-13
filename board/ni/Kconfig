@@ -4,9 +4,16 @@ choice
 
 config TARGET_NI_CRIO9068
 	bool "NI cRIO-9068"
+	select CRIO
+
+config TARGET_NI_CRIO9068_MFG
+	bool "NI cRIO-9068 manufacturing U-Boot"
+	select MFG
+	select CRIO
 
 config TARGET_NIMYRIO
 	bool "NI myRIO"
+	select MYRIO
 
 config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
@@ -15,8 +22,8 @@ config TARGET_NIMYRIO_BO
 endchoice
 
 config SYS_BOARD
-	default "criozynq" if TARGET_NIZYNQ_CRIO9068
-	default "myrio" if TARGET_NIMYRIO
+	default "criozynq" if CRIO
+	default "myrio" if MYRIO
 
 config SYS_VENDOR
 	default "ni"
@@ -25,7 +32,16 @@ config SYS_SOC
 	default "zynq"
 
 config SYS_CONFIG_NAME
-	default "nicriozynq" if TARGET_NI_CRIO9068
-	default "nimyrio" if TARGET_NIMYRIO
+	default "nicriozynq" if CRIO
+	default "nimyrio" if MYRIO
+
+config MFG
+	bool "Manufacturing U-Boot"
+
+config CRIO
+	bool "cRIO derivatives"
+
+config MYRIO
+	bool "myRIO derivatives"
 
 endif
