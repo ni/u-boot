@@ -196,7 +196,8 @@
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
 		"source $loadaddr:bootscript;\0" \
 	"boot_safemode=" \
-		"if ubifsload $loadaddr .safe/linux_safemode.itb && " \
+		"if ubifsmount ubi:bootfs && " \
+		"ubifsload $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
 			"source $loadaddr:bootscript; " \
@@ -206,7 +207,8 @@
 			"run recoverybootcmd;" \
 		"fi;\0" \
 	"boot_runmode=" \
-		"if ubifsload $loadaddr linux_runmode.itb && " \
+		"if ubifsmount ubi:bootfs && " \
+		"ubifsload $loadaddr linux_runmode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
 			"source $loadaddr:bootscript; " \
