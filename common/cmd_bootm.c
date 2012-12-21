@@ -83,7 +83,7 @@ extern flash_info_t flash_info[]; /* info for FLASH chips */
 static int do_imls(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 #endif
 
-#ifdef CONFIG_SILENT_CONSOLE
+#if defined(CONFIG_SILENT_CONSOLE) && !defined(CONFIG_SILENT_U_BOOT_ONLY)
 static void fixup_silent_linux(void);
 #endif
 
@@ -687,7 +687,7 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	bootstage_mark(BOOTSTAGE_ID_CHECK_BOOT_OS);
 
-#ifdef CONFIG_SILENT_CONSOLE
+#if defined(CONFIG_SILENT_CONSOLE) && !defined(CONFIG_SILENT_U_BOOT_ONLY)
 	if (images.os.os == IH_OS_LINUX)
 		fixup_silent_linux();
 #endif
@@ -1236,7 +1236,7 @@ U_BOOT_CMD(
 /*******************************************************************/
 /* helper routines */
 /*******************************************************************/
-#ifdef CONFIG_SILENT_CONSOLE
+#if defined(CONFIG_SILENT_CONSOLE) && !defined(CONFIG_SILENT_U_BOOT_ONLY)
 static void fixup_silent_linux(void)
 {
 	char buf[256], *start, *end;
@@ -1629,7 +1629,7 @@ static int do_bootz(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	usb_stop();
 #endif
 
-#ifdef CONFIG_SILENT_CONSOLE
+#if defined(CONFIG_SILENT_CONSOLE) && !defined(CONFIG_SILENT_U_BOOT_ONLY)
 	fixup_silent_linux();
 #endif
 	arch_preboot_os();
