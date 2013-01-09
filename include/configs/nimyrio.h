@@ -35,6 +35,7 @@
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
 #define CONFIG_SILENT_CONSOLE
+#define CONFIG_SILENT_U_BOOT_ONLY
 #define CONFIG_SILENT_CONSOLE_UPDATE_ON_SET
 #define CONFIG_SYS_DEVICE_NULLDEV
 
@@ -220,9 +221,13 @@
 		"fi;\0" \
 	"consoleoutcmd=" \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
-			"setenv silent; " \
 			"run consolecmd; " \
-			"setenv consoleparam console=$console earlyprintk; " \
+			"if test \\\\\"$bootdelay\\\\\" -gt 0; then " \
+				"setenv silent; " \
+				"setenv consoleparam console=$console; " \
+			"else " \
+				"setenv consoleparam console=$console quiet; " \
+			"fi; " \
 		"else " \
 			"setenv consoleparam console= quiet; " \
 			"setenv stderr nulldev; " \
