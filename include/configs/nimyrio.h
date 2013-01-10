@@ -116,7 +116,6 @@
 #define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_SYS_MEMTEST_SCRATCH 0xFFFFF000
 #define CONFIG_CMD_CACHE
-#define CONFIG_SYS_ARM_CACHE_WRITETHROUGH
 
 /*
  * NAND Flash settings
@@ -249,6 +248,7 @@
 		"fi;\0" \
 	"recoverycmd=echo Entering recovery mode!; " \
 		"run markhardbootcomplete; " \
+		"dcache off; " \
 		"if test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
 			"run ipresetcmd; " \
