@@ -443,10 +443,18 @@
 		"env default -a; " \
 		"env import -b $loadaddr;\0" \
 	"writepartitions=" \
-		"nand erase.part boot-config && " \
-		"ubi part boot-config && " \
-		"ubi create u-boot-env1 " __stringify(CONFIG_ENV_SIZE) " dynamic && " \
-		"ubi create u-boot-env2 " __stringify(CONFIG_ENV_SIZE) " dynamic && " \
+		"if ubi part boot-config && " \
+			"ubi read $verifyaddr u-boot-env1 1 && " \
+			"ubi read $verifyaddr u-boot-env2 1; " \
+		"then " \
+			"ubi remove bootfs && " \
+			"ubi remove config; " \
+		"else " \
+			"nand erase.part boot-config && " \
+			"ubi part boot-config && " \
+			"ubi create u-boot-env1 " __stringify(CONFIG_ENV_SIZE) " dynamic && " \
+			"ubi create u-boot-env2 " __stringify(CONFIG_ENV_SIZE) " dynamic; " \
+		"fi && " \
 		"ubi create bootfs " __stringify(CONFIG_BOOTFS_VOLUME_SIZE) " dynamic && " \
 		"ubi create config - dynamic && " \
 		"nand erase.part root && " \
