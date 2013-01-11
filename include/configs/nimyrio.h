@@ -31,6 +31,9 @@
 #define CONFIG_REGINFO		/* Again, debugging */
 /* check for input to stop even if delay is 0 */
 #define CONFIG_ZERO_BOOTDELAY_CHECK
+#undef CONFIG_BOOTDELAY
+/* -1 to Disable autoboot, -2 to force boot */
+#define CONFIG_BOOTDELAY	-2
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SILENT_CONSOLE_UPDATE_ON_SET
 #define CONFIG_SYS_DEVICE_NULLDEV
