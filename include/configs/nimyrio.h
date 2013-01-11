@@ -158,8 +158,9 @@
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
 	"ipconfigcmd:so,markhardbootcomplete:so,readbootmode:so," \
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
-	"fpga_err:so,recovery_err:so,updateenv:so,writepartitions:so," \
-	"writeboot:so,writefsbl:so,writeuboot:so,bootcmd:so,preboot:so,"
+	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
+	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
+	"bootcmd:so,preboot:so,"
 
 #define READONLY_MFG_ENV_VARS \
 	"serial#:xo,ethaddr:mc,eth1addr:mc,"
@@ -251,6 +252,7 @@
 		"dcache off; " \
 		"if test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
+			"run resetenv && " \
 			"run ipresetcmd; " \
 		"fi;" \
 		"if usb start && " \
@@ -439,6 +441,14 @@
 	"updateenv=env export -b $loadaddr; " \
 		"env default -a; " \
 		"env import -b $loadaddr;\0" \
+	"resetenv=" \
+		"serial_save=${serial#} && " \
+		"ethaddr_save=$ethaddr && " \
+		"eth1addr_save=$eth1addr && " \
+		"env default -a && " \
+		"env set serial# $serial_save && " \
+		"env set ethaddr $ethaddr_save && " \
+		"env set eth1addr $eth1addr_save;\0" \
 	"writepartitions=" \
 		"if ubi part boot-config && " \
 			"ubi read $verifyaddr u-boot-env1 1 && " \
