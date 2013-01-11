@@ -88,7 +88,7 @@ extern void mdm_init(void); /* defined in board.c */
  * Watch for 'delay' seconds for autoboot stop or autoboot delay string.
  * returns: 0 -  no key string, allow autoboot 1 - got key string, abort
  */
-#if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
+#if defined(CONFIG_BOOTDELAY)
 # if defined(CONFIG_AUTOBOOT_KEYED)
 #ifndef CONFIG_MENU
 static inline
@@ -272,7 +272,7 @@ int abortboot(int bootdelay)
 	return abort;
 }
 # endif	/* CONFIG_AUTOBOOT_KEYED */
-#endif	/* CONFIG_BOOTDELAY >= 0  */
+#endif	/* CONFIG_BOOTDELAY */
 
 /****************************************************************************/
 
@@ -285,7 +285,7 @@ void main_loop (void)
 	int flag;
 #endif
 
-#if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
+#if defined(CONFIG_BOOTDELAY)
 	char *s;
 	int bootdelay;
 #endif
@@ -352,7 +352,7 @@ void main_loop (void)
 	update_tftp (0UL);
 #endif /* CONFIG_UPDATE_TFTP */
 
-#if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
+#if defined(CONFIG_BOOTDELAY)
 	s = getenv ("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 
