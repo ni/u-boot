@@ -11,8 +11,10 @@
 #define CONFIG_NIMYRIO /* Board */
 #ifdef CONFIG_BOARD_ONLY
 #define CONFIG_DEVICE_CODE "76D3"
+#define CONFIG_FPGA_DEVICE_CODE "76D3"
 #else
 #define CONFIG_DEVICE_CODE "762F"
+#define CONFIG_FPGA_DEVICE_CODE "762F"
 #endif
 #endif
 
@@ -174,7 +176,8 @@
 #define READONLY_DEFAULT_ENV_FLAGS \
 	"consolecmd:so,ncoutport:do,ncinport:do,nc:so,sc:so," \
 	"fdt_high:xo,initrd_high:xo,TargetClass:so,DeviceDesc:so," \
-	"DeviceCode:xo,USBVendorID:xo,USBProductID:xo,USBProduct:so," \
+	"DeviceCode:xo,FPGADeviceCode:xo," \
+	"USBVendorID:xo,USBProductID:xo,USBProduct:so," \
 	"loadaddr:xo,verifyaddr:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
@@ -211,6 +214,7 @@
 	"TargetClass=cRIO\0" \
 	"DeviceDesc=cRIO-Zynq\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
+	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
 	"USBVendorID=" CONFIG_NI_USB_VID "\0" \
 	"USBProductID=" CONFIG_NI_USB_PID "\0" \
 	"USBProduct=NI myRIO\0" \
