@@ -91,6 +91,8 @@
 				(0x1 << 4)   |	/* Clear interrupt */ \
 				(0x1 << 6))	/* Disable ECC interrupt */
 
+#ifndef CONFIG_NAND_ZYNQ_USE_FSBL_TIMINGS
+
 /* Assuming 50MHz clock (20ns cycle time) and 3V operation */
 #define XNANDPSS_SET_CYCLES	((0x2 << 20) |	/* t_rr from nand_cycles */ \
 				(0x2 << 17)  |	/* t_ar from nand_cycles */ \
@@ -99,6 +101,7 @@
 				(0x2 << 8)   |	/* t_rea from nand_cycles */ \
 				(0x5 << 4)   |	/* t_wc from nand_cycles */ \
 				(0x5 << 0))	/* t_rc from nand_cycles */
+#endif
 
 #define XNANDPSS_SET_OPMODE	0x0
 
@@ -296,8 +299,10 @@ static void xnandps_init_nand_flash(void __iomem *smc_regs, int option)
 {
 	/* disable interrupts */
 	xnandps_write32(smc_regs + XSMCPSS_MC_CLR_CONFIG, XNANDPSS_CLR_CONFIG);
+#ifndef CONFIG_NAND_ZYNQ_USE_FSBL_TIMINGS
 	/* Initialize the NAND interface by setting cycles and operation mode */
 	xnandps_write32(smc_regs + XSMCPSS_MC_SET_CYCLES, XNANDPSS_SET_CYCLES);
+#endif
 	if (option & NAND_BUSWIDTH_16)
 		xnandps_write32(smc_regs + XSMCPSS_MC_SET_OPMODE,
 				(XNANDPSS_SET_OPMODE | 0x1));
