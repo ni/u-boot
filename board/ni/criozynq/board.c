@@ -65,6 +65,9 @@ int board_init(void)
 int board_late_init (void)
 {
 	u8 tmp;
+#if defined(CONFIG_MFG)
+	char serial[11] = "";
+#endif
 
 	/*
 	 * Take eth0 phy, eth1 phy, usb phy, usb hub, and external UART
@@ -172,10 +175,17 @@ int board_nand_init(struct nand_chip *nand_chip)
 		return ret;
 
 	/*
+	 * Unlock the entire flash for SD bringup and manufacturing
+	 */
+#if defined(CONFIG_MFG)
+	off = 0;
+#else
+	off = CONFIG_MTD_UBOOT_OFFSET + CONFIG_BOARD_SIZE_LIMIT;
+#endif
+	/*
 	 * This is crappy (using 0 as the device), but this is what the Zynq
 	 * NAND driver does, so we do it too to make sure we get the same device
 	 */
-	off = CONFIG_MTD_UBOOT_OFFSET + CONFIG_BOARD_SIZE_LIMIT;
 	size = nand_info[0].size - off;
 
 	nand_unlock(&nand_info[0], off, size, 0);

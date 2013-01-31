@@ -567,7 +567,6 @@
 
 #define CONFIG_PREBOOT \
 	"dcache on; " \
-	"nand unlock; " \
 	"run nc; " \
 	"setenv silent;"
 
