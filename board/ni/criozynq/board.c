@@ -6,6 +6,7 @@
 #include <nand.h>
 #include <sdhci.h>
 #include <asm/io.h>
+#include <environment.h>
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
@@ -56,6 +57,14 @@ int board_late_init (void)
 	 */
 	tmp = 0x00;
 	i2c_write(0x40, 0x03, 1, &tmp, 1);
+
+#if defined(CONFIG_MFG)
+	if (getenv("serial#") != NULL)
+		strcpy(serial, getenv("serial#"));
+	set_default_env("Default env required for auto-bringup.\n");
+	if (strlen(serial) != 0)
+		setenv("serial#", serial);
+#endif
 
 	return 0;
 }
