@@ -50,6 +50,9 @@ int board_init(void)
 int board_late_init (void)
 {
 	u8 tmp;
+#if defined(CONFIG_MFG)
+	char serial[11] = "";
+#endif
 
 	/*
 	 * Take eth0 phy, eth1 phy, usb phy, usb hub, and external UART
