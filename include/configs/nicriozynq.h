@@ -6,7 +6,7 @@
  */
 #define CONFIG_CRIO9068 /* Board */
 #define CONFIG_DEVICE_CODE "76D6"
-#define CONFIG_FPGA_DEVICE_CODE "76D6"
+#define CONFIG_FPGA_DEVICE_CODE "76F8"
 
 #include <configs/zynq_common.h>
 
