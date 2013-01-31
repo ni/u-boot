@@ -48,7 +48,11 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
+#ifdef CONFIG_MFG
+#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068 Manufacturing"
+#else
 #define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068"
+#endif
 
 #define CONFIG_DEFAULT_HOSTNAME_BASE	"cRIO-"
 
