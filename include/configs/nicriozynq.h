@@ -428,7 +428,8 @@
 			"isnofpgaapp=1; " \
 		"fi; " \
 		"if test ${cpld.softboot} -eq 0 -a " \
-			"${cpld.resetbybutton} -ne 0; " \
+			"${cpld.resetbybutton} -ne 0 -a " \
+			"${cpld.safemode} -ne 0; " \
 		"then " \
 			"isforcedrecoverymode=1; " \
 		"fi; " \
