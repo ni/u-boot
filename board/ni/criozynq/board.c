@@ -92,64 +92,69 @@ int board_eth_init(bd_t *bis)
 {
 	int retval;
 	int phy_addr;
-	char name[10];
+	const char *miiname;
+	char gemname[10];
 	int i;
 	u16 regval;
 
 	retval = zynq_gem_initialize(bis);
 
+	/* The PHYs for zynq_gem0 and zynq_gem1 are both connected to the
+	   MDIO interface of zynq_gem0. */
+	miiname = "zynq_gem0";
+
 	/* cRIO-9068 has a Marvell Gigabit PHY on gem0 and gem1 */
 	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; i++) {
-		sprintf(name, "zynq_gem%d", i);
+		sprintf(gemname, "zynq_gem%d", i);
 
-		phy_addr = zynq_gem_get_phyaddr(name);
+		phy_addr = zynq_gem_get_phyaddr(gemname);
 
 		/* Page 2 */
-		miiphy_write(name, phy_addr, 22, 2);
+		miiphy_write(miiname, phy_addr, 22, 2);
 
 		/* Disable the unused 125 MHz clock from the phy */
-		miiphy_write(name, phy_addr, 16, 0x444E);
+		miiphy_write(miiname, phy_addr, 16, 0x444E);
 
 		/* Remove the delay on the RXClk for the secondary PHY */
 		if (i == 1)
-			miiphy_write(name, phy_addr, 21, 0x1056);
+			miiphy_write(miiname, phy_addr, 21, 0x1056);
 
 		/* Override the phys' drive strength */
-		miiphy_write(name, phy_addr, 24, 0xB949);
+		miiphy_write(miiname, phy_addr, 24, 0xB949);
 
 		/* Page 0 */
-		miiphy_write(name, phy_addr, 22, 0);
+		miiphy_write(miiname, phy_addr, 22, 0);
 
 		/* Copper specific control register 1 */
-		miiphy_read(name, phy_addr, 16, &regval);
+		miiphy_read(miiname, phy_addr, 16, &regval);
 		regval |= (7 << 12); /* max number of gigabit attempts */
 		regval |= (1 << 11); /* enable downshift */
-		miiphy_write(name, phy_addr, 16, regval);
+		miiphy_write(miiname, phy_addr, 16, regval);
 
 		/* Soft-reset the secondary phy so RXClk change takes effect */
 		if (i == 1)
-			miiphy_write(name, phy_addr, 0, 0x9140);
+			miiphy_write(miiname, phy_addr, 0, 0x9140);
 
 		/* Page 0xFF */
-		miiphy_write(name, phy_addr, 22, 0xFF);
+		miiphy_write(miiname, phy_addr, 22, 0xFF);
 
 		/* Errata settings */
-		miiphy_write(name, phy_addr, 17, 0x214b);
-		miiphy_write(name, phy_addr, 16, 0x2144);
-		miiphy_write(name, phy_addr, 17, 0x0c28);
-		miiphy_write(name, phy_addr, 16, 0x2146);
-		miiphy_write(name, phy_addr, 17, 0xb233);
-		miiphy_write(name, phy_addr, 16, 0x214d);
-		miiphy_write(name, phy_addr, 17, 0xcc0c);
-		miiphy_write(name, phy_addr, 16, 0x2159);
+		miiphy_write(miiname, phy_addr, 17, 0x214b);
+		miiphy_write(miiname, phy_addr, 16, 0x2144);
+		miiphy_write(miiname, phy_addr, 17, 0x0c28);
+		miiphy_write(miiname, phy_addr, 16, 0x2146);
+		miiphy_write(miiname, phy_addr, 17, 0xb233);
+		miiphy_write(miiname, phy_addr, 16, 0x214d);
+		miiphy_write(miiname, phy_addr, 17, 0xcc0c);
+		miiphy_write(miiname, phy_addr, 16, 0x2159);
 
 		/* Page 0xFB */
-		miiphy_write(name, phy_addr, 22, 0xFB);
+		miiphy_write(miiname, phy_addr, 22, 0xFB);
 
-		miiphy_write(name, phy_addr, 7, 0xc00d);
+		miiphy_write(miiname, phy_addr, 7, 0xc00d);
 
 		/* Page 0 */
-		miiphy_write(name, phy_addr, 22, 0);
+		miiphy_write(miiname, phy_addr, 22, 0);
 	}
 
 	return retval;
