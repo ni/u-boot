@@ -60,8 +60,6 @@
 
 #define CONFIG_IDENT_STRING	"\nNational Instruments myRIO"
 
-#define CONFIG_DEFAULT_HOSTNAME_BASE	"myRIO-"
-
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
 
@@ -337,7 +335,6 @@
 		"setenv sgatewayip; " \
 		"setenv sipaddr; " \
 		"setenv snetmask; " \
-		"setenv hostname " CONFIG_DEFAULT_HOSTNAME_BASE "${serial#}; " \
 		"setenv mtu; " \
 		"setenv ncip 255.255.255.255; " \
 		"savesilent=$silent;setenv silent 1; " \
