@@ -13,9 +13,11 @@
 #define CONFIG_BOARD_ONLY
 #define CONFIG_DEVICE_CODE "76D3"
 #define CONFIG_FPGA_DEVICE_CODE "76D3"
+#define CONFIG_DEVICE_DESC "myRIO-1950"
 #else
 #define CONFIG_DEVICE_CODE "762F"
 #define CONFIG_FPGA_DEVICE_CODE "762F"
+#define CONFIG_DEVICE_DESC "myRIO-1900"
 #endif
 
 /* For all myRIOs, pretend to be the packaged myRIO over USB */
@@ -189,7 +191,7 @@
 	"fdt_high=0x7ffffff\0" \
 	"initrd_high=0x7ff7fff\0" \
 	"TargetClass=cRIO\0" \
-	"DeviceDesc=cRIO-Zynq\0" \
+	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
 	"USBVendorID=" CONFIG_NI_USB_VID "\0" \

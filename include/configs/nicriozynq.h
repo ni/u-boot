@@ -7,6 +7,7 @@
 #define CONFIG_CRIO9068 /* Board */
 #define CONFIG_DEVICE_CODE "76D6"
 #define CONFIG_FPGA_DEVICE_CODE "76F8"
+#define CONFIG_DEVICE_DESC "cRIO-9068"
 
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_NAND_ZYNQ
@@ -201,7 +202,7 @@
 	"fdt_high=0x17ffffff\0" \
 	"initrd_high=0x17ff7fff\0" \
 	"TargetClass=cRIO\0" \
-	"DeviceDesc=cRIO-Zynq\0" \
+	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
