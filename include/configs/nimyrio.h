@@ -70,7 +70,11 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
+#ifdef CONFIG_MFG
+#define CONFIG_IDENT_STRING	"\nNational Instruments myRIO Manufacturing"
+#else
 #define CONFIG_IDENT_STRING	"\nNational Instruments myRIO"
+#endif
 
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
@@ -188,8 +192,7 @@
 	READONLY_MFG_ENV_VARS \
 	NET_TYPE_ENV_VARS
 
-#undef CONFIG_EXTRA_ENV_SETTINGS
-#define CONFIG_EXTRA_ENV_SETTINGS \
+#define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
 	"consolecmd=setenv console ttyPS0,$baudrate\0" \
@@ -496,15 +499,14 @@
 		"cmp.b $loadaddr $verifyaddr " \
 			__stringify(CONFIG_BOARD_SIZE_LIMIT) ";\0"
 
-#undef CONFIG_BOOTCOMMAND
-#define CONFIG_BOOTCOMMAND	\
+#define REAL_BOOTCOMMAND	\
 	"if test $bootmode = safemode -o $bootmode = install; then " \
 		"run boot_safemode; " \
 	"else " \
 		"run boot_runmode; "\
 	"fi"
 
-#define CONFIG_PREBOOT \
+#define REAL_PREBOOT \
 	"setenv silent 1; " \
 	"dcache on; " \
 	"nand lock tight; " \
@@ -526,5 +528,39 @@
 			"run ipresetcmd; " \
 		"fi; " \
 	"fi;"
+
+
+#if defined(CONFIG_MFG)
+
+#undef CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"ipaddr=192.168.1.180\0" \
+	"netmask=255.255.255.0\0" \
+	"gatewayip=192.168.1.185\0" \
+	"serverip=192.168.1.185\0" \
+	REAL_EXTRA_ENV_SETTINGS
+
+#undef CONFIG_BOOTCOMMAND
+
+#define CONFIG_PREBOOT \
+	"usb start; " \
+	"usb reset; " \
+	"run nc; " \
+	"setenv silent;"
+
+#else /* !CONFIG_MFG */
+
+#undef CONFIG_EXTRA_ENV_SETTINGS
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	REAL_EXTRA_ENV_SETTINGS
+
+#undef CONFIG_BOOTCOMMAND
+#define CONFIG_BOOTCOMMAND \
+	REAL_BOOTCOMMAND
+
+#define CONFIG_PREBOOT \
+	REAL_PREBOOT
+
+#endif
 
 #endif /* __CONFIG_NIMYRIO_H */

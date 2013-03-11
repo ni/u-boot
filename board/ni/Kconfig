@@ -15,6 +15,11 @@ config TARGET_NIMYRIO
 	bool "NI myRIO"
 	select MYRIO
 
+config TARGET_NIMYRIO_MFG
+	bool "NI myRIO manufacturing U-Boot"
+	select MFG
+	select MYRIO
+
 config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
 	select MYRIO

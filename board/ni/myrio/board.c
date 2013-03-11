@@ -47,6 +47,10 @@ int board_late_init (void)
 	tmp = 0x00;
 	i2c_write(0x40, 0x03, 1, &tmp, 1);
 
+#if defined(CONFIG_MFG)
+	set_default_env("Default env required for manufacturing.\n");
+#endif
+
 	return 0;
 }
 
