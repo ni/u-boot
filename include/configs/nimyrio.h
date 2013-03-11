@@ -9,11 +9,21 @@
  * High Level Configuration Options
  */
 #define CONFIG_NIMYRIO /* Board */
-#ifdef CONFIG_TARGET_NIMYRIO_BO
+
+#if defined(CONFIG_TARGET_NIMYRIO_BO)
 #define CONFIG_BOARD_ONLY
+#elif defined(CONFIG_TARGET_ROBORIO)
+#define CONFIG_ROBORIO
+#endif
+
+#if defined(CONFIG_BOARD_ONLY)
 #define CONFIG_DEVICE_CODE "76D3"
 #define CONFIG_FPGA_DEVICE_CODE "76D3"
 #define CONFIG_DEVICE_DESC "myRIO-1950"
+#elif defined(CONFIG_ROBORIO)
+#define CONFIG_DEVICE_CODE "76F2"
+#define CONFIG_FPGA_DEVICE_CODE "77A9"
+#define CONFIG_DEVICE_DESC "roboRIO"
 #else
 #define CONFIG_DEVICE_CODE "762F"
 #define CONFIG_FPGA_DEVICE_CODE "762F"

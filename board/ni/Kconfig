@@ -19,6 +19,10 @@ config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
 	select MYRIO
 
+config TARGET_ROBORIO
+	bool "NI roboRIO"
+	select MYRIO
+
 endchoice
 
 config SYS_BOARD
