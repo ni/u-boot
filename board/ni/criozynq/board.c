@@ -53,6 +53,11 @@ int board_late_init (void)
 #if defined(CONFIG_MFG)
 	char serial[11] = "";
 #endif
+#if !defined(CONFIG_MFG)
+	int serial_missing;
+	int ethaddr_missing;
+	int eth1addr_missing;
+#endif
 
 	/*
 	 * Take eth0 phy, eth1 phy, usb phy, usb hub, and external UART
@@ -67,6 +72,33 @@ int board_late_init (void)
 	set_default_env("Default env required for auto-bringup.\n");
 	if (strlen(serial) != 0)
 		setenv("serial#", serial);
+#endif
+
+#if !defined(CONFIG_MFG)
+	serial_missing = getenv("serial#") == NULL;
+	ethaddr_missing = getenv("ethaddr") == NULL;
+	eth1addr_missing = getenv("eth1addr") == NULL;
+	if (serial_missing || ethaddr_missing || eth1addr_missing) {
+		u8 nand_buffer[nand_info[0]->writesize];
+		int nand_read_status;
+		char string[18];
+		size_t len = nand_info[0]->writesize;
+
+		nand_read_status = nand_read(nand_info[0], CONFIG_BACKUP_PAGE,
+		    &len, nand_buffer);
+		if (serial_missing && !nand_read_status) {
+			sprintf(string, "%x", *(u32 *)&nand_buffer[
+				CONFIG_BACKUP_SERIAL_OFFSET]);
+			setenv("serial#", string);
+		}
+		if (ethaddr_missing && !nand_read_status)
+			eth_setenv_enetaddr("ethaddr", &nand_buffer[
+                                CONFIG_BACKUP_ETHADDR_OFFSET]);
+		if (eth1addr_missing && !nand_read_status)
+			eth_setenv_enetaddr("eth1addr", &nand_buffer[
+                                CONFIG_BACKUP_ETH1ADDR_OFFSET]);
+		saveenv();
+	}
 #endif
 
 	return 0;
