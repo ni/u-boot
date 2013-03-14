@@ -176,7 +176,8 @@
 	"loadaddr:xo,verifyaddr:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
-	"ipconfigcmd:so,markhardbootcomplete:so,readbootmode:so," \
+	"ipconfigcmd:so,markhardbootcomplete:so,stopwatchdog:so," \
+	"setlederrorstatus:so,readbootmode:so," \
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
 	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
@@ -269,6 +270,7 @@
 		"fi;\0" \
 	"recoverycmd=echo Entering recovery mode!; " \
 		"run markhardbootcomplete; " \
+		"run stopwatchdog; " \
 		"dcache off; " \
 		"if test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
@@ -294,6 +296,7 @@
 			"setenv .flags $flags && " \
 			"savebootdelay=$bootdelay && " \
 			"setenv bootdelay -2 && " \
+			"run setlederrorstatus && " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
@@ -306,6 +309,7 @@
 					"${comment:-<not-set>}\\\"; " \
 			"done; " \
 		"else " \
+			"run setlederrorstatus; " \
 			"echo $recovery_err; " \
 		"fi;\0" \
 	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
@@ -383,6 +387,11 @@
 		"fi;\0" \
 	"markhardbootcomplete=" \
 		"i2c mw 0x40 1 0x20;\0" \
+	"stopwatchdog=" \
+		"i2c mw 0x40 0x13 0x80;\0" \
+	"setlederrorstatus=" \
+		"i2c mw 0x40 0x5 0xAA; " \
+		"i2c mw 0x40 0x6 0xAA;\0" \
 	"readbootmode=i2c read 0x40 0xFF 1 $loadaddr; " \
 		"setexpr.b bootmodeval *$loadaddr \\\\& 0x3; " \
 		"if test $bootmodeval -eq 1; then " \
