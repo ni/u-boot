@@ -89,10 +89,6 @@
 #define CONFIG_ENV_UBI_VOLUME_REDUND "u-boot-env2"
 #undef CONFIG_ENV_SIZE
 #define CONFIG_ENV_SIZE			0x20000
-/* Old NAND env settings */
-#define CONFIG_ENV_OFFSET		0xA0000
-#define CONFIG_ENV_OFFSET_REDUND	0xE0000
-#define CONFIG_ENV_RANGE		0x40000
 
 #define CONFIG_CMD_ENV_FLAGS
 
@@ -159,7 +155,8 @@
 #define CONFIG_CMD_UBIFS
 
 #define CONFIG_MTD_UBOOT_OFFSET		0x20000
-#define CONFIG_BOARD_SIZE_LIMIT		0x80000
+#define CONFIG_BOARD_SIZE_LIMIT		0x100000
+#define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
 #define CONFIG_BACKUP_PAGE		0x11F800
@@ -490,10 +487,10 @@
 		"nand erase.part root && " \
 		"ubi part root && " \
 		"ubi create rootfs - dynamic;\0" \
-	"writeboot=nand erase 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
-		"nand write $loadaddr 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
-		"nand read $verifyaddr 0 " __stringify(CONFIG_ENV_OFFSET_REDUND) "; " \
-		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_ENV_OFFSET_REDUND) ";\0" \
+	"writeboot=nand erase 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"nand write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"nand read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
 	"writefsbl=nand erase.part fsbl; " \
 		"nand write $loadaddr fsbl; " \
 		"nand read $verifyaddr fsbl; " \
