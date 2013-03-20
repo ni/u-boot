@@ -215,6 +215,7 @@ static struct xnandps_command_format xnandps_commands[] __devinitdata = {
 	{NAND_CMD_UNLOCK1, NAND_CMD_NONE, 3, NAND_CMD_NONE},
 	{NAND_CMD_UNLOCK2, NAND_CMD_NONE, 3, NAND_CMD_NONE},
 	{NAND_CMD_LOCK_STATUS, NAND_CMD_NONE, 3, NAND_CMD_NONE},
+	{NAND_CMD_PARAM, NAND_CMD_NONE, 1, NAND_CMD_NONE},
 	{NAND_CMD_NONE, NAND_CMD_NONE, 0, 0},
 	/* Add all the flash commands supported by the flash device and Linux */
 	/* The cache program command is not supported by driver because driver
