@@ -156,6 +156,7 @@ static const struct zynq_nand_command_format zynq_nand_commands[] = {
 	{NAND_CMD_UNLOCK1, NAND_CMD_NONE, 3, 0},
 	{NAND_CMD_UNLOCK2, NAND_CMD_NONE, 3, 0},
 	{NAND_CMD_LOCK_STATUS, NAND_CMD_NONE, 3, 0},
+	{NAND_CMD_PARAM, NAND_CMD_NONE, 1, 0},
 	{NAND_CMD_NONE, NAND_CMD_NONE, 0, 0},
 	/* Add all the flash commands supported by the flash device */
 };
