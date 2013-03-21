@@ -142,8 +142,8 @@
 #define MTDPARTS_DEFAULT \
 	"mtdparts=xilinx_nand:" \
 		"128k(fsbl)ro," \
-		"1M(u-boot)ro," \
-		"60M(boot-config)," \
+		"11M(u-boot)ro," \
+		"70M(boot-config)," \
 		"-(root)"
 
 /* UBI */
@@ -159,7 +159,7 @@
 #define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
-#define CONFIG_BACKUP_PAGE		0x11F800
+#define CONFIG_BACKUP_PAGE		0xB1F800
 #define CONFIG_BACKUP_SERIAL_OFFSET	0x7f0
 #define CONFIG_BACKUP_ETHADDR_OFFSET	0x7f4
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
