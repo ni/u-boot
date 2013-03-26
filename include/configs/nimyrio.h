@@ -495,8 +495,14 @@
 		"fi && " \
 		"ubi create bootfs " __stringify(CONFIG_BOOTFS_VOLUME_SIZE) " dynamic && " \
 		"ubi create config - dynamic && " \
-		"nand erase.part root && " \
-		"ubi part root && " \
+		"if ubi part root && " \
+			"ubi read $verifyaddr rootfs 1; " \
+		"then " \
+			"ubi remove rootfs; " \
+		"else " \
+			"nand erase.part root && " \
+			"ubi part root; " \
+		"fi && " \
 		"ubi create rootfs - dynamic;\0" \
 	"writeboot=nand erase 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
 		"nand write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
