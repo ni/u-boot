@@ -70,7 +70,7 @@ int board_late_init (void)
 		nand_read_status = nand_read(nand_info[0], CONFIG_BACKUP_PAGE,
 		    &len, nand_buffer);
 		if (serial_missing && !nand_read_status) {
-			sprintf(string, "%x", *(u32 *)&nand_buffer[
+			sprintf(string, "%08x", *(u32 *)&nand_buffer[
 				CONFIG_BACKUP_SERIAL_OFFSET]);
 			setenv("serial#", string);
 		}
