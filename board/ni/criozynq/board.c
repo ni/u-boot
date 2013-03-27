@@ -84,19 +84,23 @@ int board_late_init (void)
 		char string[18];
 		size_t len = nand_info[0]->writesize;
 
-		nand_read_status = nand_read(nand_info[0], CONFIG_BACKUP_PAGE,
-		    &len, nand_buffer);
+		nand_read_status = nand_read(nand_info[0],
+		    getenv_ulong("backuppage", 16, CONFIG_BACKUP_PAGE), &len,
+		    nand_buffer);
 		if (serial_missing && !nand_read_status) {
 			sprintf(string, "%08x", *(u32 *)&nand_buffer[
-				CONFIG_BACKUP_SERIAL_OFFSET]);
+			    getenv_ulong("backupserialoffset", 16,
+				CONFIG_BACKUP_SERIAL_OFFSET)]);
 			setenv("serial#", string);
 		}
 		if (ethaddr_missing && !nand_read_status)
 			eth_setenv_enetaddr("ethaddr", &nand_buffer[
-                                CONFIG_BACKUP_ETHADDR_OFFSET]);
+                            getenv_ulong("backupethaddroffset", 16,
+				CONFIG_BACKUP_ETHADDR_OFFSET)]);
 		if (eth1addr_missing && !nand_read_status)
 			eth_setenv_enetaddr("eth1addr", &nand_buffer[
-                                CONFIG_BACKUP_ETH1ADDR_OFFSET]);
+                            getenv_ulong("backupeth1addroffset", 16,
+				CONFIG_BACKUP_ETH1ADDR_OFFSET)]);
 		saveenv();
 	}
 #endif
