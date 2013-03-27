@@ -174,7 +174,7 @@
 	"consolecmd:so,ncoutport:do,ncinport:do,nc:so,sc:so," \
 	"fdt_high:xo,initrd_high:xo,TargetClass:so,DeviceDesc:so," \
 	"DeviceCode:xo,FPGADeviceCode:xo," \
-	"USBVendorID:xo,USBProductID:xo,USBProduct:so," \
+	"USBVendorID:xo,USBProductID:xo,USBProduct:so,USBDevice:xo," \
 	"loadaddr:xo,verifyaddr:xo," \
 	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
 	"backupeth1addroffset:xo," \
@@ -217,6 +217,7 @@
 	"USBVendorID=" CONFIG_NI_USB_VID "\0" \
 	"USBProductID=" CONFIG_NI_USB_PID "\0" \
 	"USBProduct=NI myRIO\0" \
+	"USBDevice=0x" CONFIG_DEVICE_CODE "\0" \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"verifyaddr=0x8000000\0" \
