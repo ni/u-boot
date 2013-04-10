@@ -542,27 +542,12 @@ int Xgmac_send(struct eth_device *dev, void *packet, int length)
 
 int Xgmac_rx(struct eth_device *dev)
 {
-	u32 status, retval;
-	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
+	XEmacPss *EmacPssInstancePtr = (XEmacPss *) dev->priv;
 
-	status =
-	    XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
-			     XEMACPSS_RXSR_OFFSET);
-	if (status & XEMACPSS_RXSR_FRAMERX_MASK) {
+	while (!Xgmac_process_rx(EmacPssInstancePtr))
+		;
 
-//		printf("rx packet received\n");
-	
-		do {
-			retval = Xgmac_process_rx(EmacPssInstancePtr);
-		} while (retval == 0) ;
-	}
-
-	/* Clear interrupt status.
-	 */
-	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
-	                  XEMACPSS_RXSR_OFFSET, status);
-	
-	return 1;
+	return 0;
 }
 
 static int Xgmac_write_hwaddr(struct eth_device *dev)
