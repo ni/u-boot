@@ -10,6 +10,7 @@
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <serial.h>
 #include <zynqpl.h>
 
 #define BOOT_MODE_REG     (XPSS_SYS_CTRL_BASEADDR + 0x25C)
@@ -42,6 +43,11 @@ u32 XIo_In32(u32 InAddress)
 #ifdef CONFIG_FPGA
 Xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
 #endif
+
+struct serial_device *default_serial_console(void)
+{
+	return &zynq_serial0_device;
+}
 
 int board_init(void)
 {
