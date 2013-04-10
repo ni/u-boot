@@ -2602,8 +2602,8 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
 
 	ret = done_command(ctx);  /* implicit closure of previous command */
 	/* The current command is null so don't allocate a new one */
-	if (ret && type == PIPE_SEQ)
-		return ret;
+	if (ret && type == PIPE_SEQ && ctx->w != RES_DONE)
+		return 1;
 	debug_printf("done_pipe, type %d\n", type);
 	ctx->pipe->followup = type;
 	ctx->last_followup = type;
