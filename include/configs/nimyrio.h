@@ -417,7 +417,7 @@
 	"setlederrorstatus=" \
 		"i2c mw 0x40 0x5 0xAA; " \
 		"i2c mw 0x40 0x6 0xAA;\0" \
-	"readbootmode=i2c read 0x40 0xFF 1 $loadaddr; " \
+	"readbootmode=i2c read 0x40 0x1F 1 $loadaddr; " \
 		"setexpr.b bootmodeval *$loadaddr \\\\& 0x3; " \
 		"if test $bootmodeval -eq 1; then " \
 			"bootmode=safemode; " \
