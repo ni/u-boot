@@ -97,8 +97,8 @@
 #define CONFIG_FPGA_ZYNQPL
 
 /* HW to use */
-#define CONFIG_ZYNQ_UART0
 #ifndef CONFIG_DM_SERIAL
+#undef CONFIG_ZYNQ_SERIAL
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
@@ -106,6 +106,8 @@
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
+#define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
+#define CONFIG_CONSOLE_UBOOT_DEV "eserial0"
 
 #define CONFIG_BOOTP_MAY_FAIL
 #define CONFIG_BOOTP_SERVERIP
@@ -213,12 +215,14 @@
 #define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
-	"consolecmd=setenv console ttyPS0,$baudrate\0" \
+	"consolecmd=setenv console " CONFIG_CONSOLE_LINUX_DEV ",$baudrate\0" \
 	"ncoutport=7865\0" \
 	"ncinport=8473\0" \
 	"ncip=255.255.255.255\0" \
 	"nc=setenv stdout nc;setenv stdin nc\0" \
-	"sc=setenv stdout serial;setenv stdin serial\0" \
+	"sc=setenv stdout " CONFIG_CONSOLE_UBOOT_DEV ";" \
+		"setenv stderr " CONFIG_CONSOLE_UBOOT_DEV ";" \
+		"setenv stdin " CONFIG_CONSOLE_UBOOT_DEV ";\0" \
 	"fdt_high=0x7ffffff\0" \
 	"initrd_high=0x7ff7fff\0" \
 	"TargetClass=cRIO\0" \
@@ -269,6 +273,7 @@
 			"else " \
 				"setenv consoleparam console=$console quiet; " \
 			"fi; " \
+			"run sc; " \
 		"else " \
 			"setenv consoleparam console= quiet; " \
 			"setenv stderr nulldev; " \
@@ -552,7 +557,6 @@
 	"run readcplddip; " \
 	"run readbootmode; " \
 	"run evaldip; " \
-	"run consoleoutcmd; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"setenv silent; " \
@@ -561,6 +565,7 @@
 		"run recoverycmd; " \
 	"else " \
 		"run fpgaloadcmd; " \
+		"run consoleoutcmd; " \
 		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \
 		"fi; " \
