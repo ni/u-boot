@@ -8,6 +8,7 @@
 #include <asm/io.h>
 #include <environment.h>
 #include <i2c.h>
+#include <jffs2/load_kernel.h>
 #include <miiphy.h>
 #include <netdev.h>
 #include <serial.h>
@@ -69,6 +70,35 @@ int board_late_init (void)
 	int ethaddr_missing;
 	int eth1addr_missing;
 #endif
+#ifdef CONFIG_CMD_NAND
+	loff_t off;
+	loff_t size;
+
+#if defined(CONFIG_MFG)
+	/*
+	 * Unlock the entire flash for manufacturing
+	 */
+	off = 0;
+#else
+	struct mtd_device *dev;
+	u8 part_num;
+	struct part_info *part;
+
+	if (mtdparts_init() || find_dev_and_part("u-boot", &dev, &part_num, &part))
+		off = CONFIG_MTD_UBOOT_OFFSET + CONFIG_BOARD_SIZE_LIMIT;
+	else
+		off = part->size + part->offset;
+#endif
+
+	/*
+	 * This is crappy (using 0 as the device), but this is what the Zynq
+	 * NAND driver does, so we do it too to make sure we get the same device
+	 */
+	size = nand_info[0].size - off;
+
+	nand_unlock(&nand_info[0], off, size, 0);
+
+#endif /* CONFIG_CMD_NAND */
 
 	/*
 	 * Take usb phy out of reset
@@ -124,31 +154,7 @@ int board_mmc_init(bd_t *bd)
 #ifdef CONFIG_CMD_NAND
 int board_nand_init(struct nand_chip *nand_chip)
 {
-	loff_t off;
-	loff_t size;
-	int ret;
-
-	ret = zynq_nand_init(nand_chip);
-	if (ret)
-		return ret;
-
-	/*
-	 * Unlock the entire flash for manufacturing
-	 */
-#if defined(CONFIG_MFG)
-	off = 0;
-#else
-	off = CONFIG_MTD_UBOOT_OFFSET + CONFIG_BOARD_SIZE_LIMIT;
-#endif
-	/*
-	 * This is crappy (using 0 as the device), but this is what the Zynq
-	 * NAND driver does, so we do it too to make sure we get the same device
-	 */
-	size = nand_info[0].size - off;
-
-	nand_unlock(&nand_info[0], off, size, 0);
-
-	return ret;
+	return zynq_nand_init(nand_chip);
 }
 #endif
 
