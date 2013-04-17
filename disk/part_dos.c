@@ -78,13 +78,18 @@ static void print_one_part (dos_partition_t *p, int ext_part_sector, int part_nu
 
 static int test_block_type(unsigned char *buffer)
 {
+	dos_partition_t *p;
+	int slot;
+
 	if((buffer[DOS_PART_MAGIC_OFFSET + 0] != 0x55) ||
 	    (buffer[DOS_PART_MAGIC_OFFSET + 1] != 0xaa) ) {
 		return (-1);
 	} /* no DOS Signature at all */
-	if (strncmp((char *)&buffer[DOS_PBR_FSTYPE_OFFSET],"FAT",3)==0 ||
-	    strncmp((char *)&buffer[DOS_PBR32_FSTYPE_OFFSET],"FAT32",5)==0) {
-		return DOS_PBR; /* is PBR */
+
+	p = (dos_partition_t *)(buffer + 0x1be);
+	for (slot = 0; slot < 4; slot++, p++) {
+		if (p->boot_ind != 0 && p->boot_ind != 0x80)
+			return DOS_PBR; /* is PBR */
 	}
 	return DOS_MBR;	    /* Is MBR */
 }
