@@ -189,6 +189,7 @@ struct xnandps_info {
 	void __iomem		*smc_regs;
 	unsigned long		end_cmd_pending;
 	unsigned long		end_cmd;
+	int			last_read_page;
 };
 
 #define NAND_CMD_GET_FEATURES	0xEE
@@ -828,6 +829,15 @@ static void xnandps_cmd_function(struct mtd_info *mtd, unsigned int command,
 		command = NAND_CMD_READ0;
 	}
 
+	/* If we receive a READ0 for the page that we've most recently read,
+	   without an intervening command that would change the state of the
+	   NAND cache register, we can replace the READ0 with a RNDOUT. */
+	if ((command == NAND_CMD_READ0) &&
+	    (xnand->last_read_page == page_addr)) {
+		command = NAND_CMD_RNDOUT;
+		page_addr = -1;
+	}
+
 	/* Get the command format */
 	for (i = 0; (xnandps_commands[i].start_cmd != NAND_CMD_NONE ||
 		xnandps_commands[i].end_cmd != NAND_CMD_NONE); i++) {
@@ -836,6 +846,11 @@ static void xnandps_cmd_function(struct mtd_info *mtd, unsigned int command,
 	}
 	if (curr_cmd == NULL)
 		return;
+
+	/* We want to preserve the page address of the last READ0
+	   when just changing the read column address. */
+	if (command != NAND_CMD_RNDOUT)
+		xnand->last_read_page = -1;
 
 	/* Clear interrupt */
 	xnandps_write32((xnand->smc_regs + XSMCPSS_MC_CLR_CONFIG), (1 << 4));
@@ -915,8 +930,12 @@ static void xnandps_cmd_function(struct mtd_info *mtd, unsigned int command,
 		(command == NAND_CMD_GET_FEATURES)) {
 		while (!chip->dev_ready(mtd))
 				;
-		return;
 	}
+
+	if (command == NAND_CMD_READ0)
+		/* Store the read page address so that we can detect consecutive
+		   reads of the same page and only send one read command. */
+		xnand->last_read_page = page_addr;
 }
 
 /**
@@ -1314,6 +1333,8 @@ int zynq_nand_init(struct nand_chip *nand_chip)
 		else
 			;
 	}
+
+	xnand->last_read_page = -1;
 
 	/* second phase scan */
 	if (nand_scan_tail(mtd)) {
