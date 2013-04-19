@@ -122,6 +122,7 @@ struct zynq_nand_info {
 	void __iomem	*nand_base;
 	u8		end_cmd_pending;
 	u8		end_cmd;
+	int		last_read_page;
 };
 
 /*
@@ -797,6 +798,15 @@ static void zynq_nand_cmd_function(struct mtd_info *mtd, unsigned int command,
 		command = NAND_CMD_READ0;
 	}
 
+	/* If we receive a READ0 for the page that we've most recently read,
+	   without an intervening command that would change the state of the
+	   NAND cache register, we can replace the READ0 with a RNDOUT. */
+	if ((command == NAND_CMD_READ0) &&
+	    (xnand->last_read_page == page_addr)) {
+		command = NAND_CMD_RNDOUT;
+		page_addr = -1;
+	}
+
 	/* Get the command format */
 	for (index = 0; index < ARRAY_SIZE(zynq_nand_commands); index++)
 		if (command == zynq_nand_commands[index].start_cmd)
@@ -807,6 +817,11 @@ static void zynq_nand_cmd_function(struct mtd_info *mtd, unsigned int command,
 		return;
 	}
 	curr_cmd = &zynq_nand_commands[index];
+
+	/* We want to preserve the page address of the last READ0
+	   when just changing the read column address. */
+	if (command != NAND_CMD_RNDOUT)
+		xnand->last_read_page = -1;
 
 	/* Clear interrupt */
 	writel(ZYNQ_MEMC_CLRCR_INT_CLR1, &zynq_nand_smc_base->cfr);
@@ -886,6 +901,11 @@ static void zynq_nand_cmd_function(struct mtd_info *mtd, unsigned int command,
 	    (command == NAND_CMD_GET_FEATURES))
 		/* wait until command is processed */
 		nand_wait_ready(mtd);
+
+	if (command == NAND_CMD_READ0)
+		/* Store the read page address so that we can detect consecutive
+		   reads of the same page and only send one read command. */
+		xnand->last_read_page = page_addr;
 }
 
 /*
@@ -1183,6 +1203,8 @@ static int zynq_nand_init(struct nand_chip *nand_chip, int devnum)
 		else
 			printf("%s: No oob layout found\n", __func__);
 	}
+
+	xnand->last_read_page = -1;
 
 	/* Second phase scan */
 	if (nand_scan_tail(mtd)) {
