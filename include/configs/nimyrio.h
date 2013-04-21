@@ -324,6 +324,7 @@
 			"savebootdelay=$bootdelay && " \
 			"setenv bootdelay -2 && " \
 			"run setlederrorstatus && " \
+			"usb reset && " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
