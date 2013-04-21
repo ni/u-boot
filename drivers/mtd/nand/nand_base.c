@@ -2391,6 +2391,7 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 	/* Check, if it is write protected */
 	if (nand_check_wp(mtd)) {
 		ret = -EIO;
+		chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
 		goto err_out;
 	}
 
@@ -2595,6 +2596,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
 
 	/* Check, if it is write protected */
 	if (nand_check_wp(mtd)) {
+		chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
 		chip->select_chip(mtd, -1);
 		return -EROFS;
 	}
@@ -2730,6 +2732,7 @@ int nand_erase_nand(struct mtd_info *mtd, struct erase_info *instr,
 	if (nand_check_wp(mtd)) {
 		pr_debug("%s: device is write protected!\n",
 				__func__);
+		chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
 		instr->state = MTD_ERASE_FAILED;
 		goto erase_exit;
 	}
