@@ -33,7 +33,7 @@ static void Xgmac_set_eth_advertise(XEmacPss *EmacPssInstancePtr,
 
 /*************************** Constant Definitions ***************************/
 
-#define RXBD_CNT       8	/* Number of RxBDs to use */
+#define RXBD_CNT       4096	/* Number of RxBDs to use */
 #define TXBD_CNT       8	/* Number of TxBDs to use */
 
 #define phy_spinwait(e) do { while (!Xgmac_phy_mgmt_idle(e)); } while (0)
