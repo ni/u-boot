@@ -772,7 +772,22 @@ static int zynq_nand_read_page_swecc(struct mtd_info *mtd,
  */
 static void zynq_nand_select_chip(struct mtd_info *mtd, int chip)
 {
-	/* Not support multiple chips yet */
+	/* CS is automatically asserted when a command or data access is
+	   started. In this function we only need to deassert CS when the
+	   chip is no longer in use. Unfortunately, the only way we can
+	   do this is to read a byte of data from the NAND chip. */
+	if (-1 == chip) {
+		struct nand_chip *nand_chip;
+		unsigned long data_phase_addr;
+
+		nand_chip = (struct nand_chip *)mtd->priv;
+		data_phase_addr = (unsigned long __force)nand_chip->IO_ADDR_R;
+		data_phase_addr |= ZYNQ_NAND_CLEAR_CS;
+		nand_chip->IO_ADDR_R = (void __iomem *__force)data_phase_addr;
+
+		readb(nand_chip->IO_ADDR_R);
+	}
+	return;
 }
 
 /*
