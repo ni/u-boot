@@ -990,6 +990,18 @@ int cpu_release(int nr, int argc, char * const argv[]);
 #define DEFINE_CACHE_ALIGN_BUFFER(type, name, size)			\
 	DEFINE_ALIGN_BUFFER(type, name, size, ARCH_DMA_MINALIGN)
 
+/*
+ * Multiplies an integer by a fraction, while avoiding unnecessary
+ * overflow or loss of precision.
+ */
+#define mult_frac(x, numer, denom)(			\
+{							\
+	typeof(x) quot = (x) / (denom);			\
+	typeof(x) rem  = (x) % (denom);			\
+	(quot * (numer)) + ((rem * (numer)) / (denom));	\
+}							\
+)
+
 /* Pull in stuff for the build system */
 #ifdef DO_DEPS_ONLY
 # include <environment.h>
