@@ -53,6 +53,7 @@ struct mtd_partition {
 int mtd_is_partition(const struct mtd_info *mtd);
 int add_mtd_partitions(struct mtd_info *, const struct mtd_partition *, int);
 int del_mtd_partitions(struct mtd_info *);
+uint64_t mtd_get_device_size(const struct mtd_info *mtd);
 
 #if 0
 /*
