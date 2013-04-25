@@ -2452,6 +2452,40 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 	return chip->block_markbad(mtd, ofs);
 }
 
+#ifdef CONFIG_SYS_NAND_ONFI_DETECTION
+/**
+ * nand_max_bad_blocks - [MTD Interface] Max number of bad blocks for an mtd
+ * @mtd: MTD device structure
+ * @ofs: offset relative to mtd start
+ * @len: length of mtd
+ */
+static int nand_max_bad_blocks (struct mtd_info *mtd, loff_t ofs, size_t len)
+{
+	struct nand_chip *chip = mtd->priv;
+	uint32_t part_start_block;
+	uint32_t part_end_block;
+	uint32_t part_start_lun;
+	uint32_t part_end_lun;
+
+	/* ONFI is used to determine the maximum bad block count. */
+	if (!chip->onfi_version)
+		return -ENOTSUPP;
+
+	/* Get the start and end of the partition in erase blocks. */
+	part_start_block = mtd_div_by_eb(ofs, mtd);
+	part_end_block = mtd_div_by_eb(len, mtd) + part_start_block - 1;
+
+	/* Get the start and end LUNs of the partition. */
+	part_start_lun = part_start_block / chip->onfi_params.blocks_per_lun;
+	part_end_lun = part_end_block / chip->onfi_params.blocks_per_lun;
+
+	/* Look up the bad blocks per unit and multiply by the number of units
+	   that the partition spans. */
+	return chip->onfi_params.bb_per_lun *
+		(part_end_lun - part_start_lun + 1);
+}
+#endif
+
 /*
  * Set default functions
  */
@@ -3179,7 +3213,9 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;
 	mtd->block_markbad = nand_block_markbad;
-
+#ifdef CONFIG_SYS_NAND_ONFI_DETECTION
+	mtd->max_bad_blocks = nand_max_bad_blocks;
+#endif
 	/* propagate ecc.layout to mtd_info */
 	mtd->ecclayout = chip->ecc.layout;
 
