@@ -50,6 +50,7 @@ struct mtd_partition {
 #define MTDPART_SIZ_FULL	(0)
 
 
+int mtd_is_partition(const struct mtd_info *mtd);
 int add_mtd_partitions(struct mtd_info *, const struct mtd_partition *, int);
 int del_mtd_partitions(struct mtd_info *);
 

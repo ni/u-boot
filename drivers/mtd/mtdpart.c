@@ -476,3 +476,17 @@ int add_mtd_partitions(struct mtd_info *master,
 
 	return 0;
 }
+
+int mtd_is_partition(const struct mtd_info *mtd)
+{
+	struct mtd_part *part;
+	int ispart = 0;
+
+	list_for_each_entry(part, &mtd_partitions, list)
+		if (&part->mtd == mtd) {
+			ispart = 1;
+			break;
+		}
+
+	return ispart;
+}
