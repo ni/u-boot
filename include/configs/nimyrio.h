@@ -165,7 +165,6 @@
 /* UBI */
 #define CONFIG_RBTREE
 #define CONFIG_CMD_UBI
-#define CONFIG_MTD_UBI_BEB_RESERVE_ONFI
 
 /* UBIFS */
 #define CONFIG_LZO
