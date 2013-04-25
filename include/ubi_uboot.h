@@ -39,7 +39,7 @@ do {									\
 
 /* configurable */
 #define CONFIG_MTD_UBI_WL_THRESHOLD	4096
-#define CONFIG_MTD_UBI_BEB_LIMIT	2
+#define CONFIG_MTD_UBI_BEB_LIMIT	20
 #define UBI_IO_DEBUG			0
 
 /* debug options (Linux: drivers/mtd/ubi/Kconfig.debug) */

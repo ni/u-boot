@@ -45,6 +45,7 @@
 #endif
 #include <ubi_uboot.h>
 #include "ubi.h"
+#include <linux/mtd/partitions.h>
 
 #if (CONFIG_SYS_MALLOC_LEN < (512 << 10))
 #error Malloc area too small for UBI, increase CONFIG_SYS_MALLOC_LEN to >= 512k
@@ -542,11 +543,25 @@ static int io_init(struct ubi_device *ubi)
 	if (ubi->mtd->block_isbad && ubi->mtd->block_markbad) {
 		ubi->bad_allowed = 1;
 		if (CONFIG_MTD_UBI_BEB_LIMIT > 0) {
-			int percent = CONFIG_MTD_UBI_BEB_LIMIT;
-			int limit = mult_frac(ubi->peb_count, percent, 100);
+			int per1024 = CONFIG_MTD_UBI_BEB_LIMIT;
+			int limit, device_pebs;
+			uint64_t device_size;
+
+			/*
+			 * Here we are using size of the entire flash chip and
+			 * not just the MTD partition size because the maximum
+			 * number of bad eraseblocks is a percentage of the
+			 * whole device and bad eraseblocks are not fairly
+			 * distributed over the flash chip. So the worst case
+			 * is that all the bad eraseblocks of the chip are in
+			 * the MTD partition we are attaching (ubi->mtd).
+			 */
+			device_size = mtd_get_device_size(ubi->mtd);
+			device_pebs = mtd_div_by_eb(device_size, ubi->mtd);
+			limit = mult_frac(device_pebs, per1024, 1024);
 
 			/* Round it up */
-			if (mult_frac(limit, 100, percent) < ubi->peb_count)
+			if (mult_frac(limit, 1024, per1024) < device_pebs)
 				limit += 1;
 			ubi->bad_peb_limit = limit;
 		}
