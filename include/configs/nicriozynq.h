@@ -9,6 +9,8 @@
 #define CONFIG_FPGA_DEVICE_CODE "76F8"
 #define CONFIG_DEVICE_DESC "cRIO-9068"
 
+#define CONFIG_CPU_FREQ_HZ 666666666
+
 #include <configs/zynq_common.h>
 
 #undef CONFIG_ZYNQ_XIL_LQSPI

@@ -29,6 +29,8 @@
 #define CONFIG_NI_USB_PID "0x762F"
 #define CONFIG_NI_USB_VID "0x3923"
 
+#define CONFIG_CPU_FREQ_HZ 666666666
+
 #include <configs/zynq_common.h>
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
