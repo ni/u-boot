@@ -23,7 +23,11 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_FPGA
+#if defined(CONFIG_ROBORIO)
 xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
+#else
+xilinx_desc fpga = XILINX_XC7Z010_DESC(0);
+#endif
 #endif
 
 int board_init(void)
