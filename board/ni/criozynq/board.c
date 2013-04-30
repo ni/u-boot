@@ -37,8 +37,6 @@ struct serial_device *default_serial_console(void)
 
 int board_init(void)
 {
-	icache_enable();
-
 #ifdef CONFIG_FPGA
 	fpga_init();
 	fpga_add(fpga_xilinx, &fpga);
