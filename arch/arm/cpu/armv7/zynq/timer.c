@@ -83,8 +83,9 @@ int timer_init(void)
 								emask);
 
 	/* Reset time */
-	gd->lastinc = readl(&timer_base->counter) /
-					(TIMER_TICK_HZ / CONFIG_SYS_HZ);
+	gd->lastinc = (u32)lldiv((unsigned long long)
+				 readl(&timer_base->counter) * CONFIG_SYS_HZ,
+				 TIMER_TICK_HZ);
 	gd->tbl = 0;
 
 	return 0;
@@ -98,7 +99,8 @@ ulong get_timer_masked(void)
 {
 	ulong now;
 
-	now = readl(&timer_base->counter) / (TIMER_TICK_HZ / CONFIG_SYS_HZ);
+	now = (u32)lldiv((unsigned long long)readl(&timer_base->counter) *
+			 CONFIG_SYS_HZ, TIMER_TICK_HZ);
 
 	if (gd->lastinc >= now) {
 		/* Normal mode */
@@ -122,7 +124,7 @@ void __udelay(unsigned long usec)
 	if (usec == 0)
 		return;
 
-	countticks = (u32) (((unsigned long long) TIMER_TICK_HZ * usec) /
+	countticks = (u32)lldiv((unsigned long long)TIMER_TICK_HZ * usec,
 								1000000);
 
 	/* decrementing timer */
