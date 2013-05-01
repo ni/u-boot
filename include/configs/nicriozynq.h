@@ -184,7 +184,7 @@
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
 	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
-	"bootcmd:so,preboot:so,"
+	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
 	"serial#:xo,ethaddr:mc,eth1addr:mc,"
