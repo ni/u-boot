@@ -70,8 +70,9 @@ int timer_init(void)
 								emask);
 
 	/* Reset time */
-	gd->arch.lastinc = readl(&timer_base->counter) /
-				(gd->arch.timer_rate_hz / CONFIG_SYS_HZ);
+	gd->arch.lastinc = (u32)lldiv((unsigned long long)
+				      readl(&timer_base->counter) *
+				      CONFIG_SYS_HZ, gd->arch.timer_rate_hz);
 	gd->arch.tbl = 0;
 
 	return 0;
