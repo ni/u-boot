@@ -1266,6 +1266,10 @@ int zynq_nand_init(struct nand_chip *nand_chip)
 						ONDIE_ECC_FEATURE_ADDR, -1);
 		nand_chip->write_buf(mtd, set_feature, 4);
 
+		ndelay(100);
+		while (!nand_chip->dev_ready(mtd))
+			;
+
 		nand_chip->cmdfunc(mtd, NAND_CMD_GET_FEATURES,
 						ONDIE_ECC_FEATURE_ADDR, -1);
 		nand_chip->read_buf(mtd, get_feature, 4);
