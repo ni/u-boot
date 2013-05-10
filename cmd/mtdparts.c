@@ -121,6 +121,11 @@ extern void board_mtdparts_default(const char **mtdids, const char **mtdparts);
 static const char *mtdids_default = MTDIDS_DEFAULT;
 static const char *mtdparts_default = MTDPARTS_DEFAULT;
 
+/* Reserved space at the end of the last partition */
+#ifndef CONFIG_MTD_RESERVE_END
+#define CONFIG_MTD_RESERVE_END 0
+#endif
+
 /* copies of last seen 'mtdids', 'mtdparts' and 'partition' env variables */
 #define MTDIDS_MAXLEN		128
 #define MTDPARTS_MAXLEN		512
@@ -398,7 +403,7 @@ static int part_validate_eraseblock(struct mtdids *id, struct part_info *part)
 static int part_validate(struct mtdids *id, struct part_info *part)
 {
 	if (part->size == SIZE_REMAINING)
-		part->size = id->size - part->offset;
+		part->size = id->size - part->offset - CONFIG_MTD_RESERVE_END;
 
 	if (part->offset > id->size) {
 		printf("%s: offset %08llx beyond flash size %08llx\n",
