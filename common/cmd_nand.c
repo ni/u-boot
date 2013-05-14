@@ -375,15 +375,22 @@ static void nand_print_and_set_info(int idx)
 	struct nand_chip *chip = nand->priv;
 	const int bufsz = 32;
 	char buf[bufsz];
+	int buswidth;
+	int eraseblocks;
+
+	buswidth = (chip->options & NAND_BUSWIDTH_16) ? 16 : 8;
+	eraseblocks = mtd_div_by_eb(nand->size, nand);
 
 	printf("Device %d: ", idx);
 	if (chip->numchips > 1)
 		printf("%dx ", chip->numchips);
 	printf("%s, sector size %u KiB\n",
 	       nand->name, nand->erasesize >> 10);
-	printf("  Page size  %8d b\n", nand->writesize);
-	printf("  OOB size   %8d b\n", nand->oobsize);
-	printf("  Erase size %8d b\n", nand->erasesize);
+	printf("  Page size    %8d bytes\n", nand->writesize);
+	printf("  OOB size     %8d bytes\n", nand->oobsize);
+	printf("  Erase size   %8d bytes\n", nand->erasesize);
+	printf("  Bus width    %8d bits\n", buswidth);
+	printf("  Erase blocks %8d\n", eraseblocks);
 
 	/* Set geometry info */
 	sprintf(buf, "%x", nand->writesize);
@@ -394,6 +401,12 @@ static void nand_print_and_set_info(int idx)
 
 	sprintf(buf, "%x", nand->erasesize);
 	setenv("nand_erasesize", buf);
+
+	sprintf(buf, "%x", buswidth);
+	setenv("nand_buswidth", buf);
+
+	sprintf(buf, "%x", eraseblocks);
+	setenv("nand_eraseblocks", buf);
 }
 
 static int raw_access(nand_info_t *nand, ulong addr, loff_t off, ulong count,
