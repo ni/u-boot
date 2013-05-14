@@ -1030,6 +1030,8 @@ static int check_create(struct mtd_info *mtd, uint8_t *buf, struct nand_bbt_desc
 	return 0;
 }
 
+#ifndef CONFIG_NAND_BBT_NO_MARK
+
 /**
  * mark_bbt_regions - [GENERIC] mark the bad block table regions
  * @mtd:	MTD device structure
@@ -1089,6 +1091,8 @@ static void mark_bbt_region(struct mtd_info *mtd, struct nand_bbt_descr *td)
 			nand_update_bbt(mtd, (loff_t)(block - 2) << (this->bbt_erase_shift - 1));
 	}
 }
+
+#endif /* !CONFIG_NAND_BBT_NO_MARK */
 
 /**
  * verify_bbt_descr - verify the bad block description
@@ -1204,11 +1208,12 @@ int nand_scan_bbt(struct mtd_info *mtd, struct nand_bbt_descr *bd)
 	if (res)
 		res = check_create(mtd, buf, bd);
 
+#ifndef CONFIG_NAND_BBT_NO_MARK
 	/* Prevent the bbt regions from erasing / writing */
 	mark_bbt_region(mtd, td);
 	if (md)
 		mark_bbt_region(mtd, md);
-
+#endif
 	vfree(buf);
 	return res;
 }
