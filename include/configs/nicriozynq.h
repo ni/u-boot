@@ -185,6 +185,10 @@
 		"70M(boot-config)," \
 		"-(root)"
 
+#if defined(CONFIG_MFG)
+#define CONFIG_NAND_BBT_NO_MARK
+#endif
+
 /* UBI */
 #define CONFIG_RBTREE
 #define CONFIG_CMD_UBI
