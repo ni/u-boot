@@ -285,6 +285,11 @@ static void nand_print_and_set_info(int idx)
 {
 	struct mtd_info *mtd = nand_info[idx];
 	struct nand_chip *chip = mtd_to_nand(mtd);
+	int buswidth;
+	int eraseblocks;
+
+	buswidth = (chip->options & NAND_BUSWIDTH_16) ? 16 : 8;
+	eraseblocks = mtd_div_by_eb(mtd->size, mtd);
 
 	printf("Device %d: ", idx);
 	if (chip->numchips > 1)
@@ -297,11 +302,15 @@ static void nand_print_and_set_info(int idx)
 	printf("  subpagesize %8d b\n", chip->subpagesize);
 	printf("  options     0x%8x\n", chip->options);
 	printf("  bbt options 0x%8x\n", chip->bbt_options);
+	printf("  Bus width    %8d bits\n", buswidth);
+	printf("  Erase blocks %8d\n", eraseblocks);
 
 	/* Set geometry info */
 	setenv_hex("nand_writesize", mtd->writesize);
 	setenv_hex("nand_oobsize", mtd->oobsize);
 	setenv_hex("nand_erasesize", mtd->erasesize);
+	setenv_hex("nand_buswidth", buswidth);
+	setenv_hex("nand_eraseblocks", eraseblocks);
 }
 
 static int raw_access(struct mtd_info *mtd, ulong addr, loff_t off,
