@@ -42,6 +42,15 @@
 #define SLCR_FPGA_RST_CTRL (SLCR_BASEADDR + 0x240)
 #define SLCR_LVL_SHFTR_EN (SLCR_BASEADDR + 0x900)
 
+#define SLCR_FPGA_RST_CTRL_DONT_MODIFY_MASK	0x01030000
+#define SLCR_FPGA_RST_CTRL_OUT_RST_MASK		0x0000000F
+#define SLCR_FPGA_RST_CTRL_CLEAR_RST_CTRL	0x00000000
+
+#define SLCR_LVL_SHFTR_EN_DONT_MODIFY_MASK	0x00000010
+#define SLCR_LVL_SHFTR_EN_DISABLE_MASK		0x00000000
+#define SLCR_LVL_SHFTR_EN_PRE_DOWNLOAD_MASK	0x0000000A
+#define SLCR_LVL_SHFTR_EN_POST_DOWNLOAD_MASK	0x0000000F
+
 #define DEVCFG_BASEADDR 0xF8007000
 #define DEVCFG_CTRL (DEVCFG_BASEADDR + 0x00)
 #define DEVCFG_CTRL_PCFG_PROG_B 0x40000000
@@ -99,6 +108,8 @@ int zynq_load(Xilinx_desc *desc, const void *buf, size_t bsize)
 	u32 control;
 	u32 isr_status;
 	u32 status;
+	u32 fpgarstctrl;
+	u32 lvlshftren;
 	const u32 *test = buf;
 	int i;
 
@@ -118,9 +129,21 @@ int zynq_load(Xilinx_desc *desc, const void *buf, size_t bsize)
 	}
 
 	out_le32(SLCR_UNLOCK, SLCR_UNLOCK_VALUE);
-	out_le32(SLCR_FPGA_RST_CTRL, 0xFFFFFFFF); /* Disable AXI interface */
+
+	/* Disable AXI interface */
+	fpgarstctrl = in_le32(SLCR_FPGA_RST_CTRL) &
+		SLCR_FPGA_RST_CTRL_DONT_MODIFY_MASK;
+	out_le32(SLCR_FPGA_RST_CTRL,
+		SLCR_FPGA_RST_CTRL_OUT_RST_MASK | fpgarstctrl);
+
 	/* Set Level Shifters DT618760*/
-	out_le32(SLCR_LVL_SHFTR_EN, 0x0000000A);
+	lvlshftren = in_le32(SLCR_LVL_SHFTR_EN) &
+		SLCR_LVL_SHFTR_EN_DONT_MODIFY_MASK;
+	out_le32(SLCR_LVL_SHFTR_EN,
+		SLCR_LVL_SHFTR_EN_DISABLE_MASK | lvlshftren);
+	out_le32(SLCR_LVL_SHFTR_EN,
+		SLCR_LVL_SHFTR_EN_PRE_DOWNLOAD_MASK | lvlshftren);
+
 	/* Setting PCFG_PROG_B signal to high */
 	control = in_le32(DEVCFG_CTRL);
 	out_le32(DEVCFG_CTRL, control | DEVCFG_CTRL_PCFG_PROG_B);
@@ -243,9 +266,15 @@ int zynq_load(Xilinx_desc *desc, const void *buf, size_t bsize)
 	out_le32(SLCR_UNLOCK, SLCR_UNLOCK_VALUE);
 
 	/* Set Level Shifters DT618760*/
-	out_le32(SLCR_LVL_SHFTR_EN, 0x0000000F);
-	/* Disable AXI interface */
-	out_le32(SLCR_FPGA_RST_CTRL, 0x00000000);
+	lvlshftren = in_le32(SLCR_LVL_SHFTR_EN) &
+		SLCR_LVL_SHFTR_EN_DONT_MODIFY_MASK;
+	out_le32(SLCR_LVL_SHFTR_EN,
+		SLCR_LVL_SHFTR_EN_POST_DOWNLOAD_MASK | lvlshftren);
+
+	/* Enable AXI interface */
+	fpgarstctrl = in_le32(SLCR_FPGA_RST_CTRL) &
+		SLCR_FPGA_RST_CTRL_DONT_MODIFY_MASK;
+	out_le32(SLCR_FPGA_RST_CTRL, SLCR_FPGA_RST_CTRL_CLEAR_RST_CTRL | fpgarstctrl);
 
 	out_le32(SLCR_LOCK, SLCR_LOCK_VALUE);
 
