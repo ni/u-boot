@@ -185,6 +185,8 @@
 #define CONFIG_BACKUP_ETHADDR_OFFSET	0x7f4
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
 
+#define CONFIG_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
+
 #undef CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
@@ -204,7 +206,7 @@
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
 	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
-	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
+	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,wl12xxnvs:so,"
 
 #define READONLY_MFG_ENV_VARS \
 	"serial#:xo,ethaddr:mc,eth1addr:mc,"
@@ -246,6 +248,7 @@
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" __stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) "\0" \
+	"wl12xxnvs=" CONFIG_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
@@ -506,10 +509,12 @@
 		"serial_save=${serial#} && " \
 		"ethaddr_save=$ethaddr && " \
 		"eth1addr_save=$eth1addr && " \
+		"wl12xxnvs_save=$wl12xxnvs && " \
 		"env default -a && " \
 		"env set serial# $serial_save && " \
 		"env set ethaddr $ethaddr_save && " \
-		"env set eth1addr $eth1addr_save;\0" \
+		"env set eth1addr $eth1addr_save && " \
+		"env set wl12xxnvs $wl12xxnvs_save;\0" \
 	"writepartitions=" \
 		"if ubi part boot-config && " \
 			"ubi read $verifyaddr u-boot-env1 1 && " \
