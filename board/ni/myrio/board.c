@@ -57,9 +57,7 @@ int board_late_init (void)
 
 #if defined(CONFIG_MFG)
 	set_default_env("Default env required for manufacturing.\n");
-#endif
-
-#if !defined(CONFIG_MFG)
+#else
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
 	eth1addr_missing = getenv("eth1addr") == NULL;
@@ -78,14 +76,24 @@ int board_late_init (void)
 				CONFIG_BACKUP_SERIAL_OFFSET)]);
 			setenv("serial#", string);
 		}
-		if (ethaddr_missing && !nand_read_status)
-			eth_setenv_enetaddr("ethaddr", &nand_buffer[
-                            getenv_ulong("backupethaddroffset", 16,
-				CONFIG_BACKUP_ETHADDR_OFFSET)]);
-		if (eth1addr_missing && !nand_read_status)
-			eth_setenv_enetaddr("eth1addr", &nand_buffer[
-                            getenv_ulong("backupeth1addroffset", 16,
-				CONFIG_BACKUP_ETH1ADDR_OFFSET)]);
+		if (ethaddr_missing && !nand_read_status) {
+			int offset = getenv_ulong("backupethaddroffset", 16,
+                                CONFIG_BACKUP_ETHADDR_OFFSET);
+
+			if (memcmp(&nand_buffer[offset],
+			    "\xff\xff\xff\xff\xff\xff", 6)) {
+				eth_setenv_enetaddr("ethaddr", &nand_buffer[offset]);
+			}
+		}
+		if (eth1addr_missing && !nand_read_status) {
+			int offset = getenv_ulong("backupeth1addroffset", 16,
+                                CONFIG_BACKUP_ETH1ADDR_OFFSET);
+
+			if (memcmp(&nand_buffer[offset],
+			    "\xff\xff\xff\xff\xff\xff", 6)) {
+				eth_setenv_enetaddr("eth1addr", &nand_buffer[offset]);
+			}
+		}
 		saveenv();
 	}
 #endif
