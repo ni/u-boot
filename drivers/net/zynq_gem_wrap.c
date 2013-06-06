@@ -9,13 +9,6 @@
 
 #include "zynq_gem.h"
 
-#if defined(CONFIG_ZYNQ_GEM0_EMIO) && !defined(CONFIG_ZYNQ_GEM0_FPGA_CLK_REG)
-#error CONFIG_ZYNQ_GEM0_FPGA_CLK_REG must be defined in EMIO mode
-#endif
-#if defined(CONFIG_ZYNQ_GEM1_EMIO) && !defined(CONFIG_ZYNQ_GEM1_FPGA_CLK_REG)
-#error CONFIG_ZYNQ_GEM1_FPGA_CLK_REG must be defined in EMIO mode
-#endif
-
 /************************ Forward function declaration **********************/
 
 static int Xgmac_process_rx(XEmacPss *EmacPssInstancePtr);
@@ -251,7 +244,7 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	int link_speed;
 	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
 	u32 slcr_gem_rx_clk;
-	u32 slcr_gem_tx_clk;
+	u32 slcr_gem_tx_clk = 0;
 	u32 slcr_gem_emio_clk = 0;
 
 	if (EmacPssInstancePtr->Initialized)
@@ -387,8 +380,10 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 		slcr_gem_rx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_RCLK_CTRL;
 #ifdef CONFIG_ZYNQ_GEM0_EMIO
+#ifdef CONFIG_ZYNQ_GEM0_FPGA_CLK_REG
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + CONFIG_ZYNQ_GEM0_FPGA_CLK_REG;
+#endif
 		slcr_gem_emio_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_CLK_CTRL;
 #else
@@ -399,8 +394,10 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 		slcr_gem_rx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_RCLK_CTRL;
 #ifdef CONFIG_ZYNQ_GEM1_EMIO
+#ifdef CONFIG_ZYNQ_GEM1_FPGA_CLK_REG
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + CONFIG_ZYNQ_GEM1_FPGA_CLK_REG;
+#endif
 		slcr_gem_emio_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_CLK_CTRL;
 #else
@@ -420,29 +417,31 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	} else
 		Out32(slcr_gem_rx_clk, XPSS_SLCR_GEMn_RCLK_CTRL_MIO);
 
-	/* Set divisors for appropriate Tx frequency */
+	if (slcr_gem_tx_clk){
+		/* Set divisors for appropriate Tx frequency */
 #ifdef CONFIG_EP107
-	if (link_speed == 1000)		/* 125MHz */
-		Out32(slcr_gem_tx_clk,
-			((1 << 20) | (48 << 8) | (1 << 4) | (1 << 0)));
-	else if (link_speed == 100)	/* 25 MHz */
-		Out32(slcr_gem_tx_clk,
-			((1 << 20) | (48 << 8) | (0 << 4) | (1 << 0)));
-	else				/* 2.5 MHz */
-		Out32(slcr_gem_tx_clk,
-			((1 << 20) | (48 << 8) | (3 << 4) | (1 << 0)));
+		if (link_speed == 1000)		/* 125MHz */
+			Out32(slcr_gem_tx_clk,
+				((1 << 20) | (48 << 8) | (1 << 4) | (1 << 0)));
+		else if (link_speed == 100)	/* 25 MHz */
+			Out32(slcr_gem_tx_clk,
+				((1 << 20) | (48 << 8) | (0 << 4) | (1 << 0)));
+		else				/* 2.5 MHz */
+			Out32(slcr_gem_tx_clk,
+				((1 << 20) | (48 << 8) | (3 << 4) | (1 << 0)));
 #else
-	/* Assumes IO PLL clock is 1000 MHz */
-	if (link_speed == 1000)		/* 125MHz */
-		Out32(slcr_gem_tx_clk,
-			((1 << 20) | (8 << 8) | (0 << 4) | (1 << 0)));
-	else if (link_speed == 100)	/* 25 MHz */
-		Out32(slcr_gem_tx_clk,
-			((1 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
-	else				/* 2.5 MHz */
-		Out32(slcr_gem_tx_clk,
-			((10 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
+		/* Assumes IO PLL clock is 1000 MHz */
+		if (link_speed == 1000)		/* 125MHz */
+			Out32(slcr_gem_tx_clk,
+				((1 << 20) | (8 << 8) | (0 << 4) | (1 << 0)));
+		else if (link_speed == 100)	/* 25 MHz */
+			Out32(slcr_gem_tx_clk,
+				((1 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
+		else				/* 2.5 MHz */
+			Out32(slcr_gem_tx_clk,
+				((10 << 20) | (40 << 8) | (0 << 4) | (1 << 0)));
 #endif
+	}
 
 	/* SLCR lock */
 	Out32(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_LOCK, XPSS_SLCR_LOCK_KEY);
