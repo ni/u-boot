@@ -1107,7 +1107,7 @@ int fw_env_open(struct env_opts *opts)
 	void *addr0;
 
 	int crc1, crc1_ok;
-	unsigned char flag1;
+	unsigned char flag1 = 0;
 	void *addr1;
 
 	int ret;
@@ -1145,19 +1145,20 @@ int fw_env_open(struct env_opts *opts)
 	}
 
 	dev_current = 0;
-	if (flash_io (O_RDONLY))
+	if (flash_io (O_RDONLY)) {
 		return -1;
+	} else {
+		crc0 = crc32 (0, (uint8_t *) environment.data, ENV_SIZE);
 
-	crc0 = crc32 (0, (uint8_t *) environment.data, ENV_SIZE);
-
-	if (opts->aes_flag) {
-		ret = env_aes_cbc_crypt(environment.data, 0,
-					opts->aes_key);
-		if (ret)
-			return ret;
+		if (opts->aes_flag) {
+			ret = env_aes_cbc_crypt(environment.data, 0,
+						opts->aes_key);
+			if (ret)
+				return ret;
+		}
+		crc0_ok = (crc0 == *environment.crc);
 	}
 
-	crc0_ok = (crc0 == *environment.crc);
 	if (!HaveRedundEnv) {
 		if (!crc0_ok) {
 			fprintf (stderr,
@@ -1182,8 +1183,18 @@ int fw_env_open(struct env_opts *opts)
 		 * other pointers in environment still point inside addr0
 		 */
 		environment.image = addr1;
-		if (flash_io (O_RDONLY))
-			return -1;
+		if (flash_io (O_RDONLY)) {
+			crc1_ok = 0;
+		} else {
+			crc1 = crc32 (0, (uint8_t *) redundant->data, ENV_SIZE);
+			if (common_args.aes_flag) {
+				ret = env_aes_cbc_crypt(redundant->data, 0);
+				if (ret)
+					return ret;
+			}
+			crc1_ok = (crc1 == redundant->crc);
+			flag1 = redundant->flags;
+		}
 
 		/* Check flag scheme compatibility */
 		if (DEVTYPE(dev_current) == MTD_NORFLASH &&
