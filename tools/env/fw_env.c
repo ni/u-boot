@@ -1059,7 +1059,7 @@ int fw_env_open(void)
 	void *addr0;
 
 	int crc1, crc1_ok;
-	unsigned char flag1;
+	unsigned char flag1 = 0;
 	void *addr1;
 
 	struct env_image_single *single;
@@ -1092,11 +1092,13 @@ int fw_env_open(void)
 	}
 
 	dev_current = 0;
-	if (flash_io (O_RDONLY))
-		return -1;
+	if (flash_io (O_RDONLY)) {
+		crc0_ok = 0;
+	} else {
+		crc0 = crc32 (0, (uint8_t *) environment.data, ENV_SIZE);
+		crc0_ok = (crc0 == *environment.crc);
+	}
 
-	crc0 = crc32 (0, (uint8_t *) environment.data, ENV_SIZE);
-	crc0_ok = (crc0 == *environment.crc);
 	if (!HaveRedundEnv) {
 		if (!crc0_ok) {
 			fprintf (stderr,
@@ -1121,8 +1123,13 @@ int fw_env_open(void)
 		 * other pointers in environment still point inside addr0
 		 */
 		environment.image = addr1;
-		if (flash_io (O_RDONLY))
-			return -1;
+		if (flash_io (O_RDONLY)) {
+			crc1_ok = 0;
+		} else {
+			crc1 = crc32 (0, (uint8_t *) redundant->data, ENV_SIZE);
+			crc1_ok = (crc1 == redundant->crc);
+			flag1 = redundant->flags;
+		}
 
 		/* Check flag scheme compatibility */
 		if (DEVTYPE(dev_current) == MTD_NORFLASH &&
@@ -1141,10 +1148,6 @@ int fw_env_open(void)
 			fprintf (stderr, "Incompatible flash types!\n");
 			return -1;
 		}
-
-		crc1 = crc32 (0, (uint8_t *) redundant->data, ENV_SIZE);
-		crc1_ok = (crc1 == redundant->crc);
-		flag1 = redundant->flags;
 
 		if (crc0_ok && !crc1_ok) {
 			dev_current = 0;
