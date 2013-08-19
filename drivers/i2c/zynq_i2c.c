@@ -28,6 +28,10 @@
 #include <i2c.h>
 #include <asm/errno.h>
 
+#ifdef CONFIG_ZYNQ_I2C_MIO_RESET
+#include <asm/gpio.h>
+#endif
+
 /* Data Memory Barrier */
 #define dmb() __asm__ __volatile__ ("dmb" : : : "memory")
 #define SYNCHRONIZE_IO dmb()
@@ -123,11 +127,87 @@ struct zynq_i2c_registers {
 static struct zynq_i2c_registers *zynq_i2c =
 	(struct zynq_i2c_registers *) ZYNQ_I2C_BASE;
 
+#ifdef CONFIG_ZYNQ_I2C_MIO_RESET
+
+#define SCL_SLCR_MIO \
+	(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_MIO_PIN(CONFIG_ZYNQ_I2C_SCL_MIO))
+#define SDA_SLCR_MIO \
+	(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_MIO_PIN(CONFIG_ZYNQ_I2C_SDA_MIO))
+
+static void i2c_reset_bus(void)
+{
+	u32 scl_slcr;
+	u32 sda_slcr;
+
+	if (gpio_request(CONFIG_ZYNQ_I2C_SCL_MIO, "SCL") ||
+	    gpio_request(CONFIG_ZYNQ_I2C_SDA_MIO, "SDA")) {
+		printf("Failed to reserve I2C lines as GPIO\n");
+		return;
+	}
+
+	/* Save the current MIO configuration of the I2C lines. */
+	scl_slcr = Xin_le32((u32 *)SCL_SLCR_MIO);
+	sda_slcr = Xin_le32((u32 *)SDA_SLCR_MIO);
+
+	/* Unlock SLCR. */
+	Xout_le32((u32 *)(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_UNLOCK),
+		XPSS_SLCR_UNLOCK_KEY);
+
+	/* Configure the I2C lines as GPIOs. */
+	Xout_le32((u32 *)SCL_SLCR_MIO, scl_slcr & ~XPSS_SLCR_MIO_GPIO_SEL);
+	Xout_le32((u32 *)SDA_SLCR_MIO, sda_slcr & ~XPSS_SLCR_MIO_GPIO_SEL);
+
+	/* If the SDA line is low, we need to toggle SDC until SDA goes high. */
+	if (!gpio_get_value(CONFIG_ZYNQ_I2C_SDA_MIO)) {
+
+		int i2c_reset_bus_loops = 0;
+
+		/* Configure SCL as an output. */
+		gpio_direction_output(CONFIG_ZYNQ_I2C_SCL_MIO, 1);
+
+		do {
+			/* With function call and register access overhead,
+			   these udelay values result in an SCL low time of
+			   5.98us and a high time of 5.54us, or 86.78kHz. */
+			gpio_set_value(CONFIG_ZYNQ_I2C_SCL_MIO, 0);
+			udelay(4);
+			gpio_set_value(CONFIG_ZYNQ_I2C_SCL_MIO, 1);
+			udelay(2);
+
+			++i2c_reset_bus_loops;
+
+			if (i2c_reset_bus_loops > 9)
+				break;
+
+		} while (!gpio_get_value(CONFIG_ZYNQ_I2C_SDA_MIO));
+
+		/* Configure SCL as an input. */
+		gpio_direction_input(CONFIG_ZYNQ_I2C_SCL_MIO);
+	}
+
+	/* Restore the original MIO configuration of the I2C lines. */
+	Xout_le32((u32 *)SCL_SLCR_MIO, scl_slcr);
+	Xout_le32((u32 *)SDA_SLCR_MIO, sda_slcr);
+
+	/* Lock SLCR. */
+	Xout_le32((u32 *)(XPSS_SYS_CTRL_BASEADDR | XPSS_SLCR_LOCK),
+		XPSS_SLCR_LOCK_KEY);
+
+	gpio_free(CONFIG_ZYNQ_I2C_SCL_MIO);
+	gpio_free(CONFIG_ZYNQ_I2C_SDA_MIO);
+}
+
+#endif
+
 /*
  * I2C init called by cmd_i2c when doing 'i2c reset'.
  */
 void i2c_init(int requested_speed, int slaveadd)
 {
+#ifdef CONFIG_ZYNQ_I2C_MIO_RESET
+	/* Make sure the bus is inactive. */
+	i2c_reset_bus();
+#endif
 	/* Assume APB speed is 100MHz */
 	/* For now, set it to ~400k always */
 	/* 100MHz / (12 + 1) / 22 = ~350kHz */
