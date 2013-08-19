@@ -234,6 +234,7 @@ extern "C" {
 #define XPSS_SLCR_FPGA2_CLK_CTRL	0x0190
 #define XPSS_SLCR_FPGA3_CLK_CTRL	0x01A0
 #define XPSS_SLCR_PSS_RST_CTRL		0x0200
+#define XPSS_SLCR_MIO_PIN(n)		(0x0700 + (4 * (n)))
 
 /* XPSS_SLCR_LOCK value */
 #define XPSS_SLCR_LOCK_KEY	0x767B
@@ -248,6 +249,9 @@ extern "C" {
 /* XPSS_SLCR_GEMn_CLK_CTRL values */
 #define XPSS_SLCR_GEMn_CLK_CTRL_MIO	0x00000001
 #define XPSS_SLCR_GEMn_CLK_CTRL_EMIO	0x00000041
+
+/* Mask these bits out to configure any MIO as a GPIO. */
+#define XPSS_SLCR_MIO_GPIO_SEL	0x000000FE
 
 /* L2CC Register Offsets */
 #define XPSS_L2CC_ID_OFFSET			0x0000
