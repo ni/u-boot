@@ -206,10 +206,11 @@
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
 	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
-	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,wl12xxnvs:so,"
+	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
-	"serial#:xo,ethaddr:mc,eth1addr:mc,"
+	"serial#:xo,ethaddr:mc,eth1addr:mc,wirelessRegionFactory:so," \
+	"wl12xxnvs:so,"
 
 #define NET_TYPE_ENV_VARS \
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
@@ -248,6 +249,7 @@
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" __stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) "\0" \
+	"wirelessRegionFactory=840\0" \
 	"wl12xxnvs=" CONFIG_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
@@ -509,11 +511,13 @@
 		"serial_save=${serial#} && " \
 		"ethaddr_save=$ethaddr && " \
 		"eth1addr_save=$eth1addr && " \
+		"wirelessRegionFactory_save=$wirelessRegionFactory && " \
 		"wl12xxnvs_save=$wl12xxnvs && " \
 		"env default -a && " \
 		"env set serial# $serial_save && " \
 		"env set ethaddr $ethaddr_save && " \
 		"env set eth1addr $eth1addr_save && " \
+		"env set wirelessRegionFactory $wirelessRegionFactory_save && " \
 		"env set wl12xxnvs $wl12xxnvs_save;\0" \
 	"writepartitions=" \
 		"if ubi part boot-config && " \
