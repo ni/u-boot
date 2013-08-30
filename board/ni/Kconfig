@@ -2,6 +2,14 @@ if NIZYNQ
 choice
 	prompt "NI Zynq board select"
 
+config TARGET_NI_CRIO9066
+	bool "NI cRIO-9066"
+	select CRIO
+
+config TARGET_NI_CRIO9067
+	bool "NI cRIO-9067"
+	select CRIO
+
 config TARGET_NI_CRIO9068
 	bool "NI cRIO-9068"
 	select CRIO

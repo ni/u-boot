@@ -4,10 +4,44 @@
 /*
  * High Level Configuration Options
  */
+#if defined (CONFIG_TARGET_NI_CRIO9066) || defined (CONFIG_TARGET_NI_CRIO9067)
+#define CONFIG_GEN2
+#endif
+
+#ifdef CONFIG_TARGET_NI_CRIO9066
+#define CONFIG_CRIO9066
+#endif
+#ifdef CONFIG_TARGET_NI_CRIO9067
+#define CONFIG_CRIO9067
+#endif
+
 #define CONFIG_CRIO9068 /* Board */
+#if defined (CONFIG_CRIO9066) /* cRIO-9067 */
+#define CONFIG_DEVICE_CODE "7744"
+#define CONFIG_FPGA_DEVICE_CODE "7744"
+#define CONFIG_DEVICE_DESC "cRIO-9067"
+#elif defined (CONFIG_CRIO9066) /* cRIO-9066 */
+#define CONFIG_DEVICE_CODE "7743"
+#define CONFIG_FPGA_DEVICE_CODE "7743"
+#define CONFIG_DEVICE_DESC "cRIO-9066"
+#else
 #define CONFIG_DEVICE_CODE "76D6"
 #define CONFIG_FPGA_DEVICE_CODE "76F8"
 #define CONFIG_DEVICE_DESC "cRIO-9068"
+#endif
+
+/* Pretend to be the packaged over USB */
+#if defined (CONFIG_GEN2)
+#define CONFIG_NI_USB_PID "0x770D"
+#define CONFIG_NI_USB_VID "0x3923"
+#define CONFIG_GADGET_VARS \
+	"USBVendorID=" CONFIG_NI_USB_VID "\0" \
+	"USBProductID=" CONFIG_NI_USB_PID "\0" \
+	"USBProduct=NI cRIO\0" \
+	"USBDevice=0x" CONFIG_DEVICE_CODE "\0"
+#else
+#define CONFIG_GADGET_VARS
+#endif
 
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_NAND_ZYNQ
@@ -50,9 +84,17 @@
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
 #ifdef CONFIG_MFG
+#if defined (CONFIG_GEN2)
+#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-Zynq Gen-2 Manufacturing"
+#else
 #define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068 Manufacturing"
+#endif
+#else
+#if defined (CONFIG_GEN2)
+#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-Zynq Gen-2"
 #else
 #define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068"
+#endif
 #endif
 
 #define CONFIG_AUTO_COMPLETE
@@ -82,8 +124,10 @@
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
 #define CONFIG_SYS_NS16550_COM1 0x80000000
+#if !defined (CONFIG_GEN2)
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_SYS_NS16550_COM3 0x80000020
+#endif
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
 
@@ -126,7 +170,11 @@
 /*
  * Physical Memory map
  */
+#if defined (CONFIG_CRIO9066)
+#define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
+#else
 #define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
+#endif
 #define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_SYS_MEMTEST_SCRATCH 0xFFFFF000
 #define CONFIG_CMD_CACHE
@@ -163,7 +211,11 @@
 #define CONFIG_CMD_UBIFS
 
 #define CONFIG_MTD_UBOOT_OFFSET		0x20000
-#define CONFIG_BOARD_SIZE_LIMIT		0x100000
+#if defined (CONFIG_CRIO9066)
+#define CONFIG_BOARD_SIZE_LIMIT		0x80000 /* 512MB */
+#else
+#define CONFIG_BOARD_SIZE_LIMIT		0x100000 /* 1GB */
+#endif
 #define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
@@ -173,13 +225,28 @@
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
 
 #undef CONFIG_SYS_LOAD_ADDR
+#if defined (CONFIG_CRIO9066)
+#define CONFIG_SYS_LOAD_ADDR 0x4000000
+#else
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
+#endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
+
+#if defined (CONFIG_CRIO9066)
+#define FDT_HIGH "0x7FFFFFF"
+#define INITRD_HIGH "0x7FF7FFF"
+#define VERIFY_ADDR "0x8000000"
+#else
+#define FDT_HIGH "0x17FFFFFF"
+#define INITRD_HIGH "0x17FF7FFF"
+#define VERIFY_ADDR "0x10000000"
+#endif
 
 #define READONLY_DEFAULT_ENV_FLAGS \
 	"consolecmd:so,ncoutport:do,ncinport:do,nc:so,sc:so," \
 	"fdt_high:xo,initrd_high:xo,TargetClass:so,DeviceDesc:so," \
 	"DeviceCode:xo,FPGADeviceCode:xo,loadaddr:xo,verifyaddr:xo," \
+	"USBVendorID:xo,USBProductID:xo,USBProduct:so,USBDevice:xo," \
 	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
 	"backupeth1addroffset:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
@@ -192,7 +259,7 @@
 	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
-	"serial#:xo,ethaddr:mc,eth1addr:mc,"
+	"serial#:xo,ethaddr:mc,eth1addr:mc,usbgadgetethaddr:mc,"
 
 #define NET_TYPE_ENV_VARS \
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
@@ -212,15 +279,16 @@
 	"ncip=255.255.255.255\0" \
 	"nc=setenv stdout nc;setenv stdin nc\0" \
 	"sc=setenv stdout serial;setenv stdin serial\0" \
-	"fdt_high=0x17ffffff\0" \
-	"initrd_high=0x17ff7fff\0" \
+	"fdt_high=" FDT_HIGH "\0" \
+	"initrd_high=" INITRD_HIGH "\0" \
 	"TargetClass=cRIO\0" \
 	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
+	CONFIG_GADGET_VARS \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
-	"verifyaddr=0x10000000\0" \
+	"verifyaddr=" VERIFY_ADDR "\0" \
 	"backuppage=" __stringify(CONFIG_BACKUP_PAGE) "\0" \
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
@@ -306,6 +374,7 @@
 			"savebootdelay=$bootdelay && " \
 			"setenv bootdelay -2 && " \
 			"run setlederrorstatus && " \
+			"usb reset && " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
@@ -568,6 +637,8 @@
 
 #define CONFIG_PREBOOT \
 	"dcache off; " \
+	"usb start; " \
+	"usb reset; " \
 	"run nc; " \
 	"setenv silent;"
 
