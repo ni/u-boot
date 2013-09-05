@@ -241,7 +241,7 @@ int Xgmac_one_time_init(void)
 int Xgmac_init(struct eth_device *dev, bd_t *bis)
 {
 	int tmp;
-	int link_speed;
+	int link_speed = 0;
 	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
 	u32 slcr_gem_rx_clk;
 	u32 slcr_gem_tx_clk = 0;
@@ -344,13 +344,15 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	   capabilities with the link partner capabilities and pick the
 	   highest common denominator. */
 
-	/* 1000BASE-T Status */
-	tmp = phy_rd(EmacPssInstancePtr, MII_STAT1000);
-	/* 1000BASE-T Control */
-	tmp &= (phy_rd(EmacPssInstancePtr, MII_CTRL1000) << 2);
-	if ((LPA_1000FULL | LPA_1000HALF) & tmp)
-		link_speed = 1000;
-	else {
+	if (tmp & BMSR_ESTATEN) {
+		/* 1000BASE-T Status */
+		tmp = phy_rd(EmacPssInstancePtr, MII_STAT1000);
+		/* 1000BASE-T Control */
+		tmp &= (phy_rd(EmacPssInstancePtr, MII_CTRL1000) << 2);
+		if ((LPA_1000FULL | LPA_1000HALF) & tmp)
+			link_speed = 1000;
+	}
+	if (0 == link_speed) {
 		/* Link Partner Ability */
 		tmp = phy_rd(EmacPssInstancePtr, MII_LPA);
 		/* Auto-Negotiation Advertisement */
