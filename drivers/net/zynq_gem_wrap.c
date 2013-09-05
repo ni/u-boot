@@ -126,6 +126,7 @@ static void phy_rst(XEmacPss *e)
 	tmp |= BMCR_RESET;
 	phy_wr(e, MII_BMCR, tmp);
 
+	tmp = 0;
 	while (phy_rd(e, MII_BMCR) & BMCR_RESET) {
 		udelay(10000);
 		tmp++;
