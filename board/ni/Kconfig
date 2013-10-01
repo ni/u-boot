@@ -6,8 +6,18 @@ config TARGET_NI_CRIO9066
 	bool "NI cRIO-9066"
 	select CRIO
 
+config TARGET_NI_CRIO9066_MFG
+	bool "NI cRIO-9066 manufacturing U-Boot"
+	select MFG
+	select CRIO
+
 config TARGET_NI_CRIO9067
 	bool "NI cRIO-9067"
+	select CRIO
+
+config TARGET_NI_CRIO9067_MFG
+	bool "NI cRIO-9067 manufacturing U-Boot"
+	select MFG
 	select CRIO
 
 config TARGET_NI_CRIO9068

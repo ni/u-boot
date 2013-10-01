@@ -4,14 +4,19 @@
 /*
  * High Level Configuration Options
  */
-#if defined (CONFIG_TARGET_NI_CRIO9066) || defined (CONFIG_TARGET_NI_CRIO9067)
+#if defined (CONFIG_TARGET_NI_CRIO9066) || \
+	defined (CONFIG_TARGET_NI_CRIO9066_MFG) || \
+	defined (CONFIG_TARGET_NI_CRIO9067) || \
+	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
 #define CONFIG_GEN2
 #endif
 
-#ifdef CONFIG_TARGET_NI_CRIO9066
+#if defined (CONFIG_TARGET_NI_CRIO9066) || \
+	defined (CONFIG_TARGET_NI_CRIO9066_MFG)
 #define CONFIG_CRIO9066
 #endif
-#ifdef CONFIG_TARGET_NI_CRIO9067
+#if defined (CONFIG_TARGET_NI_CRIO9067) || \
+	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
 #define CONFIG_CRIO9067
 #endif
 
