@@ -124,10 +124,6 @@ int board_late_init (void)
 #ifdef CONFIG_CMD_NET
 int board_eth_init(bd_t *bis)
 {
-#if defined (CONFIG_GEN2)
-	return  zynq_gem_initialize(bis);
-#else
-
 	int retval;
 	int phy_addr;
 	const char *miiname;
@@ -147,6 +143,29 @@ int board_eth_init(bd_t *bis)
 
 		phy_addr = zynq_gem_get_phyaddr(gemname);
 
+#if defined (CONFIG_GEN2)
+               /* Write value to MMD Address 2h, Register 4h */
+               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+               miiphy_write(miiname, phy_addr, 0xE, 0x0004);
+               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+               /* Set RX_DV Pad Skew [7:4] to +0.42ns */
+               miiphy_write(miiname, phy_addr, 0xE, 0x00E7);
+
+               /* Write value to MMD Address 2h, Register 5h */
+               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+               miiphy_write(miiname, phy_addr, 0xE, 0x0005);
+               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+               /* Set RXD Pad Skew to +0.42ns */
+               miiphy_write(miiname, phy_addr, 0xE, 0xEEEE);
+
+               /* Write value to MMD Address 2h, Register 8h */
+               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+               miiphy_write(miiname, phy_addr, 0xE, 0x0008);
+               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+               /* Set RX_CLK Pad Skew [4:0] to -0.9ns */
+               miiphy_write(miiname, phy_addr, 0xE, 0x3DE0);
+
+#else
 		/* Page 2 */
 		miiphy_write(miiname, phy_addr, 22, 2);
 
@@ -193,10 +212,10 @@ int board_eth_init(bd_t *bis)
 
 		/* Page 0 */
 		miiphy_write(miiname, phy_addr, 22, 0);
+#endif
 	}
 
 	return retval;
-#endif
 }
 #endif
 
