@@ -46,6 +46,11 @@ config TARGET_ROBORIO
 	bool "NI roboRIO"
 	select MYRIO
 
+config TARGET_ROBORIO_MFG
+	bool "NI roboRIO manufacturing U-Boot"
+	select MFG
+	select MYRIO
+
 config TARGET_NI_SBRIO9651
 	bool "NI sbRIO 9651"
 	select SBRIO

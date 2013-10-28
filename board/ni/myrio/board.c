@@ -43,7 +43,7 @@ int board_init(void)
 int board_late_init (void)
 {
 	u8 tmp;
-#if !defined(CONFIG_MFG)
+#ifndef CONFIG_MFG
 	int serial_missing;
 	int ethaddr_missing;
 	int eth1addr_missing;
