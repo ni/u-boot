@@ -46,11 +46,20 @@ config TARGET_ROBORIO
 	bool "NI roboRIO"
 	select MYRIO
 
+config TARGET_NI_SBRIO9651
+	bool "NI sbRIO 9651"
+	select SBRIO
+
+config TARGET_NI_SBRIO9651_MFG
+	bool "NI sbRIO 9651 manufacturing U-Boot"
+	select SBRIO
+	select MFG
 endchoice
 
 config SYS_BOARD
 	default "criozynq" if CRIO
 	default "myrio" if MYRIO
+	default "somzynq" if SBRIO
 
 config SYS_VENDOR
 	default "ni"
@@ -61,6 +70,7 @@ config SYS_SOC
 config SYS_CONFIG_NAME
 	default "nicriozynq" if CRIO
 	default "nimyrio" if MYRIO
+	default "nisomzynq" if SBRIO
 
 config MFG
 	bool "Manufacturing U-Boot"
@@ -70,5 +80,8 @@ config CRIO
 
 config MYRIO
 	bool "myRIO derivatives"
+
+config SBRIO
+	bool "sbRIO derivatives"
 
 endif
