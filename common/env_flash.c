@@ -291,7 +291,7 @@ done:
 
 #endif /* CONFIG_ENV_ADDR_REDUND */
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #ifdef CONFIG_ENV_ADDR_REDUND
 	if (gd->env_addr != (ulong)&(flash_addr->data)) {

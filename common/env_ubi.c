@@ -108,7 +108,7 @@ int saveenv(void)
 #endif /* CONFIG_CMD_SAVEENV */
 
 #ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(char, env1_buf, CONFIG_ENV_SIZE);
 	ALLOC_CACHE_ALIGN_BUFFER(char, env2_buf, CONFIG_ENV_SIZE);
@@ -181,7 +181,7 @@ void env_relocate_spec(void)
 	env_import((char *)ep, 0);
 }
 #else /* ! CONFIG_SYS_REDUNDAND_ENVIRONMENT */
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
 

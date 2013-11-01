@@ -208,7 +208,7 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 }
 
 #ifdef CONFIG_ENV_OFFSET_REDUND
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	struct mmc *mmc;
@@ -296,7 +296,7 @@ err:
 #endif
 }
 #else /* ! CONFIG_ENV_OFFSET_REDUND */
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);

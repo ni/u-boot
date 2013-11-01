@@ -54,7 +54,7 @@ uchar env_get_char_spec(int index)
 }
 #endif
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	char buf[CONFIG_ENV_SIZE];
 

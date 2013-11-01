@@ -50,7 +50,7 @@ int saveenv(void)
 }
 #endif /* CONFIG_CMD_SAVEENV */
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #ifndef ENV_IS_EMBEDDED
 	env_import((char *)env_ptr, 1);

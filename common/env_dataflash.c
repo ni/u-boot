@@ -27,7 +27,7 @@ uchar env_get_char_spec(int index)
 	return c;
 }
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	ulong crc, new = 0;
 	unsigned off;

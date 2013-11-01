@@ -149,7 +149,7 @@ int saveenv(void)
 	return ret;
 }
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	int ret;
 	int crc1_ok = 0, crc2_ok = 0;
@@ -320,7 +320,7 @@ int saveenv(void)
 	return ret;
 }
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	int ret;
 	char *buf = NULL;
