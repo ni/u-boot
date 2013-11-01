@@ -64,6 +64,7 @@ COBJS-$(CONFIG_ENV_IS_IN_SPI_FLASH) += env_sf.o
 COBJS-$(CONFIG_ENV_IS_IN_REMOTE) += env_remote.o
 COBJS-$(CONFIG_ENV_IS_IN_UBI) += env_ubi.o
 COBJS-$(CONFIG_ENV_IS_NOWHERE) += env_nowhere.o
+COBJS-$(CONFIG_ENV_FORCE_DEFAULT) += env_force_default.o
 
 # command
 COBJS-$(CONFIG_CMD_AMBAPP) += cmd_ambapp.o

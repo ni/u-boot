@@ -108,7 +108,7 @@ int saveenv(void)
 }
 #endif /* CONFIG_CMD_SAVEENV */
 
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 	char buf[CONFIG_ENV_SIZE];
 	block_dev_desc_t *dev_desc = NULL;

@@ -328,7 +328,7 @@ int get_nand_env_oob(nand_info_t *nand, unsigned long *result)
 #endif
 
 #ifdef CONFIG_ENV_OFFSET_REDUND
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	int crc1_ok = 0, crc2_ok = 0;
@@ -394,7 +394,7 @@ done:
  * device i.e., nand_dev_desc + 0. This is also the behaviour using
  * the new NAND code.
  */
-void env_relocate_spec(void)
+void __attribute__((weak)) env_relocate_spec(void)
 {
 #if !defined(ENV_IS_EMBEDDED)
 	int ret;

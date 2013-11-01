@@ -1,10 +1,7 @@
 /*
- * (C) Copyright 2000-2010
- * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ * (C) Copyright 2013
+ * National Instruments
  *
- * (C) Copyright 2001 Sysgo Real-Time Solutions, GmbH <www.elinos.com>
- * Andreas Heppel <aheppel@sysgo.de>
-
  * See file CREDITS for list of people who contributed to this
  * project.
  *
@@ -15,7 +12,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -24,28 +21,15 @@
  * MA 02111-1307 USA
  */
 
-#include <common.h>
-#include <command.h>
 #include <environment.h>
-#include <linux/stddef.h>
 
-DECLARE_GLOBAL_DATA_PTR;
-
-env_t *env_ptr;
-
-void __attribute__((weak)) env_relocate_spec(void)
+void env_relocate_spec_force_default(void)
 {
+	set_default_env("Default Environment Forced");
 }
 
-/*
- * Initialize Environment use
- *
- * We are still running from ROM, so data use is limited
- */
-int env_init(void)
-{
-	gd->env_addr	= (ulong)&default_environment[0];
-	gd->env_valid	= 0;
-
-	return 0;
-}
+/* This is strong symbol so that it can override all other env_relocate_spec
+ * functions (which must be weak symbols), forcing a default environment to be
+ * set. */
+void env_relocate_spec(void)
+	__attribute((alias("env_relocate_spec_force_default")));
