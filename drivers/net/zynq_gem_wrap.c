@@ -5,6 +5,7 @@
 #include <malloc.h>
 #include <miiphy.h>
 #include <net.h>
+#include <asm/gpio.h>
 #include <linux/mii.h>
 
 #include "zynq_gem.h"
@@ -393,6 +394,43 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM0_CLK_CTRL;
 #endif
+#if defined(CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO) || \
+    defined(CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO)
+		if (link_speed == 1000) {
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO_ON);
+#endif
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO_OFF);
+#endif
+		} else if (link_speed == 100) {
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO_OFF);
+#endif
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO_ON);
+#endif
+		} else {
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_1000_GPIO_OFF);
+#endif
+#ifdef CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM0_LINK_SPEED_100_GPIO_OFF);
+#endif
+		}
+#endif
 	} else {
 		slcr_gem_rx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_RCLK_CTRL;
@@ -406,6 +444,43 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 #else
 		slcr_gem_tx_clk =
 			XPSS_SYS_CTRL_BASEADDR + XPSS_SLCR_GEM1_CLK_CTRL;
+#endif
+#if defined(CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO) || \
+    defined(CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO)
+		if (link_speed == 1000) {
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO_ON);
+#endif
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO_OFF);
+#endif
+		} else if (link_speed == 100) {
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO_OFF);
+#endif
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO_ON);
+#endif
+		} else {
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO_OFF);
+#endif
+#ifdef CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO
+			gpio_set_value(
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO,
+				CONFIG_ZYNQ_GEM1_LINK_SPEED_100_GPIO_OFF);
+#endif
+		}
 #endif
 	}
 
