@@ -77,19 +77,27 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
+#if defined(CONFIG_CRIO9066)
+#define CONFIG_NI_BOARD_NAME "cRIO-9066"
+#elif defined(CONFIG_CRIO9067)
+#define CONFIG_NI_BOARD_NAME "cRIO-9067"
+#else
+#define CONFIG_NI_BOARD_NAME "cRIO-9068"
+#endif
+
 #ifdef CONFIG_MFG
-#if defined (CONFIG_GEN2)
-#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-Zynq Gen-2 Manufacturing"
+#define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"
 #else
-#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068 Manufacturing"
+#define CONFIG_NI_BOARD_NAME_SUFFIX
 #endif
-#else
-#if defined (CONFIG_GEN2)
-#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-Zynq Gen-2"
-#else
-#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068"
-#endif
-#endif
+
+#define CONFIG_NI_BOARD_NAME_PREFIX
+
+#define CONFIG_IDENT_STRING \
+	"\nNational Instruments" \
+	CONFIG_NI_BOARD_NAME_PREFIX " " \
+	CONFIG_NI_BOARD_NAME \
+	CONFIG_NI_BOARD_NAME_SUFFIX
 
 #undef CONFIG_SYS_PROMPT
 #define CONFIG_SYS_PROMPT	"U-Boot> "
