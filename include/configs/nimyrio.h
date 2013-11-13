@@ -70,11 +70,25 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
-#ifdef CONFIG_MFG
-#define CONFIG_IDENT_STRING	"\nNational Instruments myRIO Manufacturing"
+#if defined(CONFIG_ROBORIO)
+#define CONFIG_NI_BOARD_NAME "roboRIO"
 #else
-#define CONFIG_IDENT_STRING	"\nNational Instruments myRIO"
+#define CONFIG_NI_BOARD_NAME "myRIO"
 #endif
+
+#ifdef CONFIG_MFG
+#define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"
+#else
+#define CONFIG_NI_BOARD_NAME_SUFFIX
+#endif
+
+#define CONFIG_NI_BOARD_NAME_PREFIX
+
+#define CONFIG_IDENT_STRING \
+	"\nNational Instruments" \
+	CONFIG_NI_BOARD_NAME_PREFIX " " \
+	CONFIG_NI_BOARD_NAME \
+	CONFIG_NI_BOARD_NAME_SUFFIX
 
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
