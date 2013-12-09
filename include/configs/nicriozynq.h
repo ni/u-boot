@@ -7,7 +7,9 @@
 #if defined (CONFIG_TARGET_NI_CRIO9066) || \
 	defined (CONFIG_TARGET_NI_CRIO9066_MFG) || \
 	defined (CONFIG_TARGET_NI_CRIO9067) || \
-	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
+	defined (CONFIG_TARGET_NI_CRIO9067_MFG) || \
+	defined (CONFIG_TARGET_NI_9149) || \
+	defined (CONFIG_TARGET_NI_9149_MFG)
 #define CONFIG_GEN2
 #endif
 
@@ -19,20 +21,32 @@
 	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
 #define CONFIG_CRIO9067
 #endif
+#if defined (CONFIG_TARGET_NI_9149) || \
+	defined (CONFIG_TARGET_NI_9149_MFG)
+#define CONFIG_NI9149
+#endif
 
 #define CONFIG_CRIO9068 /* Board */
 #if defined (CONFIG_CRIO9066) /* cRIO-9067 */
 #define CONFIG_DEVICE_CODE "7744"
 #define CONFIG_FPGA_DEVICE_CODE "7744"
 #define CONFIG_DEVICE_DESC "cRIO-9067"
+#define CONFIG_TARGET_CLASS "cRIO"
 #elif defined (CONFIG_CRIO9066) /* cRIO-9066 */
 #define CONFIG_DEVICE_CODE "7743"
 #define CONFIG_FPGA_DEVICE_CODE "7743"
 #define CONFIG_DEVICE_DESC "cRIO-9066"
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_NI9149) /* NI 9149 */
+#define CONFIG_DEVICE_CODE "774E"
+#define CONFIG_FPGA_DEVICE_CODE "774E"
+#define CONFIG_DEVICE_DESC "NI 9149"
+#define CONFIG_TARGET_CLASS "Ethernet RIO"
 #else
 #define CONFIG_DEVICE_CODE "76D6"
 #define CONFIG_FPGA_DEVICE_CODE "76F8"
 #define CONFIG_DEVICE_DESC "cRIO-9068"
+#define CONFIG_TARGET_CLASS "cRIO"
 #endif
 
 /* Pretend to be the packaged over USB */
@@ -92,6 +106,8 @@
 #define CONFIG_NI_BOARD_NAME "cRIO-9066"
 #elif defined(CONFIG_CRIO9067)
 #define CONFIG_NI_BOARD_NAME "cRIO-9067"
+#elif defined(CONFIG_NI9149)
+#define CONFIG_NI_BOARD_NAME "NI 9149"
 #else
 #define CONFIG_NI_BOARD_NAME "cRIO-9068"
 #endif
@@ -133,6 +149,7 @@
 /* HW to use */
 #ifndef CONFIG_DM_SERIAL
 #undef CONFIG_ZYNQ_SERIAL
+#ifndef CONFIG_ENETEXP
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
@@ -142,6 +159,7 @@
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #endif
 #define CONFIG_CONS_INDEX 1 /* not actually used */
+#endif
 #endif
 
 #define CONFIG_ZYNQ_GEM
@@ -183,7 +201,7 @@
 /*
  * Physical Memory map
  */
-#if defined (CONFIG_CRIO9066)
+#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #else
 #define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
@@ -224,7 +242,7 @@
 #define CONFIG_CMD_UBIFS
 
 #define CONFIG_MTD_UBOOT_OFFSET		0x20000
-#if defined (CONFIG_CRIO9066)
+#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
 #define CONFIG_BOARD_SIZE_LIMIT		0x80000 /* 512MB */
 #else
 #define CONFIG_BOARD_SIZE_LIMIT		0x100000 /* 1GB */
@@ -238,14 +256,14 @@
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
 
 #undef CONFIG_SYS_LOAD_ADDR
-#if defined (CONFIG_CRIO9066)
+#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #else
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
 #endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
-#if defined (CONFIG_CRIO9066)
+#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
 #define FDT_HIGH "0x7FFFFFF"
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
@@ -294,7 +312,7 @@
 	"sc=setenv stdout serial;setenv stdin serial\0" \
 	"fdt_high=" FDT_HIGH "\0" \
 	"initrd_high=" INITRD_HIGH "\0" \
-	"TargetClass=cRIO\0" \
+	"TargetClass=" CONFIG_TARGET_CLASS "\0" \
 	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
