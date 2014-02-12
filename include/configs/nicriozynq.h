@@ -241,19 +241,20 @@
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
 
-#define CONFIG_MTD_UBOOT_OFFSET		0x20000
+#define CONFIG_MTD_UBOOT_OFFSET			0x20000
 #if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
-#define CONFIG_BOARD_SIZE_LIMIT		0x80000 /* 512MB */
+#define CONFIG_BOARD_SIZE_LIMIT			0x80000 /* 512MB */
 #else
-#define CONFIG_BOARD_SIZE_LIMIT		0x100000 /* 1GB */
+#define CONFIG_BOARD_SIZE_LIMIT			0x100000 /* 1GB */
 #endif
-#define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
-#define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
+#define CONFIG_BOOT_BIN_SIZE_LIMIT		0x120000
+#define CONFIG_BOOTFS_VOLUME_SIZE		0x3600000
 
-#define CONFIG_BACKUP_PAGE		0xB1F800
-#define CONFIG_BACKUP_SERIAL_OFFSET	0x7f0
-#define CONFIG_BACKUP_ETHADDR_OFFSET	0x7f4
-#define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
+#define CONFIG_BACKUP_PAGE			0xB1F800
+#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7ea
+#define CONFIG_BACKUP_SERIAL_OFFSET		0x7f0
+#define CONFIG_BACKUP_ETHADDR_OFFSET		0x7f4
+#define CONFIG_BACKUP_ETH1ADDR_OFFSET		0x7fa
 
 #undef CONFIG_SYS_LOAD_ADDR
 #if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
@@ -279,7 +280,7 @@
 	"DeviceCode:xo,FPGADeviceCode:xo,loadaddr:xo,verifyaddr:xo," \
 	"USBVendorID:xo,USBProductID:xo,USBProduct:so,USBDevice:xo," \
 	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
-	"backupeth1addroffset:xo," \
+	"backupeth1addroffset:xo,backupusbgadgetethaddroffset:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
 	"ipconfigcmd:so,markhardbootcomplete:so,stopwatchdog:so," \
@@ -324,6 +325,7 @@
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" __stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) "\0" \
+	"backupusbgadgetethaddroffset=" __stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
@@ -583,10 +585,12 @@
 		"serial_save=${serial#} && " \
 		"ethaddr_save=$ethaddr && " \
 		"eth1addr_save=$eth1addr && " \
+		"usbgadgetethaddr_save=$usbgadgetethaddr && " \
 		"env default -a && " \
 		"env set serial# $serial_save && " \
 		"env set ethaddr $ethaddr_save && " \
-		"env set eth1addr $eth1addr_save;\0" \
+		"env set eth1addr $eth1addr_save && " \
+		"env set usbgadgetethaddr $usbgadgetethaddr_save;\0" \
 	"writepartitions=" \
 		"if ubi part boot-config && " \
 			"ubi read $verifyaddr u-boot-env1 1 && " \
