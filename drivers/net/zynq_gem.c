@@ -273,7 +273,6 @@ void XEmacPss_Stop(XEmacPss *InstancePtr)
 * - Configure transmit and receive buffer size to default
 * - Clear transmit and receive status register and counters
 * - Clear all interrupt sources
-* - Clear phy (if there is any previously detected) address
 * - Clear MAC addresses (1-4) as well as Type IDs and hash value
 *
 * All options are placed in their default state. Any frames in the 
@@ -282,9 +281,9 @@ void XEmacPss_Stop(XEmacPss *InstancePtr)
 * were in the list before the reset may be transmitted or received.
 *
 * The upper layer software is responsible for re-configuring (if necessary)
-* and restarting the MAC after the reset. Note also that driver statistics
-* are not cleared on reset. It is up to the upper layer software to clear the
-* statistics if needed.
+* and restarting the MAC and PHY after the reset. Note also that driver
+* statistics are not cleared on reset. It is up to the upper layer software to
+* clear the statistics if needed.
 *
 * When a reset is required, the driver notifies the upper layer software of
 * this need through the ErrorHandler callback and specific status codes.
@@ -349,9 +348,6 @@ void XEmacPss_Reset(XEmacPss *InstancePtr)
 				XEMACPSS_ISR_OFFSET);
 	XEmacPss_WriteReg(InstancePtr->Config.BaseAddress, XEMACPSS_ISR_OFFSET,
 			   Reg);
-
-	XEmacPss_WriteReg(InstancePtr->Config.BaseAddress,
-			   XEMACPSS_PHYMNTNC_OFFSET, 0x0);
 
 	XEmacPss_ClearHash(InstancePtr);
 
