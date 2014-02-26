@@ -202,6 +202,7 @@
 #else
 #define CONFIG_USB_BASE_ADDR XPSS_USB1_BASEADDR /* int 44 */
 #endif
+#define XPSS_USB0_OTGCSR 0xE00021A4
 
 /*
  * Physical Memory map
@@ -356,11 +357,23 @@
 		"mmcinfo; " \
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
 		"source $loadaddr:bootscript;\0" \
+	"read_usb0_otgsc_id=setexpr.l usb0_otgsc_id *" \
+		__stringify(XPSS_USB0_OTGCSR) \
+		" \\\\& 0x100\0" \
+	"set_usb0_host_device_mode=" \
+		"if itest.l $usb0_otgsc_id == 0; then " \
+			"fdt addr $loadaddr && " \
+			"fdt get addr fdtaddr /images/fdt_" \
+				CONFIG_DEVICE_CODE " data && " \
+			"fdt addr $fdtaddr && " \
+			"fdt set /amba@0/usb@e0002000 dr_mode host; " \
+		"fi;\0" \
 	"boot_safemode=" \
 		"if ubifsmount ubi:bootfs && " \
 		"ubifsload $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
+			"run set_usb0_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"echo $safemode_err; " \
@@ -372,6 +385,7 @@
 		"ubifsload $loadaddr linux_runmode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
+			"run set_usb0_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"run boot_safemode; " \
@@ -676,6 +690,7 @@
 	"run readsoftdip; " \
 	"run readcplddip; " \
 	"run readbootmode; " \
+	"run read_usb0_otgsc_id;" \
 	"run evaldip; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
