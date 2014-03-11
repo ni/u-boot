@@ -56,7 +56,7 @@ int board_late_init (void)
 	int serial_missing;
 	int ethaddr_missing;
 	int eth1addr_missing;
-	int eth2addr_missing;
+	int usbgadgetethaddr_missing;
 	int eth3addr_missing;
 #endif
 	/*
@@ -71,11 +71,11 @@ int board_late_init (void)
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
 	eth1addr_missing = getenv("eth1addr") == NULL;
-	eth2addr_missing = getenv("eth2addr") == NULL;
+	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
 	eth3addr_missing = getenv("eth3addr") == NULL;
 
 	if (serial_missing || ethaddr_missing || eth1addr_missing ||
-	    eth2addr_missing || eth3addr_missing) {
+	    usbgadgetethaddr_missing || eth3addr_missing) {
 		u8 nand_buffer[nand_info[0]->writesize];
 		int nand_read_status;
 		char string[18];
@@ -111,14 +111,15 @@ int board_late_init (void)
 			}
 		}
 
-		if (eth2addr_missing && !nand_read_status) {
-			int offset = getenv_ulong("backupeth2addroffset", 16,
-				CONFIG_BACKUP_ETH2ADDR_OFFSET);
+		if (usbgadgetethaddr_missing && !nand_read_status) {
+			int offset = getenv_ulong(
+				"backupusbgadgetethaddroffset", 16,
+				CONFIG_BACKUP_USBGADGETETHADDR_OFFSET);
 
 			if (memcmp(&nand_buffer[offset],
 			    "\xff\xff\xff\xff\xff\xff", 6)) {
-				eth_setenv_enetaddr("eth2addr",
-				&nand_buffer[offset]);
+				eth_setenv_enetaddr("usbgadgetethaddr",
+						    &nand_buffer[offset]);
 			}
 		}
 

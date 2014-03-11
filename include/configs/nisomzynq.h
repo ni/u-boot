@@ -207,7 +207,7 @@
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7ee
 
 /* USB (Gadget) Ethernet MAC Address */
-#define CONFIG_BACKUP_ETH2ADDR_OFFSET	0x7f4
+#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7f4
 
 /* WiFi MAC Address */
 #define CONFIG_BACKUP_ETH3ADDR_OFFSET	0x7fa
@@ -234,7 +234,7 @@
 	"loadaddr:xo,verifyaddr:xo," \
 	"USBVendorID:xo,USBProductID:xo,USBProduct:so,USBDevice:xo," \
 	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
-	"backupeth1addroffset:xo,backupeth2addroffset:xo," \
+	"backupeth1addroffset:xo,backupusbgadgetethaddroffset:xo," \
 	"backupeth3addroffset:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
@@ -246,7 +246,7 @@
 	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
-	"serial#:xo,ethaddr:mc,eth1addr:mc,eth2addr:mc,eth3addr:mc," \
+	"serial#:xo,ethaddr:mc,eth1addr:mc,usbgadgetethaddr:mc,eth3addr:mc," \
 	"wirelessRegionFactory:so,wl12xxnvs:so,"
 
 #define NET_TYPE_ENV_VARS \
@@ -287,8 +287,9 @@
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" __stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) \
 				"\0" \
-	"backupeth2addroffset=" __stringify(CONFIG_BACKUP_ETH2ADDR_OFFSET) \
-				"\0" \
+	"backupusbgadgetethaddroffset=" \
+		__stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) \
+		"\0" \
 	"backupeth3addroffset=" __stringify(CONFIG_BACKUP_ETH3ADDR_OFFSET) \
 				"\0" \
 	"wirelessRegionFactory=840\0" \
@@ -566,7 +567,7 @@
 		"serial_save=${serial#} && " \
 		"ethaddr_save=$ethaddr && " \
 		"eth1addr_save=$eth1addr && " \
-		"eth2addr_save=$eth2addr && " \
+		"usbgadgetethaddr_save=$usbgadgetethaddr && " \
 		"eth3addr_save=$eth3addr && " \
 		"wirelessRegionFactory_save=$wirelessRegionFactory && " \
 		"wl12xxnvs_save=$wl12xxnvs && " \
@@ -574,7 +575,7 @@
 		"env set serial# $serial_save && " \
 		"env set ethaddr $ethaddr_save && " \
 		"env set eth1addr $eth1addr_save && " \
-		"env set eth2addr $eth2addr_save && " \
+		"env set usbgadgetethaddr $usbgadgetethaddr_save && " \
 		"env set eth3addr $eth3addr_save && " \
 		"env set wirelessRegionFactory $wirelessRegionFactory_save && " \
 		"env set wl12xxnvs $wl12xxnvs_save;\0" \
