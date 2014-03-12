@@ -46,7 +46,12 @@ int board_late_init (void)
 #ifndef CONFIG_MFG
 	int serial_missing;
 	int ethaddr_missing;
-	int eth1addr_missing;
+	/* These must be initialized to zero so that we default to this address
+	 * as not missing. This allows us to selectively populate the address
+	 * from a backup location for some targets (e.g. non-myRIO) and not for
+	 * others (e.g. myRIO). */
+	int usbgadgetethaddr_missing = 0;
+	int eth1addr_missing = 0;
 #endif
 
 	/*
@@ -60,8 +65,18 @@ int board_late_init (void)
 #else
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
+#ifdef CONFIG_MYRIO
+	/* Only set eth1addr_missing for myRIO targets, because all current
+	 * non-myRIO targets don't have an eth1addr programmed. */
 	eth1addr_missing = getenv("eth1addr") == NULL;
-	if (serial_missing || ethaddr_missing || eth1addr_missing) {
+#else
+	/* Only set usbgadgetethaddr_missing for non-myRIO targets, so that for
+	 * myRIO targets we'll never be missing the address (by always using
+	 * the initial value of 0). */
+	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
+#endif
+	if (serial_missing || ethaddr_missing || eth1addr_missing ||
+	    usbgadgetethaddr_missing) {
 		u8 nand_buffer[nand_info[0]->writesize];
 		int nand_read_status;
 		char string[18];
@@ -92,6 +107,17 @@ int board_late_init (void)
 			if (memcmp(&nand_buffer[offset],
 			    "\xff\xff\xff\xff\xff\xff", 6)) {
 				eth_setenv_enetaddr("eth1addr", &nand_buffer[offset]);
+			}
+		}
+		if (usbgadgetethaddr_missing && !nand_read_status) {
+			int offset = getenv_ulong(
+				"backupusbgadgetethaddroffset", 16,
+				CONFIG_BACKUP_USBGADGETETHADDR_OFFSET);
+
+			if (memcmp(&nand_buffer[offset],
+			    "\xff\xff\xff\xff\xff\xff", 6)) {
+				eth_setenv_enetaddr("usbgadgetethaddr",
+						    &nand_buffer[offset]);
 			}
 		}
 		saveenv();

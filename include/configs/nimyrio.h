@@ -198,6 +198,7 @@
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
 #define CONFIG_BACKUP_PAGE		0xB1F800
+#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7ea
 #define CONFIG_BACKUP_SERIAL_OFFSET	0x7f0
 #define CONFIG_BACKUP_ETHADDR_OFFSET	0x7f4
 #define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
@@ -216,6 +217,7 @@
 	"loadaddr:xo,verifyaddr:xo," \
 	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
 	"backupeth1addroffset:xo," \
+	"backupusbgadgetethaddroffset:xo," \
 	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
 	"ipconfigcmd:so,markhardbootcomplete:so,stopwatchdog:so," \
@@ -226,8 +228,8 @@
 	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
-	"serial#:xo,ethaddr:mc,eth1addr:mc,wirelessRegionFactory:so," \
-	"wl12xxnvs:so,"
+	"serial#:xo,ethaddr:mc,eth1addr:mc,usbgadgetethaddr:mc," \
+	"wirelessRegionFactory:so,wl12xxnvs:so,"
 
 #define NET_TYPE_ENV_VARS \
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
@@ -237,6 +239,52 @@
 	READONLY_DEFAULT_ENV_FLAGS \
 	READONLY_MFG_ENV_VARS \
 	NET_TYPE_ENV_VARS
+
+
+/* In order to make the resetenv command chain through the correct status, we
+ * have to avoid saving and restoring environment variables that don't exist
+ * across all targets. To do so, we define save and restore macros for each
+ * target type and use these macros to form the resetenv command. */
+
+#define ENV_SAVE(var) #var "_save=$" #var " && "
+#define ENV_RESTORE(var) "env set " #var " $" #var "_save && "
+
+#if defined(CONFIG_MYRIO)
+
+/* myRIO uses ethaddr for the USB Gadget Ethernet MAC. */
+#define USBGADGETETHADDR_SAVE ENV_SAVE(ethaddr)
+#define USBGADGETETHADDR_RESTORE ENV_RESTORE(ethaddr)
+
+/* myRIO uses eth1addr for the WiFi Ethernet MAC. */
+#define WIFIETHADDR_SAVE ENV_SAVE(eth1addr)
+#define WIFIETHADDR_RESTORE ENV_RESTORE(eth1addr)
+
+/* myRIO doesn't have wired Ethernet. */
+#define ETHADDR_SAVE
+#define ETHADDR_RESTORE
+
+#elif defined(CONFIG_ROBORIO)
+
+/* roboRIO uses usbgadgetethaddr for the USB Gadget Ethernet MAC. */
+#define USBGADGETETHADDR_SAVE ENV_SAVE(usbgadgetethaddr)
+#define USBGADGETETHADDR_RESTORE ENV_RESTORE(usbgadgetethaddr)
+
+/* roboRIO doesn't have WiFi. */
+#define WIFIETHADDR_SAVE
+#define WIFIETHADDR_RESTORE
+
+/* roboRIO uses ethaddr for wired Ethernet. */
+#define ETHADDR_SAVE ENV_SAVE(ethaddr)
+#define ETHADDR_RESTORE ENV_RESTORE(ethaddr)
+
+#endif
+
+/* Make sure that all resetenv save and restore macros are defined. */
+#if !defined(USBGADGETETHADDR_SAVE) || !defined(USBGADGETETHADDR_RESTORE) || \
+    !defined(WIFIETHADDR_SAVE) || !defined(WIFIETHADDR_RESTORE) || \
+    !defined(ETHADDR_SAVE) || !defined(ETHADDR_RESTORE)
+#error "Please define resetenv save and restore macros for your board."
+#endif
 
 #define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
@@ -266,6 +314,8 @@
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" __stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) "\0" \
+	"backupusbgadgetethaddroffset=" \
+		__stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) "\0" \
 	"wirelessRegionFactory=840\0" \
 	"wl12xxnvs=" CONFIG_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
@@ -526,16 +576,20 @@
 		"env import -b $loadaddr;\0" \
 	"resetenv=" \
 		"serial_save=${serial#} && " \
-		"ethaddr_save=$ethaddr && " \
-		"eth1addr_save=$eth1addr && " \
+		USBGADGETETHADDR_SAVE \
+		WIFIETHADDR_SAVE \
+		ETHADDR_SAVE \
 		"wirelessRegionFactory_save=$wirelessRegionFactory && " \
 		"wl12xxnvs_save=$wl12xxnvs && " \
 		"env default -a && " \
 		"env set serial# $serial_save && " \
-		"env set ethaddr $ethaddr_save && " \
-		"env set eth1addr $eth1addr_save && " \
-		"env set wirelessRegionFactory $wirelessRegionFactory_save && " \
-		"env set wl12xxnvs $wl12xxnvs_save;\0" \
+		USBGADGETETHADDR_RESTORE \
+		WIFIETHADDR_RESTORE \
+		ETHADDR_RESTORE \
+		"env set wirelessRegionFactory " \
+			"$wirelessRegionFactory_save && " \
+		"env set wl12xxnvs $wl12xxnvs_save;" \
+		"\0" \
 	"writepartitions=" \
 		"if ubi part boot-config && " \
 			"ubi read $verifyaddr u-boot-env1 1 && " \
