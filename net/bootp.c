@@ -387,12 +387,18 @@ static void bootp_timeout_handler(void)
 
 	if (time_taken >= time_taken_max) {
 #ifdef CONFIG_BOOTP_MAY_FAIL
-		puts("\nRetry time exceeded\n");
-		net_set_state(NETLOOP_FAIL);
-#else
-		puts("\nRetry time exceeded; starting again\n");
-		net_start_again();
+		char *ethrotate;
+		ethrotate = getenv("ethrotate");
+		if ((ethrotate != NULL && strcmp(ethrotate, "no") == 0) ||
+		    net_restart_wrap) {
+			puts("\nRetry time exceeded\n");
+			net_set_state(NETLOOP_FAIL);
+		} else
 #endif
+		{
+			puts("\nRetry time exceeded; starting again\n");
+			net_start_again();
+		}
 	} else {
 		bootp_timeout *= 2;
 		if (bootp_timeout > 2000)
