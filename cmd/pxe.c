@@ -30,7 +30,7 @@ const char *pxe_default_paths[] = {
 	NULL
 };
 
-static bool is_pxe;
+static int is_pxe;
 
 /*
  * Like getenv, but prints an error if envvar isn't defined in the
@@ -1616,7 +1616,7 @@ static int do_pxe(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc < 2)
 		return CMD_RET_USAGE;
 
-	is_pxe = true;
+	is_pxe = 1;
 
 	/* drop initial "pxe" arg */
 	argc--;
@@ -1651,7 +1651,7 @@ static int do_sysboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char *filename;
 	int prompt = 0;
 
-	is_pxe = false;
+	is_pxe = 0;
 
 	if (argc > 1 && strstr(argv[1], "-p")) {
 		prompt = 1;
