@@ -329,12 +329,18 @@ BootpTimeout(void)
 {
 	if (BootpTry >= TIMEOUT_COUNT) {
 #ifdef CONFIG_BOOTP_MAY_FAIL
-		puts("\nRetry count exceeded\n");
-		net_set_state(NETLOOP_FAIL);
-#else
-		puts("\nRetry count exceeded; starting again\n");
-		NetStartAgain();
+		char *ethrotate;
+		ethrotate = getenv("ethrotate");
+		if ((ethrotate != NULL && strcmp(ethrotate, "no") == 0) ||
+		    NetRestartWrap) {
+			puts("\nRetry count exceeded\n");
+			net_set_state(NETLOOP_FAIL);
+		} else
 #endif
+		{
+			puts("\nRetry count exceeded; starting again\n");
+			NetStartAgain();
+		}
 	} else {
 		NetSetTimeout(TIMEOUT, BootpTimeout);
 		BootpRequest();
