@@ -234,6 +234,9 @@
 #define INITRD_HIGH "0x17FF7FFF"
 #define VERIFY_ADDR "0x10000000"
 
+/* This address is 32k before the load address of the initrd */
+#define FDT_ADDR "0x7FF8000"
+
 #include "niresetenv.h"
 
 /* sbRIO-9651 uses usbgadgetethaddr for the USB Gadget Ethernet MAC. */

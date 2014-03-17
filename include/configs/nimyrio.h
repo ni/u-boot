@@ -221,6 +221,9 @@
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
 
+/* This address is 32k before the load address of the initrd */
+#define FDT_ADDR "0x7FF8000"
+
 #include "niresetenv.h"
 
 #if defined(CONFIG_MYRIO)

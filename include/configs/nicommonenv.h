@@ -15,7 +15,7 @@
 	"backupeth1addroffset:xo," \
 	"backupusbgadgetethaddroffset:xo," \
 	"backupeth3addroffset:xo," \
-	"boot_safemode:so,boot_runmode:so,consoleoutcmd:so," \
+	"boot_safemode:so,boot_runmode:so,boot_pxe:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
 	"ipconfigcmd:so,markhardbootcomplete:so,stopwatchdog:so," \
 	"setlederrorstatus:so,readbootmode:so," \
@@ -108,6 +108,18 @@
 		"else " \
 			"run boot_safemode; " \
 		"fi;\0" \
+	"boot_pxe=" \
+		"dcache off; " \
+		"while sleep 1; do " \
+			"setenv pxefile_addr_r $loadaddr; " \
+			"dhcp && " \
+			"if pxe get; then " \
+				"setenv kernel_addr_r $loadaddr; " \
+				"setenv ramdisk_addr_r $verifyaddr; " \
+				"setenv fdt_addr_r " FDT_ADDR "; " \
+				"pxe boot; " \
+			"fi; " \
+		"done;\0" \
 	"consoleoutcmd=" \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
 			"run consolecmd; " \
@@ -277,11 +289,13 @@
 			"setenv ipreset.enabled ${ipreset.enabled:-false}; " \
 			"setenv consoleout.enabled ${consoleout.enabled:-false}; " \
 			"setenv nofpgaapp.enabled ${nofpgaapp.enabled:-false}; " \
+			"setenv pxeboot.enabled ${pxeboot.enabled:-false}; " \
 		"else " \
 			"setenv safemode.enabled false; " \
 			"setenv ipreset.enabled false; " \
 			"setenv consoleout.enabled false; " \
 			"setenv nofpgaapp.enabled false; " \
+			"setenv pxeboot.enabled false; " \
 		"fi;\0" \
 	"readcplddip=i2c read 0x40 1 1 $loadaddr; " \
 		"setexpr.b cpld.safemode *$loadaddr \\\\& 0x01; " \
@@ -316,11 +330,15 @@
 		"then " \
 			"isforcedrecoverymode=1; " \
 		"fi; " \
+		"if test \\\\\"${pxeboot.enabled}\\\\\" != false; then " \
+			"ispxeboot=1; " \
+		"fi; " \
 		"setenv safemode.enabled; " \
 		"setenv ipreset.enabled; " \
 		"setenv consoleout.enabled; " \
 		"setenv nofpgaapp.enabled; " \
 		"setenv noapp.enabled; " \
+		"setenv pxeboot.enabled; " \
 		"setenv host_name; " \
 		"setenv primarymac; " \
 		"setenv language; " \
@@ -395,6 +413,8 @@
 #define REAL_BOOTCOMMAND \
 	"if test $bootmode = safemode; then " \
 		"run boot_safemode; " \
+	"elif test \\\\\"${ispxeboot}\\\\\" = 1; then " \
+		"run boot_pxe; " \
 	"else " \
 		"run boot_runmode; "\
 	"fi"

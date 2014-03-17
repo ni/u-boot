@@ -276,6 +276,9 @@
 #define VERIFY_ADDR "0x10000000"
 #endif
 
+/* This address is 32k before the load address of the initrd */
+#define FDT_ADDR "0x7FF8000"
+
 #include "niresetenv.h"
 
 #if defined (CONFIG_GEN2)
