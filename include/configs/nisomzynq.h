@@ -5,14 +5,98 @@
 #ifndef __CONFIG_NISOMZYNQ_H
 #define __CONFIG_NISOMZYNQ_H
 
+#if \
+	defined(CONFIG_TARGET_NI_7931) || \
+	defined(CONFIG_TARGET_NI_7931_MFG)
+#define CONFIG_NI7931
+#endif
+
+#if \
+	defined(CONFIG_TARGET_NI_7932) || \
+	defined(CONFIG_TARGET_NI_7932_MFG)
+#define CONFIG_NI7932
+#endif
+
+#if \
+	defined(CONFIG_TARGET_NI_7935) || \
+	defined(CONFIG_TARGET_NI_7935_MFG)
+#define CONFIG_NI7935
+#endif
+
+#if \
+	defined(CONFIG_TARGET_NI_SBRIO9651) || \
+	defined(CONFIG_TARGET_NI_SBRIO9651_MFG)
+#define CONFIG_SBRIO9651SOM
+#endif
+
+#if \
+	defined(CONFIG_TARGET_NI_7931) || \
+	defined(CONFIG_TARGET_NI_7931_MFG) || \
+	defined(CONFIG_TARGET_NI_7932) || \
+	defined(CONFIG_TARGET_NI_7932_MFG) || \
+	defined(CONFIG_TARGET_NI_7935) || \
+	defined(CONFIG_TARGET_NI_7935_MFG)
+#define CONFIG_NI793X
+#endif
+
 /*
  * High Level Configuration Options
  */
+#if defined(CONFIG_SBRIO9651SOM)
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined(CONFIG_NI793X)
+#define CONFIG_TARGET_CLASS "FlexRIO"
+/* NI-793xR Zynq FPGA load will only use a default bitfile, as it
+ * is not user-reconfigurable */
+#undef CONFIG_FPGALOADCMD
+#define CONFIG_FPGALOADCMD \
+	"ubifsmount ubi:bootfs; " \
+	"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
+		"ubifsload $loadaddr .defbit/default.bit.bin && " \
+		"md5sum -v $loadaddr $filesize *$verifyaddr; " \
+	"then " \
+		"configfpga=1; " \
+	"fi; " \
+	"if test -n \\\\\"$configfpga\\\\\"; then " \
+		"if fpga load 0 $loadaddr $filesize; then " \
+			"fpgasuccess=1; " \
+		"fi; " \
+	"fi; " \
+	"if test -z \\\\\"$fpgasuccess\\\\\"; then " \
+		"echo $fpga_err; " \
+		"run recoverycmd; " \
+		"run recoverybootcmd;" \
+	"fi; " \
+	"run markhardbootcomplete;"
+#else
+#error "Unknown CONFIG_TARGET_CLASS"
+#endif
+
+#if defined(CONFIG_SBRIO9651SOM)
 #define CONFIG_DEVICE_CODE "775E"
 #define CONFIG_FPGA_DEVICE_CODE "775E"
 #define CONFIG_DEVICE_DESC "sbRIO-9651"
 #define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
-#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined(CONFIG_NI7931)
+#define CONFIG_DEVICE_CODE "77B1"
+#define CONFIG_FPGA_DEVICE_CODE "77B1"
+#define CONFIG_DEVICE_DESC "NI-7931R"
+#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
+#elif defined(CONFIG_NI7932)
+#define CONFIG_DEVICE_CODE "77B2"
+#define CONFIG_FPGA_DEVICE_CODE "77B2"
+#define CONFIG_DEVICE_DESC "NI-7932R"
+#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
+#elif defined(CONFIG_NI7935)
+#define CONFIG_DEVICE_CODE "77AC"
+#define CONFIG_FPGA_DEVICE_CODE "77AC"
+#define CONFIG_DEVICE_DESC "NI-7935R"
+#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
+#else
+#error "Unknown CONFIG_DEVICE_CODE"
+#endif
+
+#define CONFIG_NI_BOARD_NAME CONFIG_DEVICE_DESC
 
 #define CONFIG_NI_USB_PID "0x770D"
 #define CONFIG_NI_USB_VID "0x3923"
@@ -54,8 +138,6 @@
 #define CONFIG_INI_CASE_INSENSITIVE
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
-
-#define CONFIG_NI_BOARD_NAME "sbRIO-9651"
 
 #ifdef CONFIG_MFG
 #define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"

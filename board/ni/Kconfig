@@ -20,6 +20,33 @@ config TARGET_NI_9147_MFG
 	select MFG
 	select CRIO
 
+config TARGET_NI_7931
+	bool "NI 7931"
+	select SBRIO
+
+config TARGET_NI_7931_MFG
+	bool "NI 7931 manufacturing U-Boot"
+	select SBRIO
+	select MFG
+
+config TARGET_NI_7932
+	bool "NI 7932"
+	select SBRIO
+
+config TARGET_NI_7932_MFG
+	bool "NI 7932 manufacturing U-Boot"
+	select SBRIO
+	select MFG
+
+config TARGET_NI_7935
+	bool "NI 7935"
+	select SBRIO
+
+config TARGET_NI_7935_MFG
+	bool "NI 7935 manufacturing U-Boot"
+	select SBRIO
+	select MFG
+
 config TARGET_NI_CRIO9063
 	bool "NI cRIO-9063"
 	select CRIO
