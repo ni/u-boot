@@ -11,6 +11,7 @@
 #define CONFIG_DEVICE_CODE "775E"
 #define CONFIG_FPGA_DEVICE_CODE "775E"
 #define CONFIG_DEVICE_DESC "sbRIO-9651"
+#define CONFIG_TARGET_CLASS "cRIO"
 
 #define CONFIG_NI_USB_PID "0x770D"
 #define CONFIG_NI_USB_VID "0x3923"
@@ -271,7 +272,7 @@
 		"setenv stdin " CONFIG_CONSOLE_UBOOT_DEV ";\0" \
 	"fdt_high=0x17ffffff\0" \
 	"initrd_high=0x17ff7fff\0" \
-	"TargetClass=cRIO\0" \
+	"TargetClass=" CONFIG_TARGET_CLASS "\0" \
 	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \

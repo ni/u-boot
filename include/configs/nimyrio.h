@@ -29,6 +29,7 @@
 #define CONFIG_FPGA_DEVICE_CODE "762F"
 #define CONFIG_DEVICE_DESC "myRIO-1900"
 #endif
+#define CONFIG_TARGET_CLASS "cRIO"
 
 /* For all myRIOs, pretend to be the packaged myRIO over USB */
 #define CONFIG_NI_USB_PID "0x762F"
@@ -299,7 +300,7 @@
 		"setenv stdin " CONFIG_CONSOLE_UBOOT_DEV ";\0" \
 	"fdt_high=0x7ffffff\0" \
 	"initrd_high=0x7ff7fff\0" \
-	"TargetClass=cRIO\0" \
+	"TargetClass=" CONFIG_TARGET_CLASS "\0" \
 	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
