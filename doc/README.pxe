@@ -166,6 +166,8 @@ fdt <path>	    - if this label is chosen, use tftp to retrieve the fdt blob
 		      the fdt_addr_r environment variable, and that address will
 		      be passed to bootm.
 
+bootcmd <string>    - Use <string> as the command to be execute.
+
 localboot <flag>    - Run the command defined by "localcmd" in the environment.
 		      <flag> is ignored and is only here to match the syntax of
 		      PXELINUX config files.
