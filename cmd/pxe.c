@@ -464,6 +464,7 @@ static int get_relfile_envaddr(cmd_tbl_t *cmdtp, const char *file_path, const ch
  * kernel - the path to the kernel file to use for this label.
  * append - kernel command line to use when booting this label
  * initrd - path to the initrd to use for this label.
+ * bootcmd - u-boot command to execute when use this label.
  * attempted - 0 if we haven't tried to boot this label, 1 if we have.
  * localboot - 1 if this label specified 'localboot', 0 otherwise.
  * list - lets these form a list, which a pxe_menu struct will hold.
@@ -477,6 +478,7 @@ struct pxe_label {
 	char *initrd;
 	char *fdt;
 	char *fdtdir;
+	char *bootcmd;
 	int ipappend;
 	int attempted;
 	int localboot;
@@ -551,6 +553,9 @@ static void label_destroy(struct pxe_label *label)
 
 	if (label->fdtdir)
 		free(label->fdtdir);
+
+	if (label->bootcmd)
+		free(label->bootcmd);
 
 	free(label);
 }
@@ -699,6 +704,12 @@ static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
 		printf("append: %s\n", finalbootargs);
 	}
 
+	if (label->bootcmd) {
+		debug("running: %s\n", label->bootcmd);
+		run_command_list(label->bootcmd, strlen(label->bootcmd), 0);
+		return 0;
+	}
+
 	bootm_argv[1] = getenv("kernel_addr_r");
 
 	/*
@@ -830,6 +841,7 @@ enum token_type {
 	T_FDTDIR,
 	T_ONTIMEOUT,
 	T_IPAPPEND,
+	T_BOOTCMD,
 	T_INVALID
 };
 
@@ -863,6 +875,7 @@ static const struct token keywords[] = {
 	{"fdtdir", T_FDTDIR},
 	{"ontimeout", T_ONTIMEOUT,},
 	{"ipappend", T_IPAPPEND,},
+	{"bootcmd", T_BOOTCMD,},
 	{NULL, T_INVALID}
 };
 
@@ -1269,6 +1282,10 @@ static int parse_label(char **c, struct pxe_menu *cfg)
 
 		case T_IPAPPEND:
 			err = parse_integer(c, &label->ipappend);
+			break;
+
+		case T_BOOTCMD:
+			err = parse_sliteral(c, &label->bootcmd);
 			break;
 
 		case T_EOL:

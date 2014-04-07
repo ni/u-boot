@@ -162,6 +162,8 @@ fdtdir <path>	    - if this label is chosen, use tftp to retrieve a fdt blob
 		      variables, i.e. <path>/<soc>-<board>.dtb is retrieved.
 		      If the fdt command is specified, fdtdir is ignored.
 
+bootcmd <string>    - Use <string> as the command to be execute.
+
 localboot <flag>    - Run the command defined by "localcmd" in the environment.
 		      <flag> is ignored and is only here to match the syntax of
 		      PXELINUX config files.
