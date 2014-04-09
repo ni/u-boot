@@ -18,7 +18,7 @@
 	"boot_safemode:so,boot_runmode:so,boot_pxe:so,consoleoutcmd:so," \
 	"recoverybootcmd:so,recoverycmd:so,fpgaloadcmd:so,ipresetcmd:so," \
 	"ipconfigcmd:so,markhardbootcomplete:so,stopwatchdog:so," \
-	"setlederrorstatus:so,readbootmode:so," \
+	"setlederrorstatus:so,readbootmode:so,pxesupport:do," \
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
 	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
@@ -53,6 +53,7 @@
 #define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
+	"pxesupport=1\0" \
 	"consolecmd=setenv console " CONFIG_CONSOLE_LINUX_DEV ",$baudrate\0" \
 	"ncoutport=7865\0" \
 	"ncinport=8473\0" \
