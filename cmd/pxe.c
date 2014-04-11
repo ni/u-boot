@@ -22,6 +22,9 @@
 #define MAX_TFTP_PATH_LEN 127
 
 const char *pxe_default_paths[] = {
+#ifdef CONFIG_PXE_PLATFORM_DEFAULT
+	CONFIG_PXE_PLATFORM_DEFAULT,
+#endif
 #ifdef CONFIG_SYS_SOC
 	"default-" CONFIG_SYS_ARCH "-" CONFIG_SYS_SOC,
 #endif
