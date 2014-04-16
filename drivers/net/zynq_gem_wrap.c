@@ -240,6 +240,45 @@ int Xgmac_one_time_init(void)
 	return 0;
 }
 
+int xgmac_init_tx_bd(XEmacPss *EmacPssInstancePtr)
+{
+	int Status;
+	XEmacPss_Bd BdTemplate;
+
+	/*
+	 * Setup TxBD space.
+	 */
+
+	XEmacPss_BdClear(&BdTemplate);
+	XEmacPss_BdSetStatus(&BdTemplate, XEMACPSS_TXBUF_USED_MASK);
+
+	/*
+	 * Create the TxBD ring
+	 */
+	Status = XEmacPss_BdRingCreate(
+		&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
+		(u32)&TxBdSpace, (u32)&TxBdSpace,
+		XEMACPSS_BD_ALIGNMENT, TXBD_CNT);
+	if (Status != 0) {
+		puts("Error setting up TxBD space, BdRingCreate");
+		return -1;
+	}
+
+	Status = XEmacPss_BdRingClone(
+		&(XEmacPss_GetTxRing(EmacPssInstancePtr)),
+		&BdTemplate, XEMACPSS_SEND);
+	if (Status != 0) {
+		puts("Error setting up TxBD space, BdRingClone");
+		return -1;
+	}
+	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
+		  XEMACPSS_TXQBASE_OFFSET,
+		  EmacPssInstancePtr->TxBdRing.BaseBdAddr);
+
+	return 0;
+}
+
+
 int Xgmac_init(struct eth_device *dev, bd_t *bis)
 {
 	int tmp;
@@ -249,13 +288,15 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	u32 slcr_gem_tx_clk = 0;
 	u32 slcr_gem_emio_clk = 0;
 
-	if (EmacPssInstancePtr->Initialized)
+	if (EmacPssInstancePtr->Initialized && EmacPssInstancePtr->IsStarted)
 		return 1;
 
 	/*
 	 * Setup the ethernet.
 	 */
 	printf("Trying to set up link on %s\n", dev->name);
+
+	xgmac_init_tx_bd(EmacPssInstancePtr);
 
 	/* Configure DMA */
 	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
@@ -272,6 +313,9 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	tmp |= XEMACPSS_NWCTRL_RXEN_MASK | XEMACPSS_NWCTRL_TXEN_MASK;
 	XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
 			  XEMACPSS_NWCTRL_OFFSET, tmp);
+
+	if (EmacPssInstancePtr->Initialized)
+		goto Xgmac_init_started;
 
 	/*************************** PHY Setup ***************************/
 
@@ -527,11 +571,30 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	printf("Link is now at %dMbps!\n", link_speed);
 
 	EmacPssInstancePtr->Initialized = 1;
+
+Xgmac_init_started:
+	EmacPssInstancePtr->IsStarted = XCOMPONENT_IS_STARTED;
 	return 0;
 }
 
 void Xgmac_halt(struct eth_device *dev)
 {
+	unsigned int tmp;
+	XEmacPss *EmacPssInstancePtr = (XEmacPss *)dev->priv;
+
+	if (EmacPssInstancePtr->IsStarted) {
+
+
+		/* Disable Tx and Rx */
+		tmp =
+		XEmacPss_ReadReg(EmacPssInstancePtr->Config.BaseAddress,
+				XEMACPSS_NWCTRL_OFFSET);
+		tmp &= ~(XEMACPSS_NWCTRL_RXEN_MASK | XEMACPSS_NWCTRL_TXEN_MASK);
+		XEmacPss_WriteReg(EmacPssInstancePtr->Config.BaseAddress,
+				XEMACPSS_NWCTRL_OFFSET, tmp);
+
+		EmacPssInstancePtr->IsStarted = 0;
+	}
 	return;
 }
 
