@@ -172,14 +172,14 @@
 		"elif test -n \\\\\"$forcedrecovery\\\\\"; " \
 		"then " \
 			"flags=${.flags} && " \
-			"setenv .flags bootcmd && " \
 			"savebootcmd=$bootcmd && " \
+			"setenv .flags bootcmd && " \
 			"setenv bootcmd \\\\\"$recoverybootcmd\\\\\" && " \
-			"setenv .flags $flags && " \
+			"setenv .flags $flags; " \
 			"savebootdelay=$bootdelay && " \
-			"setenv bootdelay -2 && " \
-			"run setlederrorstatus && " \
-			"usb reset && " \
+			"setenv bootdelay -2; " \
+			"run setlederrorstatus; " \
+			"usb reset; " \
 			"run ipconfigcmd; " \
 			"run nc; " \
 			"setenv silent; " \
