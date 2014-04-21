@@ -540,7 +540,7 @@ int fw_setenv(int argc, char *argv[], struct env_opts *opts)
 int fw_parse_script(char *fname, struct env_opts *opts)
 {
 	FILE *fp;
-	char dump[1024];	/* Maximum line length in the file */
+	char dump[4096];	/* Maximum line length in the file */
 	char *name;
 	char *val;
 	int lineno = 0;
