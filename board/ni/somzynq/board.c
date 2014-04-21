@@ -157,7 +157,30 @@ int board_late_init (void)
 #ifdef CONFIG_CMD_NET
 int board_eth_init(bd_t *bis)
 {
-	return zynq_gem_initialize(bis);
+	int retval;
+	int phy_addr;
+	char gemname[10];
+	int i;
+
+	retval = zynq_gem_initialize(bis);
+
+	/* sbRIO-9651 has a Micrel KSZ9031MNX Gigabit Ethernet PHY on zynq_gem0
+	 * and possibly another on zynq_gem1 on a daughter board. */
+	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; i++) {
+		sprintf(gemname, "zynq_gem%d", i);
+
+		phy_addr = zynq_gem_get_phyaddr(gemname);
+
+		/* Write value to MMD Address 2h, Register 8h */
+		miiphy_write(gemname, phy_addr, 0xD, 0x0002);
+		miiphy_write(gemname, phy_addr, 0xE, 0x0008);
+		miiphy_write(gemname, phy_addr, 0xD, 0x4002);
+		/* Set RX_CLK Pad Skew [4:0] to 0b00000. Leave the GTX_CLK Pad
+		 * Skew [9:5] at its default of 0b01111. */
+		miiphy_write(gemname, phy_addr, 0xE, 0x01E0);
+	}
+
+	return retval;
 }
 #endif
 
