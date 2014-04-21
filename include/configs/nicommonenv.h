@@ -196,7 +196,9 @@
 			"echo $recovery_err; " \
 		"fi;\0" \
 	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
-		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode; then " \
+		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
+			"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
+		"then " \
 			"loaddefaultbit=1; " \
 		"else " \
 			"if ubifsload $verifyaddr user.bit.crc && " \
@@ -437,6 +439,29 @@
 		"run recoverycmd; " \
 	"else " \
 		"run fpgaloadcmd; " \
+		"run consoleoutcmd; " \
+		"if test -n \\\\\"$isipreset\\\\\"; then " \
+			"run ipresetcmd; " \
+		"fi; " \
+	"fi;"
+
+#define REAL_PREBOOT_FEEBLE_RECOVERY \
+	"setenv silent 1; " \
+	"nand lock tight; " \
+	"ubi part boot-config; " \
+	"run readsoftdip; " \
+	"run readcplddip; " \
+	"run readbootmode; " \
+	"run read_usb0_otgsc_id;" \
+	"run evaldip; " \
+	"run fpgaloadcmd; " \
+	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
+			"setenv silent; " \
+		"fi; " \
+		"forcedrecovery=1; " \
+		"run recoverycmd; " \
+	"else " \
 		"run consoleoutcmd; " \
 		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \
