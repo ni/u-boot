@@ -15,10 +15,31 @@
 #define CONFIG_FPGA_DEVICE_CODE "7743"
 #define CONFIG_DEVICE_DESC "cRIO-9066"
 #define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_CRIO9065) /* cRIO-9065, 4-slot cRIO, extended temp */
+#define CONFIG_DEVICE_CODE "7742"
+#define CONFIG_FPGA_DEVICE_CODE "7742"
+#define CONFIG_DEVICE_DESC "cRIO-9065"
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_CRIO9064) /* cRIO-9064, 4-slot cRIO, 512MB RAM */
+#define CONFIG_DEVICE_CODE "7741"
+#define CONFIG_FPGA_DEVICE_CODE "7741"
+#define CONFIG_DEVICE_DESC "cRIO-9064"
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_CRIO9063) /* cRIO-9063, 4-slot cRIO, 256MB RAM */
+#define CONFIG_DEVICE_CODE "7740"
+#define CONFIG_FPGA_DEVICE_CODE "7740"
+#define CONFIG_DEVICE_DESC "cRIO-9063"
+#define CONFIG_TARGET_CLASS "cRIO"
 #elif defined (CONFIG_NI9149) /* NI 9149 */
 #define CONFIG_DEVICE_CODE "774E"
 #define CONFIG_FPGA_DEVICE_CODE "774E"
 #define CONFIG_DEVICE_DESC "NI 9149"
+#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
+#define CONFIG_TARGET_CLASS "Ethernet RIO"
+#elif defined (CONFIG_NI9147) /* NI 9147, 4-slot ethernet expansion cRIO*/
+#define CONFIG_DEVICE_CODE "774C"
+#define CONFIG_FPGA_DEVICE_CODE "774C"
+#define CONFIG_DEVICE_DESC "NI 9147"
 #define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
 #define CONFIG_TARGET_CLASS "Ethernet RIO"
 #else
@@ -81,10 +102,18 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
-#if defined(CONFIG_CRIO9066)
+#if defined(CONFIG_CRIO9063)
+#define CONFIG_NI_BOARD_NAME "cRIO-9063"
+#elif defined(CONFIG_CRIO9064)
+#define CONFIG_NI_BOARD_NAME "cRIO-9064"
+#elif defined(CONFIG_CRIO9065)
+#define CONFIG_NI_BOARD_NAME "cRIO-9065"
+#elif defined(CONFIG_CRIO9066)
 #define CONFIG_NI_BOARD_NAME "cRIO-9066"
 #elif defined(CONFIG_CRIO9067)
 #define CONFIG_NI_BOARD_NAME "cRIO-9067"
+#elif defined(CONFIG_NI9147)
+#define CONFIG_NI_BOARD_NAME "NI 9147"
 #elif defined(CONFIG_NI9149)
 #define CONFIG_NI_BOARD_NAME "NI 9149"
 #else
@@ -149,7 +178,7 @@
 /* Use both GEM interfaces */
 #define CONFIG_NET_MULTI
 #define CONFIG_ZYNQ_GEM
-#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define CONFIG_ZYNQ_GEM_COUNT		1
 #else
 #define CONFIG_ZYNQ_GEM_COUNT		2
@@ -169,7 +198,7 @@
 #endif
 
 /* GEM1 on EMIO */
-#if !defined (CONFIG_CRIO9066) && !defined (CONFIG_ENETEXP)
+#if !defined (CONFIG_MEM_256) && !defined (CONFIG_ENETEXP)
 #define CONFIG_ZYNQ_GEM1_EMIO
 #define CONFIG_ZYNQ_GEM1_BASE_ADDR	XPSS_GEM1_BASEADDR
 #define CONFIG_ZYNQ_GEM1_CREATE_MII	0
@@ -253,7 +282,7 @@
 /*
  * Physical Memory map
  */
-#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #else
 #define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
@@ -298,7 +327,7 @@
 #define CONFIG_CMD_UBIFS
 
 #define CONFIG_MTD_UBOOT_OFFSET			0x20000
-#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define CONFIG_BOARD_SIZE_LIMIT			0x80000 /* 512MB */
 #else
 #define CONFIG_BOARD_SIZE_LIMIT			0x100000 /* 1GB */
@@ -315,14 +344,14 @@
 #define CONFIG_DEFAULT_NVS
 
 #undef CONFIG_SYS_LOAD_ADDR
-#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #else
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
 #endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
-#if defined (CONFIG_CRIO9066) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define FDT_HIGH "0x7FFFFFF"
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
@@ -355,12 +384,12 @@
 #define WIFIETHADDR_SAVE
 #define WIFIETHADDR_RESTORE
 
-#if defined(CONFIG_CRIO9066) || defined(CONFIG_NI9149)
-/* cRIO-9066 and NI 9149 use ethaddr for wired Ethernet. */
+#if defined(CONFIG_MEM_256) || defined(CONFIG_ENETEXP)
+/* cRIO-9063, cRIO-9066, NI 9147 and NI 9149 use ethaddr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr)
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr)
 #else
-/* cRIO-9068 and cRIO-9067 use ethaddr and eth1addr for wired Ethernet. */
+/* cRIO-9064, cRIO-9065, cRIO-9067 and cRIO-9068 use ethaddr and eth1addr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr) ENV_SAVE(eth1addr)
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr) ENV_RESTORE(eth1addr)
 #endif
@@ -405,7 +434,7 @@
 #define CONFIG_BOOTCOMMAND \
 	REAL_BOOTCOMMAND
 
-#ifdef CONFIG_NI9149
+#ifdef CONFIG_ENETEXP
 #define CONFIG_PREBOOT \
 	REAL_PREBOOT_FEEBLE_RECOVERY
 #else
