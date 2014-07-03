@@ -76,7 +76,7 @@ int board_late_init (void)
 #if !defined(CONFIG_MFG)
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
-#if !defined(CONFIG_CRIO9066) && !defined(CONFIG_ENETEXP)
+#if !defined(CONFIG_MEM_256) && !defined(CONFIG_ENETEXP)
 	eth1addr_missing = getenv("eth1addr") == NULL;
 #endif
 #if defined(CONFIG_GEN2)
@@ -101,7 +101,7 @@ int board_late_init (void)
 			eth_setenv_enetaddr("ethaddr", &nand_buffer[
                             getenv_ulong("backupethaddroffset", 16,
 				CONFIG_BACKUP_ETHADDR_OFFSET)]);
-#if !defined(CONFIG_CRIO9066) && !defined(CONFIG_ENETEXP)
+#if !defined(CONFIG_MEM_256) && !defined(CONFIG_ENETEXP)
 		if (eth1addr_missing && !nand_read_status)
 			eth_setenv_enetaddr("eth1addr", &nand_buffer[
                             getenv_ulong("backupeth1addroffset", 16,
