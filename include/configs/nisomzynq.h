@@ -204,6 +204,12 @@
 #define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
 #define CONFIG_BACKUP_PAGE		0xB1F800
+
+/* CCA Serial Number, useful when testing multiple sbRIO-9651 at once in
+ * manufacturing, so that the test can tell which CCA is it working on. This is
+ * a different variable than the Module Assembly (MA) serial number. */
+#define CONFIG_BACKUP_CCA_SERIAL_OFFSET	0x7e0
+
 #define CONFIG_BACKUP_SERIAL_OFFSET	0x7e4
 
 /* Primary MAC Address */

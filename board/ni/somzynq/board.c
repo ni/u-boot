@@ -54,6 +54,7 @@ int board_late_init (void)
 	u8 tmp;
 #if !defined(CONFIG_MFG)
 	int serial_missing;
+	int cca_serial_missing;
 	int ethaddr_missing;
 	int eth1addr_missing;
 	int usbgadgetethaddr_missing;
@@ -69,13 +70,13 @@ int board_late_init (void)
 	set_default_env("Default env required for manufacturing.\n");
 #else
 	serial_missing = getenv("serial#") == NULL;
+	cca_serial_missing = getenv("ccaserial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
 	eth1addr_missing = getenv("eth1addr") == NULL;
 	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
 	eth3addr_missing = getenv("eth3addr") == NULL;
-
-	if (serial_missing || ethaddr_missing || eth1addr_missing ||
-	    usbgadgetethaddr_missing || eth3addr_missing) {
+	if (serial_missing || cca_serial_missing || ethaddr_missing ||
+	    eth1addr_missing || usbgadgetethaddr_missing || eth3addr_missing) {
 		u8 nand_buffer[nand_info[0]->writesize];
 		int nand_read_status;
 		char string[18];
@@ -89,6 +90,12 @@ int board_late_init (void)
 			    getenv_ulong("backupserialoffset", 16,
 				CONFIG_BACKUP_SERIAL_OFFSET)]);
 			setenv("serial#", string);
+		}
+		if (cca_serial_missing && !nand_read_status) {
+			sprintf(string, "%08x", *(u32 *)&nand_buffer[
+			    getenv_ulong("backupccaserialoffset", 16,
+				CONFIG_BACKUP_CCA_SERIAL_OFFSET)]);
+			setenv("ccaserial#", string);
 		}
 		if (ethaddr_missing && !nand_read_status) {
 			int offset = getenv_ulong("backupethaddroffset", 16,
