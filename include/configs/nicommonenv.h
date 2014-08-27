@@ -11,8 +11,8 @@
 	"DeviceCode:xo,FPGADeviceCode:xo," \
 	"USBVendorID:xo,USBProductID:xo,USBProduct:so,USBDevice:xo," \
 	"loadaddr:xo,verifyaddr:xo," \
-	"backuppage:xo,backupserialoffset:xo,backupethaddroffset:xo," \
-	"backupeth1addroffset:xo," \
+	"backuppage:xo,backupserialoffset:xo,backupccaserialoffset:xo," \
+	"backupethaddroffset:xo,backupeth1addroffset:xo," \
 	"backupusbgadgetethaddroffset:xo," \
 	"backupeth3addroffset:xo," \
 	"boot_safemode:so,boot_runmode:so,boot_pxe:so,consoleoutcmd:so," \
@@ -74,6 +74,8 @@
 	"verifyaddr=" VERIFY_ADDR "\0" \
 	"backuppage=" __stringify(CONFIG_BACKUP_PAGE) "\0" \
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
+	"backupccaserialoffset=" \
+		__stringify(CONFIG_BACKUP_CCA_SERIAL_OFFSET) "\0" \
 	"backupethaddroffset=" __stringify(CONFIG_BACKUP_ETHADDR_OFFSET) "\0" \
 	"backupeth1addroffset=" \
 		__stringify(CONFIG_BACKUP_ETH1ADDR_OFFSET) "\0" \
