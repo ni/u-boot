@@ -183,7 +183,7 @@
 #define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
 #endif
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 #define CONFIG_NI_USB_PID "0x770D"
 #define CONFIG_NI_USB_VID "0x3923"
 #endif
@@ -242,6 +242,12 @@
 #define CONFIG_NI_BOARD_NAME "NI 9147"
 #elif defined(CONFIG_NI9149)
 #define CONFIG_NI_BOARD_NAME "NI 9149"
+#elif defined(CONFIG_SBRIO9637)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9637"
+#elif defined(CONFIG_SBRIO9627)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9627"
+#elif defined(CONFIG_SBRIO9607)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9607"
 #else
 #define CONFIG_NI_BOARD_NAME "cRIO-9068"
 #endif
@@ -291,7 +297,7 @@
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
 #define CONFIG_SYS_NS16550_COM1 0x80000000
-#if !defined (CONFIG_GEN2)
+#if !defined (CONFIG_GEN2) && !defined(CONFIG_SBRIO9607)
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #endif
@@ -324,6 +330,8 @@
 #define CONFIG_SYS_I2C_SPEED 400
 #define CONFIG_HARD_I2C
 #define CONFIG_ZYNQ_I2C
+#define CONFIG_RTC_DS3231
+#define CONFIG_SYS_I2C_RTC_ADDR 0x68
 
 /* USB Host support */
 #define CONFIG_USB_STORAGE
@@ -422,10 +430,10 @@
 
 #include "niresetenv.h"
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || (defined (CONFIG_SBRIO) && defined(CONFIG_RMC))
 
-/* GEN2 cRIO-906x uses usbgadgetethaddr for the USB Gadget Ethernet
- * MAC. */
+/* GEN2 cRIO-906x, sbRIO-96x7 with RMC use usbgadgetethaddr for the USB
+ * Gadget Ethernet MAC. */
 #define USBGADGETETHADDR_SAVE ENV_SAVE(usbgadgetethaddr)
 #define USBGADGETETHADDR_RESTORE ENV_RESTORE(usbgadgetethaddr)
 
@@ -440,7 +448,9 @@
 #define WIFIETHADDR_SAVE
 #define WIFIETHADDR_RESTORE
 
-#if defined(CONFIG_MEM_256) || defined(CONFIG_ENETEXP)
+#if defined(CONFIG_MEM_256) || \
+	defined(CONFIG_ENETEXP) || \
+	(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC))
 /* cRIO-9063, cRIO-9066, NI 9147 and NI 9149 use ethaddr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr)
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr)
