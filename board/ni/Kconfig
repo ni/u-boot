@@ -87,6 +87,33 @@ config TARGET_ROBORIO_MFG
 	select MFG
 	select MYRIO
 
+config TARGET_NI_SBRIO9607
+	bool "NI sbRIO-9607"
+	select CRIO
+
+config TARGET_NI_SBRIO9607_MFG
+	bool "NI sbRIO-9607 manufacturing U-Boot"
+	select MFG
+	select CRIO
+
+config TARGET_NI_SBRIO9627
+	bool "NI sbRIO-9627"
+	select CRIO
+
+config TARGET_NI_SBRIO9627_MFG
+	bool "NI sbRIO-9627 manufacturing U-Boot"
+	select MFG
+	select CRIO
+
+config TARGET_NI_SBRIO9637
+	bool "NI sbRIO-9637"
+	select CRIO
+
+config TARGET_NI_SBRIO9637_MFG
+	bool "NI sbRIO-9637 manufacturing U-Boot"
+	select MFG
+	select CRIO
+
 config TARGET_NI_SBRIO9651
 	bool "NI sbRIO 9651"
 	select SBRIO
