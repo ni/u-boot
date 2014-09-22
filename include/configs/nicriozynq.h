@@ -67,7 +67,7 @@
 #define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
 #endif
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 #define CONFIG_NI_USB_PID "0x770D"
 #define CONFIG_NI_USB_VID "0x3923"
 #endif
@@ -131,6 +131,12 @@
 #define CONFIG_NI_BOARD_NAME "NI 9147"
 #elif defined(CONFIG_NI9149)
 #define CONFIG_NI_BOARD_NAME "NI 9149"
+#elif defined(CONFIG_SBRIO9637)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9637"
+#elif defined(CONFIG_SBRIO9627)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9627"
+#elif defined(CONFIG_SBRIO9607)
+#define CONFIG_NI_BOARD_NAME "sbRIO-9607"
 #else
 #define CONFIG_NI_BOARD_NAME "cRIO-9068"
 #endif
@@ -183,7 +189,7 @@
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
 #define CONFIG_SYS_NS16550_COM1 0x80000000
-#if !defined (CONFIG_GEN2)
+#if !defined (CONFIG_GEN2) && !defined(CONFIG_SBRIO9607)
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #endif
@@ -193,7 +199,9 @@
 /* Use both GEM interfaces */
 #define CONFIG_NET_MULTI
 #define CONFIG_ZYNQ_GEM
-#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_MEM_256) \
+	|| defined (CONFIG_ENETEXP) \
+	|| (defined(CONFIG_SBRIO) && !defined (CONFIG_RMC))
 #define CONFIG_ZYNQ_GEM_COUNT		1
 #else
 #define CONFIG_ZYNQ_GEM_COUNT		2
@@ -203,7 +211,7 @@
 #define CONFIG_ZYNQ_GEM0_BASE_ADDR	XPSS_GEM0_BASEADDR
 #define CONFIG_ZYNQ_GEM0_PHY_ADDR	0
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 /* GEM0 on EMIO */
 #define CONFIG_ZYNQ_GEM0_EMIO
 #define CONFIG_ZYNQ_GEM0_FPGA_CLK_REG	XPSS_SLCR_FPGA0_CLK_CTRL
@@ -213,13 +221,15 @@
 #endif
 
 /* GEM1 on EMIO */
-#if !defined (CONFIG_MEM_256) && !defined (CONFIG_ENETEXP)
+#if !defined (CONFIG_MEM_256) && \
+	!defined (CONFIG_ENETEXP) && \
+	!(defined(CONFIG_SBRIO) && !defined (CONFIG_RMC))
 #define CONFIG_ZYNQ_GEM1_EMIO
 #define CONFIG_ZYNQ_GEM1_BASE_ADDR	XPSS_GEM1_BASEADDR
 #define CONFIG_ZYNQ_GEM1_CREATE_MII	0
 #define CONFIG_ZYNQ_GEM1_MII_GEM	0
 #define CONFIG_ZYNQ_GEM1_PHY_ADDR	1
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 #define CONFIG_ZYNQ_GEM1_FPGA_CLK_REG	XPSS_SLCR_FPGA2_CLK_CTRL
 #define CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO 55
 #define CONFIG_ZYNQ_GEM1_LINK_SPEED_1000_GPIO_ON 0
@@ -265,6 +275,9 @@
 #if defined (CONFIG_GEN2)
 #define CONFIG_ZYNQ_I2C_SCL_MIO 18
 #define CONFIG_ZYNQ_I2C_SDA_MIO 19
+#elif  defined (CONFIG_SBRIO)
+#define CONFIG_ZYNQ_I2C_SCL_MIO 26
+#define CONFIG_ZYNQ_I2C_SDA_MIO 27
 #else
 #define CONFIG_ZYNQ_I2C_SCL_MIO 50
 #define CONFIG_ZYNQ_I2C_SDA_MIO 51
@@ -381,10 +394,10 @@
 
 #include "niresetenv.h"
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || (defined (CONFIG_SBRIO) && defined(CONFIG_RMC))
 
-/* GEN2 cRIO-906x uses usbgadgetethaddr for the USB Gadget Ethernet
- * MAC. */
+/* GEN2 cRIO-906x, sbRIO-96x7 with RMC use usbgadgetethaddr for the USB
+ * Gadget Ethernet MAC. */
 #define USBGADGETETHADDR_SAVE ENV_SAVE(usbgadgetethaddr)
 #define USBGADGETETHADDR_RESTORE ENV_RESTORE(usbgadgetethaddr)
 
@@ -399,7 +412,9 @@
 #define WIFIETHADDR_SAVE
 #define WIFIETHADDR_RESTORE
 
-#if defined(CONFIG_MEM_256) || defined(CONFIG_ENETEXP)
+#if defined(CONFIG_MEM_256) || \
+	defined(CONFIG_ENETEXP) || \
+	(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC))
 /* cRIO-9063, cRIO-9066, NI 9147 and NI 9149 use ethaddr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr)
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr)

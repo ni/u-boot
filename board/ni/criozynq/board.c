@@ -91,10 +91,12 @@ int board_late_init (void)
 #if !defined(CONFIG_MFG)
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
-#if !defined(CONFIG_MEM_256) && !defined(CONFIG_ENETEXP)
+#if !defined(CONFIG_MEM_256) && \
+	!defined(CONFIG_ENETEXP) && \
+	!(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC))
 	eth1addr_missing = getenv("eth1addr") == NULL;
 #endif
-#if defined(CONFIG_GEN2)
+#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO)
 	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
 #endif
 	if (serial_missing || ethaddr_missing || eth1addr_missing || usbgadgetethaddr_missing) {
@@ -116,13 +118,15 @@ int board_late_init (void)
 			eth_setenv_enetaddr("ethaddr", &nand_buffer[
                             getenv_ulong("backupethaddroffset", 16,
 				CONFIG_BACKUP_ETHADDR_OFFSET)]);
-#if !defined(CONFIG_MEM_256) && !defined(CONFIG_ENETEXP)
+#if !defined(CONFIG_MEM_256) && \
+	!defined(CONFIG_ENETEXP) && \
+	!(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC))
 		if (eth1addr_missing && !nand_read_status)
 			eth_setenv_enetaddr("eth1addr", &nand_buffer[
                             getenv_ulong("backupeth1addroffset", 16,
 				CONFIG_BACKUP_ETH1ADDR_OFFSET)]);
 #endif
-#if defined(CONFIG_GEN2)
+#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO)
 		if (usbgadgetethaddr_missing && !nand_read_status)
 			eth_setenv_enetaddr("usbgadgetethaddr", &nand_buffer[
                             getenv_ulong("backupusbgadgetethaddroffset", 16,
@@ -157,7 +161,7 @@ int board_eth_init(bd_t *bis)
 
 		phy_addr = zynq_gem_get_phyaddr(gemname);
 
-#if defined (CONFIG_GEN2)
+#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
                /* Write value to MMD Address 2h, Register 4h */
                miiphy_write(miiname, phy_addr, 0xD, 0x0002);
                miiphy_write(miiname, phy_addr, 0xE, 0x0004);
