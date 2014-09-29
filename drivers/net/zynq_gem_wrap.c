@@ -312,6 +312,7 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	u32 slcr_gem_emio_clk = 0;
 	char *ep;             /* Environment pointer */
 	int eth_phy_reset;
+	int eth_phy_renegotiate;
 	int ret;
 
 	if (EmacPssInstancePtr->Initialized && EmacPssInstancePtr->IsStarted)
@@ -397,7 +398,17 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	Xgmac_set_eth_advertise(EmacPssInstancePtr, 1000);
 #endif
 
-	ret = phy_renegotiate(EmacPssInstancePtr);
+	/*
+	 * Allow the user to bypass PHY re-negotiation for all PHYs.
+	 */
+	eth_phy_renegotiate = 1;
+	ep = getenv("ethphyrenegotiate");
+	if (ep != NULL)
+		eth_phy_renegotiate = strcmp(ep, "no");
+
+	/* Re-auto-negotiate with the settings with recently set. */
+	if (eth_phy_renegotiate)
+		ret = phy_renegotiate(EmacPssInstancePtr);
 
 	/* Fail this function if auto-negotiation failed. */
 	if (ret < 0)
