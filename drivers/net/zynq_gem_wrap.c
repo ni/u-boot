@@ -139,6 +139,29 @@ static void phy_rst(XEmacPss *e)
 	puts("\nPHY reset complete.\n");
 }
 
+static int phy_renegotiate(XEmacPss *e)
+{
+	int tmp;
+
+	/* Attempt auto-negotiation */
+	tmp = phy_rd(e, MII_BMCR);
+	tmp |= BMCR_ANRESTART;
+	phy_wr(e, MII_BMCR, tmp);
+
+	puts("Waiting for PHY to complete auto-negotiation...\n");
+	tmp = 0; /* delay counter */
+	while (!(phy_rd(e, MII_BMSR) & BMSR_ANEGCOMPLETE)) {
+		udelay(10000);
+		tmp++;
+		if (tmp > 1000) { /* stalled if no link after 10 seconds */
+			puts("***Error: Auto-negotiation stalled...\n");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 static void Out32(u32 OutAddress, u32 Value)
 {
 	*(volatile u32 *) OutAddress = Value;
@@ -287,6 +310,7 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	u32 slcr_gem_rx_clk;
 	u32 slcr_gem_tx_clk = 0;
 	u32 slcr_gem_emio_clk = 0;
+	int ret;
 
 	if (EmacPssInstancePtr->Initialized && EmacPssInstancePtr->IsStarted)
 		return 1;
@@ -359,19 +383,12 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	/* CR-659040 */
 	Xgmac_set_eth_advertise(EmacPssInstancePtr, 1000);
 #endif
-	phy_rst(EmacPssInstancePtr);
 
-	/* Attempt auto-negotiation */
-	puts("Waiting for PHY to complete auto-negotiation...\n");
-	tmp = 0; /* delay counter */
-	while (!(phy_rd(EmacPssInstancePtr, MII_BMSR) & BMSR_ANEGCOMPLETE)) {
-		udelay(10000);
-		tmp++;
-		if (tmp > 1000) { /* stalled if no link after 10 seconds */
-			puts("***Error: Auto-negotiation stalled...\n");
-			return -1;
-		}
-	}
+	ret = phy_renegotiate(EmacPssInstancePtr);
+
+	/* Fail this function if auto-negotiation failed. */
+	if (ret < 0)
+		return ret;
 
 	/* Check if the link is up */
 	tmp = phy_rd(EmacPssInstancePtr, MII_BMSR);
