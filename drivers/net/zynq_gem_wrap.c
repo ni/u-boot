@@ -310,6 +310,8 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	u32 slcr_gem_rx_clk;
 	u32 slcr_gem_tx_clk = 0;
 	u32 slcr_gem_emio_clk = 0;
+	char *ep;             /* Environment pointer */
+	int eth_phy_reset;
 	int ret;
 
 	if (EmacPssInstancePtr->Initialized && EmacPssInstancePtr->IsStarted)
@@ -351,6 +353,17 @@ int Xgmac_init(struct eth_device *dev, bd_t *bis)
 	printf("Phy ID: %04X", tmp);
 	tmp = phy_rd(EmacPssInstancePtr, MII_PHYSID2);
 	printf("%04X\n", tmp);
+
+	/*
+	 * Allow the user to skip PHY reset.
+	 */
+	eth_phy_reset = 1;
+	ep = getenv("ethphyreset");
+	if (ep != NULL)
+		eth_phy_reset = strcmp(ep, "no");
+
+	if (eth_phy_reset)
+		phy_rst(EmacPssInstancePtr);
 
 #ifdef CONFIG_EP107
 	/* Auto-negotiation advertisement register */
