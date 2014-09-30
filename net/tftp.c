@@ -40,6 +40,7 @@
 
 static ulong TftpTimeoutMSecs = TIMEOUT;
 static int TftpTimeoutCountMax = TIMEOUT_COUNT;
+static int TftpRetries = TIMEOUT_COUNT;
 
 /*
  * These globals govern the timeout behavior when attempting a connection to a
@@ -586,7 +587,7 @@ TftpHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src,
 		}
 
 		TftpLastBlock = TftpBlock;
-		TftpTimeoutCountMax = TIMEOUT_COUNT;
+		TftpTimeoutCountMax = TftpRetries;
 		NetSetTimeout(TftpTimeoutMSecs, TftpTimeout);
 
 		store_block(TftpBlock - 1, pkt + 2, len);
@@ -701,6 +702,10 @@ void TftpStart(enum proto_t protocol)
 		TftpTimeoutMSecs = 1000;
 	}
 
+	ep = getenv("tftpretries");
+	if (ep != NULL)
+		TftpRetries = simple_strtol(ep, NULL, 10);
+
 	debug("TFTP blocksize = %i, timeout = %ld ms\n",
 		TftpBlkSizeOption, TftpTimeoutMSecs);
 
@@ -775,7 +780,14 @@ void TftpStart(enum proto_t protocol)
 		TftpState = STATE_SEND_RRQ;
 	}
 
-	TftpTimeoutCountMax = TftpRRQTimeoutCountMax;
+	if (TftpRRQTimeoutCountMax != TIMEOUT_COUNT)
+		/*
+		 * A non-default RRQ timeout was specified via a global. Use
+		 * that value instead of TftpRetries.
+		 */
+		TftpTimeoutCountMax = TftpRRQTimeoutCountMax;
+	else
+		TftpTimeoutCountMax = TftpRetries;
 
 	NetSetTimeout(TftpTimeoutMSecs, TftpTimeout);
 	net_set_udp_handler(TftpHandler);
@@ -824,7 +836,7 @@ TftpStartServer(void)
 
 	puts("Loading: *\b");
 
-	TftpTimeoutCountMax = TIMEOUT_COUNT;
+	TftpTimeoutCountMax = TftpRetries;
 	TftpTimeoutCount = 0;
 	TftpTimeoutMSecs = TIMEOUT;
 	NetSetTimeout(TftpTimeoutMSecs, TftpTimeout);
