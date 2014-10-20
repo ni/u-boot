@@ -50,6 +50,40 @@
 #define CONFIG_GADGET_VARS
 #endif
 
+#if defined(CONFIG_OTG_USB_BASE_ADDR)
+
+#ifndef CONFIG_OTG_USB_DT_NODE
+#if CONFIG_OTG_USB_BASE_ADDR == ZYNQ_USB_BASEADDR0
+#define CONFIG_OTG_USB_DT_NODE "/amba@0/usb@e0002000"
+#elif CONFIG_OTG_USB_BASE_ADDR == ZYNQ_USB_BASEADDR1
+#define CONFIG_OTG_USB_DT_NODE "/amba@0/usb@e0003000"
+#else
+#error "Unexpected USB base address for USB OTG configuration"
+#endif
+#endif /* CONFIG_OTG_USB_DT_NODE */
+
+#define USB_HOST_DEVICE_COMMANDS \
+	"read_usb_otgsc_id=setexpr.l usb_otgsc " \
+		__stringify(CONFIG_OTG_USB_BASE_ADDR) " + " \
+		__stringify(XPSS_USB_OTGSC) "; " \
+		"setexpr.l usb_otgsc_id *$usb_otgsc" \
+		" \\\\& " __stringify(XPSS_USB_OTGSC_ID_MASK) "\0" \
+	"set_usb_host_device_mode=" \
+			"fdt addr $loadaddr && " \
+			"fdt get addr fdtaddr /images/fdt_" \
+				CONFIG_DEVICE_CODE " data && " \
+			"fdt addr $fdtaddr && " \
+		"if itest.l $usb_otgsc_id == 0; then " \
+			"fdt set " CONFIG_OTG_USB_DT_NODE \
+				" dr_mode host; " \
+		"else " \
+			"fdt set " CONFIG_OTG_USB_DT_NODE \
+				" dr_mode peripheral; " \
+		"fi;\0"
+#else
+#define USB_HOST_DEVICE_COMMANDS
+#endif /* CONFIG_OTG_USB_BASE_ADDR */
+
 #define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
@@ -94,7 +128,7 @@
 		"ubifsload $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
-			"run set_usb0_host_device_mode; " \
+			"run set_usb_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"echo $safemode_err; " \
@@ -106,7 +140,7 @@
 		"ubifsload $loadaddr linux_runmode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
-			"run set_usb0_host_device_mode; " \
+			"run set_usb_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"run boot_safemode; " \
@@ -355,6 +389,7 @@
 		"setenv cpld.consoleout; " \
 		"setenv cpld.softboot; " \
 		"setenv cpld.resetbybutton;\0" \
+	USB_HOST_DEVICE_COMMANDS \
 	"safemode_err=Failed to find a valid safemode image.\0" \
 	"fpga_err=Failed to load an FPGA image.\0" \
 	"recovery_err=Safemode or FPGA is corrupt. " \
@@ -431,7 +466,7 @@
 	"run readsoftdip; " \
 	"run readcplddip; " \
 	"run readbootmode; " \
-	"run read_usb0_otgsc_id;" \
+	"run read_usb_otgsc_id;" \
 	"run evaldip; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
 		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
@@ -454,7 +489,7 @@
 	"run readsoftdip; " \
 	"run readcplddip; " \
 	"run readbootmode; " \
-	"run read_usb0_otgsc_id;" \
+	"run read_usb_otgsc_id;" \
 	"run evaldip; " \
 	"run fpgaloadcmd; " \
 	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \

@@ -346,6 +346,9 @@
 #define CONFIG_USB_EHCI_ZYNQ
 #define CONFIG_USB_EHCI_TXFIFO_THRESH 8
 #define CONFIG_EHCI_IS_TDI
+#if defined(CONFIG_SBRIO) && defined(CONFIG_RMC)
+#define CONFIG_OTG_USB_BASE_ADDR ZYNQ_USB_BASEADDR1
+#endif
 
 /*
  * Physical Memory map
