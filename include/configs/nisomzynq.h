@@ -208,7 +208,7 @@
 #else
 #define CONFIG_USB_BASE_ADDR XPSS_USB1_BASEADDR /* int 44 */
 #endif
-#define XPSS_USB0_OTGCSR 0xE00021A4
+#define CONFIG_OTG_USB_BASE_ADDR XPSS_USB0_BASEADDR
 
 /*
  * Physical Memory map
@@ -326,24 +326,10 @@
 
 #include "nicommonenv.h"
 
-#define USB_HOST_DEVICE_COMMANDS \
-	"read_usb0_otgsc_id=setexpr.l usb0_otgsc_id *" \
-		__stringify(XPSS_USB0_OTGCSR) \
-		" \\\\& 0x100\0" \
-	"set_usb0_host_device_mode=" \
-		"if itest.l $usb0_otgsc_id == 0; then " \
-			"fdt addr $loadaddr && " \
-			"fdt get addr fdtaddr /images/fdt_" \
-				CONFIG_DEVICE_CODE " data && " \
-			"fdt addr $fdtaddr && " \
-			"fdt set /amba@0/usb@e0002000 dr_mode host; " \
-		"fi;\0" \
-
 #if defined(CONFIG_MFG)
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	USB_HOST_DEVICE_COMMANDS \
 	"ipaddr=192.168.1.180\0" \
 	"netmask=255.255.255.0\0" \
 	"gatewayip=192.168.1.185\0" \
@@ -360,7 +346,6 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	USB_HOST_DEVICE_COMMANDS \
 	REAL_EXTRA_ENV_SETTINGS
 
 #undef CONFIG_BOOTCOMMAND

@@ -362,6 +362,10 @@ extern "C" {
 /* USB Register Offsets */
 #define XPSS_USB_CAPLENGTH			0x0100
 #define XPSS_USB_ULPI_VIEWPORT			0x0170
+#define XPSS_USB_OTGSC				0x01A4
+
+/* USB OTG Status and Control bit mask */
+#define XPSS_USB_OTGSC_ID_MASK			0x00000100
 
 #ifdef __cplusplus
 }

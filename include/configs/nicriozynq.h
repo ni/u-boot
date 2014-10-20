@@ -306,6 +306,9 @@
 #else
 #define CONFIG_USB_BASE_ADDR XPSS_USB0_BASEADDR
 #endif
+#if defined(CONFIG_SBRIO) && defined(CONFIG_RMC)
+#define CONFIG_OTG_USB_BASE_ADDR XPSS_USB1_BASEADDR
+#endif
 
 /*
  * Physical Memory map
