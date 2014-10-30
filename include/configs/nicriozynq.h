@@ -95,6 +95,11 @@
 #define CONFIG_CRIO9067
 #endif
 
+#if defined (CONFIG_TARGET_NI_CRIO9068) || \
+	defined (CONFIG_TARGET_NI_CRIO9068_MFG)
+#define CONFIG_CRIO9068
+#endif
+
 #if defined (CONFIG_TARGET_NI_9147) || \
 	defined (CONFIG_TARGET_NI_9147_MFG)
 #define CONFIG_NI9147
@@ -120,8 +125,12 @@
 #define CONFIG_SBRIO9637
 #endif
 
-#define CONFIG_CRIO9068 /* Board */
-#if defined (CONFIG_CRIO9066) /* cRIO-9067 */
+#if defined (CONFIG_CRIO9068)
+#define CONFIG_DEVICE_CODE "76D6"
+#define CONFIG_FPGA_DEVICE_CODE "76F8"
+#define CONFIG_DEVICE_DESC "cRIO-9068"
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_CRIO9067) /* cRIO-9067 */
 #define CONFIG_DEVICE_CODE "7744"
 #define CONFIG_FPGA_DEVICE_CODE "7744"
 #define CONFIG_DEVICE_DESC "cRIO-9067"
@@ -174,10 +183,7 @@
 #define CONFIG_DEVICE_DESC "sbRIO-9607"
 #define CONFIG_TARGET_CLASS "cRIO"
 #else
-#define CONFIG_DEVICE_CODE "76D6"
-#define CONFIG_FPGA_DEVICE_CODE "76F8"
-#define CONFIG_DEVICE_DESC "cRIO-9068"
-#define CONFIG_TARGET_CLASS "cRIO"
+#error "Unrecognized CONFIG_DEVICE_CODE"
 #endif
 #ifndef CONFIG_PREFIXED_DEVICE_DESC
 #define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
@@ -238,6 +244,8 @@
 #define CONFIG_NI_BOARD_NAME "cRIO-9066"
 #elif defined(CONFIG_CRIO9067)
 #define CONFIG_NI_BOARD_NAME "cRIO-9067"
+#elif defined(CONFIG_CRIO9068)
+#define CONFIG_NI_BOARD_NAME "cRIO-9068"
 #elif defined(CONFIG_NI9147)
 #define CONFIG_NI_BOARD_NAME "NI 9147"
 #elif defined(CONFIG_NI9149)
@@ -249,7 +257,7 @@
 #elif defined(CONFIG_SBRIO9607)
 #define CONFIG_NI_BOARD_NAME "sbRIO-9607"
 #else
-#define CONFIG_NI_BOARD_NAME "cRIO-9068"
+#error "CONFIG_NI_BOARD_NAME not defined for this target"
 #endif
 
 #ifdef CONFIG_MFG
