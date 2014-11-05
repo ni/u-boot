@@ -32,6 +32,49 @@
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
 	"ncip:i,mtu:d,"
 
+#ifndef CONFIG_FPGALOADCMD
+#define CONFIG_FPGALOADCMD \
+	"ubifsmount ubi:bootfs; " \
+	"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
+		"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
+	"then " \
+		"loaddefaultbit=1; " \
+	"else " \
+		"if ubifsload $verifyaddr user.bit.crc && " \
+			"ubifsload $loadaddr user.bit.bin && " \
+			"md5sum -v $loadaddr $filesize *$verifyaddr; " \
+		"then " \
+			"if fpga load 0 $loadaddr $filesize; then " \
+				"fpgasuccess=1; " \
+			"else " \
+				"echo $fpga_err..(user) ; " \
+				"loaddefaultbit=1; " \
+			"fi; " \
+		"else " \
+			"loaddefaultbit=1; " \
+		"fi; " \
+	"fi; " \
+	"if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
+		"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
+			"ubifsload $loadaddr .defbit/default.bit.bin && " \
+			"md5sum -v $loadaddr $filesize *$verifyaddr; " \
+		"then " \
+			"configfpga=1; " \
+		"fi; " \
+	"fi; " \
+	"if test -n \\\\\"$configfpga\\\\\"; then " \
+		"if fpga load 0 $loadaddr $filesize; then " \
+			"fpgasuccess=1; " \
+		"fi; " \
+	"fi; " \
+	"if test -z \\\\\"$fpgasuccess\\\\\"; then " \
+		"echo $fpga_err; " \
+		"run recoverycmd; " \
+		"run recoverybootcmd;" \
+	"fi; " \
+	"run markhardbootcomplete;"
+#endif
+
 /* Make sure that all resetenv save and restore macros are defined. */
 #if !defined(USBGADGETETHADDR_SAVE) || !defined(USBGADGETETHADDR_RESTORE) || \
     !defined(WIFIETHADDR_SAVE) || !defined(WIFIETHADDR_RESTORE) || \
@@ -231,45 +274,7 @@
 			"run setlederrorstatus; " \
 			"echo $recovery_err; " \
 		"fi;\0" \
-	"fpgaloadcmd=ubifsmount ubi:bootfs; " \
-		"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
-			"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
-		"then " \
-			"loaddefaultbit=1; " \
-		"else " \
-			"if ubifsload $verifyaddr user.bit.crc && " \
-				"ubifsload $loadaddr user.bit.bin && " \
-				"md5sum -v $loadaddr $filesize *$verifyaddr; " \
-			"then " \
-				"if fpga load 0 $loadaddr $filesize; then " \
-					"fpgasuccess=1; " \
-				"else " \
-					"echo $fpga_err..(user) ; " \
-					"loaddefaultbit=1; " \
-				"fi; " \
-			"else " \
-				"loaddefaultbit=1; " \
-			"fi; " \
-		"fi; " \
-		"if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
-			"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
-				"ubifsload $loadaddr .defbit/default.bit.bin && " \
-				"md5sum -v $loadaddr $filesize *$verifyaddr; " \
-			"then " \
-				"configfpga=1; " \
-			"fi; " \
-		"fi; " \
-		"if test -n \\\\\"$configfpga\\\\\"; then " \
-			"if fpga load 0 $loadaddr $filesize; then " \
-				"fpgasuccess=1; " \
-			"fi; " \
-		"fi; " \
-		"if test -z \\\\\"$fpgasuccess\\\\\"; then " \
-			"echo $fpga_err; " \
-			"run recoverycmd; " \
-			"run recoverybootcmd;" \
-		"fi; " \
-		"run markhardbootcomplete;\0" \
+	"fpgaloadcmd=" CONFIG_FPGALOADCMD "\0" \
 	"ipresetcmd=echo Resetting primary Ethernet configuration; " \
 		"setenv dhcpenabled 1; " \
 		"setenv linklocalenabled 1; " \
