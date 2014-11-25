@@ -162,26 +162,41 @@ int board_eth_init(bd_t *bis)
 		phy_addr = zynq_gem_get_phyaddr(gemname);
 
 #if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
-               /* Write value to MMD Address 2h, Register 4h */
-               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
-               miiphy_write(miiname, phy_addr, 0xE, 0x0004);
-               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
-               /* Set RX_DV Pad Skew [7:4] to +0.42ns */
-               miiphy_write(miiname, phy_addr, 0xE, 0x00E7);
+		/* Write value to MMD Address 2h, Register 4h */
+		miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+		miiphy_write(miiname, phy_addr, 0xE, 0x0004);
+		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+		miiphy_read(miiname, phy_addr, 0xE, &regval);
+		/* Set RX_DV Pad Skew [7:4] to +0.30ns
+		       TX_EN Pad Skew [3:0] to -0.30ns */
+		regval &= 0xFF00;
+		regval |= 0xC2;
+		miiphy_write(miiname, phy_addr, 0xE, regval);
 
-               /* Write value to MMD Address 2h, Register 5h */
-               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
-               miiphy_write(miiname, phy_addr, 0xE, 0x0005);
-               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
-               /* Set RXD Pad Skew to +0.42ns */
-               miiphy_write(miiname, phy_addr, 0xE, 0xEEEE);
+		/* Write value to MMD Address 2h, Register 5h */
+		miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+		miiphy_write(miiname, phy_addr, 0xE, 0x0005);
+		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+		/* Set RXD 0-3 Pad Skew to +0.30ns */
+		miiphy_write(miiname, phy_addr, 0xE, 0xCCCC);
 
-               /* Write value to MMD Address 2h, Register 8h */
-               miiphy_write(miiname, phy_addr, 0xD, 0x0002);
-               miiphy_write(miiname, phy_addr, 0xE, 0x0008);
-               miiphy_write(miiname, phy_addr, 0xD, 0x4002);
-               /* Set RX_CLK Pad Skew [4:0] to -0.9ns */
-               miiphy_write(miiname, phy_addr, 0xE, 0x3DE0);
+		/* Write value to MMD Address 2h, Register 6h */
+		miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+		miiphy_write(miiname, phy_addr, 0xE, 0x0006);
+		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+		/* Set TXD 0-3 Pad Skew to -0.30ns */
+		miiphy_write(miiname, phy_addr, 0xE, 0x2222);
+
+		/* Write value to MMD Address 2h, Register 8h */
+		miiphy_write(miiname, phy_addr, 0xD, 0x0002);
+		miiphy_write(miiname, phy_addr, 0xE, 0x0008);
+		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
+		miiphy_read(miiname, phy_addr, 0xE, &regval);
+		/* Set RX_CLK Pad Skew [4:0] to -0.9ns
+		       GTX_CLK Pad Skew [9:5] to +0.96ns */
+		regval &= 0xFC00;
+		regval |= 0x3E0;
+		miiphy_write(miiname, phy_addr, 0xE, regval);
 
 #else
 		/* Page 2 */
