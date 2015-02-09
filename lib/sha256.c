@@ -11,6 +11,7 @@
 #include <linux/string.h>
 #else
 #include <string.h>
+#include <stdint.h>
 #endif /* USE_HOSTCC */
 #include <watchdog.h>
 #include <u-boot/sha256.h>

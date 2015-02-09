@@ -18,6 +18,7 @@ endif
 
 subdir-$(HOST_TOOLS_ALL) += easylogo
 subdir-$(HOST_TOOLS_ALL) += gdb
+subdir-$(HOST_TOOLS_ALL) += fdtview
 
 # Merge all the different vars for envcrc into one
 ENVCRC-$(CONFIG_ENV_IS_EMBEDDED) = y

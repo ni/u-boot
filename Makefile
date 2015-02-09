@@ -1397,7 +1397,7 @@ checkarmreloc: u-boot
 		false; \
 	fi
 
-env: scripts_basic
+env fdtview: scripts_basic
 	$(Q)$(MAKE) $(build)=tools/$@
 
 tools-only: scripts_basic $(version_h) $(timestamp_h)
