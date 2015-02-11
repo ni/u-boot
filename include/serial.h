@@ -44,6 +44,7 @@ extern struct serial_device eserial3_device;
 extern struct serial_device eserial4_device;
 extern struct serial_device eserial5_device;
 extern struct serial_device eserial6_device;
+extern struct serial_device nulldev_serial_device;
 
 extern void serial_register(struct serial_device *);
 extern void serial_initialize(void);
@@ -201,6 +202,7 @@ void mpc8xx_serial_initialize(void);
 void mxc_serial_initialize(void);
 void mxs_auart_initialize(void);
 void ns16550_serial_initialize(void);
+void nulldev_serial_initialize(void);
 void oc_serial_initialize(void);
 void p3mx_serial_initialize(void);
 void pl01x_serial_initialize(void);
