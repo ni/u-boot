@@ -54,6 +54,12 @@ DECLARE_GLOBAL_DATA_PTR;
 void inline __show_boot_progress (int val) {}
 void show_boot_progress (int val) __attribute__((weak, alias("__show_boot_progress")));
 
+/*
+ * Board-specific Platform code can reimplement board_post_preboot() if needed
+ */
+inline void __board_post_preboot() {}
+void board_post_preboot() __attribute__((weak, alias("__board_post_preboot")));
+
 #if defined(CONFIG_UPDATE_TFTP)
 int update_tftp (ulong addr);
 #endif /* CONFIG_UPDATE_TFTP */
@@ -346,6 +352,7 @@ void main_loop (void)
 		disable_ctrlc(prev);	/* restore Control C checking */
 # endif
 	}
+	board_post_preboot();
 #endif /* CONFIG_PREBOOT */
 
 #if defined(CONFIG_UPDATE_TFTP)
