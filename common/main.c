@@ -19,6 +19,11 @@ DECLARE_GLOBAL_DATA_PTR;
  * Board-specific Platform code can reimplement show_boot_progress () if needed
  */
 __weak void show_boot_progress(int val) {}
+/*
+ * Board-specific Platform code can reimplement board_post_preboot() if needed
+ */
+inline void __board_post_preboot() {}
+void board_post_preboot() __attribute__((weak, alias("__board_post_preboot")));
 
 static void run_preboot_environment_command(void)
 {
@@ -37,6 +42,7 @@ static void run_preboot_environment_command(void)
 		disable_ctrlc(prev);	/* restore Control C checking */
 # endif
 	}
+	board_post_preboot();
 #endif /* CONFIG_PREBOOT */
 }
 
