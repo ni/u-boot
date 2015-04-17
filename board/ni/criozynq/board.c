@@ -139,36 +139,33 @@ int board_late_init (void)
 	return 0;
 }
 
-#ifdef CONFIG_CMD_NET
-int board_eth_init(bd_t *bis)
+/*
+ * Configure Micrel Ethernet PHY registers
+ */
+static void config_micrel_phy()
 {
-	int retval;
 	int phy_addr;
 	const char *miiname;
 	char gemname[10];
 	int i;
 	u16 regval;
 
-	retval = zynq_gem_initialize(bis);
-
 	/* The PHYs for zynq_gem0 and zynq_gem1 are both connected to the
 	   MDIO interface of zynq_gem0. */
 	miiname = "zynq_gem0";
 
-	/* cRIO-9068 has a Marvell Gigabit PHY on gem0 and gem1 */
 	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; i++) {
 		sprintf(gemname, "zynq_gem%d", i);
 
 		phy_addr = zynq_gem_get_phyaddr(gemname);
 
-#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 		/* Write value to MMD Address 2h, Register 4h */
 		miiphy_write(miiname, phy_addr, 0xD, 0x0002);
 		miiphy_write(miiname, phy_addr, 0xE, 0x0004);
 		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
 		miiphy_read(miiname, phy_addr, 0xE, &regval);
 		/* Set RX_DV Pad Skew [7:4] to +0.30ns
-		       TX_EN Pad Skew [3:0] to -0.30ns */
+			TX_EN Pad Skew [3:0] to -0.30ns */
 		regval &= 0xFF00;
 		regval |= 0xC2;
 		miiphy_write(miiname, phy_addr, 0xE, regval);
@@ -193,12 +190,36 @@ int board_eth_init(bd_t *bis)
 		miiphy_write(miiname, phy_addr, 0xD, 0x4002);
 		miiphy_read(miiname, phy_addr, 0xE, &regval);
 		/* Set RX_CLK Pad Skew [4:0] to -0.9ns
-		       GTX_CLK Pad Skew [9:5] to +0.96ns */
+			GTX_CLK Pad Skew [9:5] to +0.96ns */
 		regval &= 0xFC00;
 		regval |= 0x3E0;
 		miiphy_write(miiname, phy_addr, 0xE, regval);
+	}
 
-#else
+}
+
+/*
+ * Configure Marvel Ethernet PHY registers
+ */
+static void config_marvel_phy()
+{
+	int phy_addr;
+	const char *miiname;
+	char gemname[10];
+	int i;
+	u16 regval;
+
+	/*
+	 * The PHYs for zynq_gem0 and zynq_gem1 are both connected to the
+	 * MDIO interface of zynq_gem0.
+	 */
+	miiname = "zynq_gem0";
+
+	for (i = 0; i < CONFIG_ZYNQ_GEM_COUNT; i++) {
+		sprintf(gemname, "zynq_gem%d", i);
+
+		phy_addr = zynq_gem_get_phyaddr(gemname);
+
 		/* Page 2 */
 		miiphy_write(miiname, phy_addr, 22, 2);
 
@@ -245,10 +266,36 @@ int board_eth_init(bd_t *bis)
 
 		/* Page 0 */
 		miiphy_write(miiname, phy_addr, 22, 0);
-#endif
 	}
+}
 
+#ifdef CONFIG_CMD_NET
+int board_eth_init(bd_t *bis)
+{
+	int retval;
+
+	retval = zynq_gem_initialize(bis);
+
+#if defined(CONFIG_GEN2)
+	/* Configure Micrel Ethernet PHY registers */
+	config_micrel_phy();
+#elif defined(CONFIG_CRIO9068)
+	/* Configure Marvel Ethernet PHY registers */
+	config_marvel_phy();
+#endif
 	return retval;
+}
+#endif
+
+#ifdef CONFIG_SBRIO
+void board_post_preboot()
+{
+	/* Configure Micrel Ethernet PHY registers */
+	/*
+	 * MDIO in SBRIO is connected to EMIO. So, Ethernet PHY settings
+	 * have to be set after FPGA load.
+	 */
+	config_micrel_phy();
 }
 #endif
 
