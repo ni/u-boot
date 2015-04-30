@@ -95,34 +95,22 @@
 
 #if defined(CONFIG_OTG_USB_BASE_ADDR)
 
-#ifndef CONFIG_OTG_USB_DT_NODE
 #if CONFIG_OTG_USB_BASE_ADDR == ZYNQ_USB_BASEADDR0
-#define CONFIG_OTG_USB_DT_NODE "/amba@0/usb@e0002000"
+#define CONFIG_OTG_USB_BASEADDR "e0002000"
 #elif CONFIG_OTG_USB_BASE_ADDR == ZYNQ_USB_BASEADDR1
-#define CONFIG_OTG_USB_DT_NODE "/amba@0/usb@e0003000"
+#define CONFIG_OTG_USB_BASEADDR "e0003000"
 #else
 #error "Unexpected USB base address for USB OTG configuration"
 #endif
-#endif /* CONFIG_OTG_USB_DT_NODE */
 
 #define USB_HOST_DEVICE_COMMANDS \
 	"read_usb_otgsc_id=setexpr.l usb_otgsc " \
 		__stringify(CONFIG_OTG_USB_BASE_ADDR) " + " \
 		__stringify(XPSS_USB_OTGSC) "; " \
 		"setexpr.l usb_otgsc_id *$usb_otgsc" \
-		" \\\\& " __stringify(XPSS_USB_OTGSC_ID_MASK) "\0" \
-	"set_usb_host_device_mode=" \
-			"fdt addr $loadaddr && " \
-			"fdt get addr fdtaddr /images/fdt_" \
-				CONFIG_DEVICE_CODE " data && " \
-			"fdt addr $fdtaddr && " \
-		"if itest.l $usb_otgsc_id == 0; then " \
-			"fdt set " CONFIG_OTG_USB_DT_NODE \
-				" dr_mode host; " \
-		"else " \
-			"fdt set " CONFIG_OTG_USB_DT_NODE \
-				" dr_mode peripheral; " \
-		"fi;\0"
+		" \\\\& " __stringify(XPSS_USB_OTGSC_ID_MASK) ";\0" \
+	"otg_usb_en=1\0" \
+	"otg_usb_base_addr=" CONFIG_OTG_USB_BASEADDR "\0"
 #else
 #define USB_HOST_DEVICE_COMMANDS
 #endif /* CONFIG_OTG_USB_BASE_ADDR */
@@ -171,7 +159,6 @@
 		"ubifsload $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
-			"run set_usb_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"echo $safemode_err; " \
@@ -183,7 +170,6 @@
 		"ubifsload $loadaddr linux_runmode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
-			"run set_usb_host_device_mode; " \
 			"source $loadaddr:bootscript; " \
 		"else " \
 			"run boot_safemode; " \
