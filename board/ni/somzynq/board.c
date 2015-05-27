@@ -11,6 +11,7 @@
 #include <jffs2/load_kernel.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <rtc_ds3232.h>
 #include <serial.h>
 #include <zynqpl.h>
 
@@ -75,6 +76,11 @@ int board_late_init (void)
 	int usbgadgetethaddr_missing;
 	int eth3addr_missing;
 #endif
+
+	/* Rev C sbRIO-9651 SOM CCA use DS3232, which require disabling of the
+	 * battery-backed 32kHz clock to conserve battery. */
+	rtc_ds3232_disable_bb32khz();
+
 	/*
 	 * Take usb phy out of reset
 	 */
