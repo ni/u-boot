@@ -64,6 +64,7 @@
  */
 #define RTC_STAT_BIT_A1F	0x1	/* Alarm 1 flag                 */
 #define RTC_STAT_BIT_A2F	0x2	/* Alarm 2 flag                 */
+#define RTC_STAT_BIT_BB32KHZ	0x40	/* Battery-backed 32kHz output  */
 #define RTC_STAT_BIT_OSF	0x80	/* Oscillator stop flag         */
 
 
@@ -155,6 +156,19 @@ int rtc_set (struct rtc_time *tmp)
 void rtc_reset (void)
 {
 	rtc_write (RTC_CTL_REG_ADDR, RTC_CTL_BIT_RS1 | RTC_CTL_BIT_RS2);
+}
+
+
+/*
+ * Configure the RTC to not waste battery by disabling the BB32KHZ bit.
+ */
+void rtc_ds3232_disable_bb32khz (void)
+{
+	uchar status;
+
+	status = rtc_read (RTC_STAT_REG_ADDR);
+	status &= ~RTC_STAT_BIT_BB32KHZ;
+	rtc_write (RTC_STAT_REG_ADDR, status);
 }
 
 
