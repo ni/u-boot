@@ -105,6 +105,15 @@ config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
 	select MYRIO
 
+config TARGET_ELVISRIOCM
+	bool "NI ELVIS RIO Control Module"
+	select MYRIO
+
+config TARGET_ELVISRIOCM_MFG
+	bool "NI ELVIS RIO Control Module manufacturing U-Boot"
+	select MFG
+	select MYRIO
+
 config TARGET_ROBORIO
 	bool "NI roboRIO"
 	select MYRIO

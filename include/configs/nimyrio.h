@@ -14,6 +14,10 @@
 #define CONFIG_BOARD_ONLY
 #elif defined(CONFIG_TARGET_ROBORIO)
 #define CONFIG_ROBORIO
+#elif \
+	defined(CONFIG_TARGET_ELVISRIOCM) || \
+	defined(CONFIG_TARGET_ELVISRIOCM_MFG)
+#define CONFIG_ELVISRIOCM
 #endif
 
 #if defined(CONFIG_BOARD_ONLY)
@@ -24,6 +28,10 @@
 #define CONFIG_DEVICE_CODE "76F2"
 #define CONFIG_FPGA_DEVICE_CODE "77A9"
 #define CONFIG_DEVICE_DESC "roboRIO"
+#elif defined(CONFIG_ELVISRIOCM)
+#define CONFIG_DEVICE_CODE "7885"
+#define CONFIG_FPGA_DEVICE_CODE "7885"
+#define CONFIG_DEVICE_DESC "ELVIS RIO CM"
 #else
 #define CONFIG_DEVICE_CODE "762F"
 #define CONFIG_FPGA_DEVICE_CODE "762F"
@@ -74,6 +82,8 @@
 
 #if defined(CONFIG_ROBORIO)
 #define CONFIG_NI_BOARD_NAME "roboRIO"
+#elif defined(CONFIG_ELVISRIOCM)
+#define CONFIG_NI_BOARD_NAME "ELVIS RIO CM"
 #else
 #define CONFIG_NI_BOARD_NAME "myRIO"
 #endif
@@ -260,6 +270,24 @@
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr)
 
 /* roboRIO does not have a wl12xx */
+#define WL12XXNVS_SAVE
+#define WL12XXNVS_RESTORE
+
+#elif defined(CONFIG_ELVISRIOCM)
+
+/* elRIO uses usbgadgetethaddr for the USB Gadget Ethernet MAC. */
+#define USBGADGETETHADDR_SAVE ENV_SAVE(usbgadgetethaddr)
+#define USBGADGETETHADDR_RESTORE ENV_RESTORE(usbgadgetethaddr)
+
+/* elRIO doesn't have WiFi. */
+#define WIFIETHADDR_SAVE
+#define WIFIETHADDR_RESTORE
+
+/* elRIO doesn't have wired Ethernet. */
+#define ETHADDR_SAVE
+#define ETHADDR_RESTORE
+
+/* elRIO does not have a wl12xx */
 #define WL12XXNVS_SAVE
 #define WL12XXNVS_RESTORE
 
