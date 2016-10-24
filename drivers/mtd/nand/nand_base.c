@@ -2934,7 +2934,7 @@ static int nand_onfi_get_features(struct mtd_info *mtd, struct nand_chip *chip,
  */
 static int nand_max_bad_blocks (struct mtd_info *mtd, loff_t ofs, size_t len)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	uint32_t part_start_block;
 	uint32_t part_end_block;
 	uint32_t part_start_lun;
