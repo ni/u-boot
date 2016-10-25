@@ -194,7 +194,6 @@
 #define CONFIG_NI_USB_VID "0x3923"
 #endif
 
-#define CONFIG_ZYNQ_GEM
 #define CONFIG_NAND_ZYNQ
 #include <configs/zynq-common.h>
 
@@ -313,11 +312,26 @@
 #endif
 #endif
 
-#define CONFIG_ZYNQ_GEM
+/* Zynq Clock support */
+#define CONFIG_DM_CLK
+#define CONFIG_CLK_ZYNQ
+
+/* Zynq GEM Ethernet support */
+/* EMIO state for different speeds */
+#define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_ON	0
+#define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_OFF	1
+#define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_ON	1
+#define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF	0
+
+#define CONFIG_DM_ETH
+#define CONFIG_MACB
+#define CONFIG_MACB_ZYNQ
 #define CONFIG_NET_MULTI
 #define CONFIG_CMD_MII
 #define CONFIG_MII
 #define CONFIG_PHYLIB
+#define CONFIG_PHY_MICREL
+#define CONFIG_PHY_MICREL_KSZ9031
 #define CONFIG_MENU
 #define CONFIG_CMD_PXE
 #define CONFIG_BOOTP_MAY_FAIL
@@ -333,6 +347,9 @@
 #ifdef CONFIG_MFG
 #define CONFIG_ETHADDR 00:80:2f:00:00:00
 #endif
+
+/* Zynq GPIO support */
+#define CONFIG_ZYNQ_GPIO
 
 /* USB Host support */
 #define CONFIG_USB_STORAGE

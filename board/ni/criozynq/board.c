@@ -2,17 +2,22 @@
  * Just to satisfy init routines..
  */
 
+#include <dm.h>
 #include <common.h>
+
+#include <clk.h>
 #include <nand.h>
 #include <sdhci.h>
 #include <asm/io.h>
 #include <environment.h>
 #include <i2c.h>
 #include <miiphy.h>
+#include <net.h>
 #include <netdev.h>
 #include <serial.h>
 #include <zynqpl.h>
 #include <usb/ulpi.h>
+#include <asm/arch/hardware.h>
 
 #define BOOT_MODE_REG     (XPSS_SYS_CTRL_BASEADDR + 0x25C)
 #define BOOT_MODES_MASK    0x0000000F
@@ -22,10 +27,24 @@
 #define SD_MODE           (0x00000005)            /**< Secure Digital card */
 #define JTAG_MODE	  (0x00000000)		  /**< JTAG */
 
+/* Clock frequencies for different speeds */
+#define MACB_ZYNQ_GEM_FREQ_10	2500000
+#define MACB_ZYNQ_GEM_FREQ_100	25000000
+#define MACB_ZYNQ_GEM_FREQ_1000	125000000
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #ifdef CONFIG_FPGA
 xilinx_desc fpga = XILINX_XC7Z020_DESC(0);
+#endif
+
+#ifdef CONFIG_MACB_ZYNQ
+struct macb_zynq_spd_cfg {
+	int			emio_spd_gpio_1000;
+	int			emio_spd_gpio_100;
+	struct clk		tx_clk;
+};
+static struct macb_zynq_spd_cfg gem_spd_cfg[2];
 #endif
 
 #ifndef CONFIG_DM_SERIAL
@@ -206,6 +225,88 @@ int ft_board_setup(void *blob, bd_t *bd)
 		fdt_find_and_setprop(blob, "/", "DeviceCode",
 			&product_id_val, sizeof(product_id_val), 1);
 	}
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_MACB_ZYNQ
+int macb_linkspd_cb(void *regs, unsigned int speed)
+{
+	struct macb_zynq_spd_cfg *macb;
+	unsigned long clk_spd = 0;
+	unsigned short emio_spd_1000;
+	unsigned short emio_spd_100;
+	int ret;
+
+	if (regs == ZYNQ_GEM_BASEADDR0)
+		macb = &gem_spd_cfg[0];
+	else
+		macb = &gem_spd_cfg[1];
+
+	if (speed == _1000BASET) {
+		clk_spd = MACB_ZYNQ_GEM_FREQ_1000;
+		emio_spd_1000 = MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_ON;
+		emio_spd_100 = MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF;
+	} else if (speed == _100BASET) {
+		clk_spd = MACB_ZYNQ_GEM_FREQ_100;
+		emio_spd_1000 = MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_OFF;
+		emio_spd_100 = MACB_ZYNQ_GEM_LINKSPD_100_GPIO_ON;
+	} else {
+		clk_spd = MACB_ZYNQ_GEM_FREQ_10;
+		emio_spd_1000 = MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_OFF;
+		emio_spd_100 = MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF;
+	}
+
+	if (macb->emio_spd_gpio_1000 >= 0)
+		gpio_set_value(macb->emio_spd_gpio_1000, emio_spd_1000);
+	if (macb->emio_spd_gpio_100 >= 0)
+		gpio_set_value(macb->emio_spd_gpio_100, emio_spd_100);
+
+	if (macb->tx_clk.dev) {
+		zynq_slcr_unlock();
+		ret = clk_set_rate(&macb->tx_clk, clk_spd);
+		zynq_slcr_lock();
+	}
+
+	return ret;
+}
+
+int macb_late_eth_ofdata_to_platdata(struct udevice *dev)
+{
+	struct macb_zynq_spd_cfg *macb;
+
+	if (dev_get_addr(dev) == ZYNQ_GEM_BASEADDR0)
+		macb = &gem_spd_cfg[0];
+	else
+		macb = &gem_spd_cfg[1];
+
+	macb->emio_spd_gpio_1000 = fdtdec_get_int(
+			gd->fdt_blob, dev->of_offset,
+			"cdns,emio-gpio-speed-1000", -1);
+	macb->emio_spd_gpio_100 = fdtdec_get_int(
+			gd->fdt_blob, dev->of_offset,
+			"cdns,emio-gpio-speed-100", -1);
+
+	if (macb->emio_spd_gpio_1000 >= 0) {
+		if (gpio_requestf(macb->emio_spd_gpio_1000,
+				  "gpio%d", macb->emio_spd_gpio_1000)) {
+			printf("ERROR: Failed to reserved GPIO%d\n",
+			       macb->emio_spd_gpio_1000);
+			return -EBUSY;
+		}
+	}
+	if (macb->emio_spd_gpio_100 >= 0) {
+		if (gpio_requestf(macb->emio_spd_gpio_100,
+				  "gpio%d", macb->emio_spd_gpio_100)) {
+			printf("ERROR: Failed to reserved GPIO%d\n",
+			       macb->emio_spd_gpio_100);
+			return -EBUSY;
+		}
+	}
+
+	if (clk_get_by_name(dev, "tx_clk", &macb->tx_clk))
+		macb->tx_clk.dev = 0;
+
 	return 0;
 }
 #endif
