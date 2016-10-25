@@ -173,7 +173,7 @@ config XILINX_SPI
 
 config ZYNQ_SPI
 	bool "Zynq SPI driver"
-	depends on ARCH_ZYNQ || ARCH_ZYNQMP
+	depends on ARCH_ZYNQ || ARCH_ZYNQMP || NIZYNQ
 	help
 	  Enable the Zynq SPI driver. This driver can be used to
 	  access the SPI NOR flash on platforms embedding this Zynq
@@ -181,7 +181,7 @@ config ZYNQ_SPI
 
 config ZYNQ_QSPI
 	bool "Zynq QSPI driver"
-	depends on ARCH_ZYNQ
+	depends on ARCH_ZYNQ || NIZYNQ
 	help
 	  Enable the Zynq Quad-SPI (QSPI) driver. This driver can be
 	  used to access the SPI NOR flash on platforms embedding this
