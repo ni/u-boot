@@ -371,6 +371,7 @@
 /*
  * Physical Memory map
  */
+#define PHYS_SDRAM_1_BASE 0x00000000
 #if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #else

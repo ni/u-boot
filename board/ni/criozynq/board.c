@@ -191,6 +191,12 @@ int dram_init(void)
 	return 0;
 }
 
+void dram_init_banksize(void)
+{
+	gd->bd->bi_dram[0].start = PHYS_SDRAM_1_BASE;
+	gd->bd->bi_dram[0].size = gd->ram_size;
+}
+
 /*
  * OK, and resets too.
  */
