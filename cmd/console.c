@@ -8,6 +8,7 @@
 /*
  * Boot support
  */
+#include <dm.h>
 #include <common.h>
 #include <command.h>
 #include <stdio_dev.h>
@@ -43,11 +44,33 @@ static int do_coninfo(cmd_tbl_t *cmd, int flag, int argc, char * const argv[])
 	return 0;
 }
 
+static int do_conprobe(cmd_tbl_t *cmd, int flag, int argc, char * const argv[])
+{
+	struct udevice *dev;
+	struct uclass *uc;
+
+	uclass_get(UCLASS_SERIAL, &uc);
+	uclass_foreach_dev(dev, uc) {
+		/*
+		 * Loop through all serial devices, probe and register
+		 * them with stdio services.
+		 */
+		if (device_probe(dev))
+			debug("%s: %s: PROBE FAIL\n", __func__, dev->name);
+	}
+	return 0;
+}
 
 /***************************************************/
 
 U_BOOT_CMD(
 	coninfo,	3,	1,	do_coninfo,
 	"print console devices and information",
+	""
+);
+
+U_BOOT_CMD(
+	conprobe,	3,	1,	do_conprobe,
+	"probe serial devices and register with stdio list",
 	""
 );
