@@ -195,6 +195,7 @@
 			"else " \
 				"setenv consoleparam console=$console quiet; " \
 			"fi; " \
+			"conprobe; " \
 			"run sc; " \
 		"else " \
 			"setenv consoleparam console= quiet; " \
