@@ -507,6 +507,7 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"i2cbus=0\0" \
 	"ipaddr=192.168.1.180\0" \
 	"netmask=255.255.255.0\0" \
 	"gatewayip=192.168.1.185\0" \
@@ -517,15 +518,16 @@
 
 #define CONFIG_PREBOOT \
 	"dcache off; " \
+	"i2c dev $i2cbus; " \
 	"usb start; " \
 	"usb reset; " \
-	"run nc; " \
-	"setenv silent;"
+	"run nc; "
 
 #else /* !CONFIG_MFG */
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"i2cbus=0\0" \
 	REAL_EXTRA_ENV_SETTINGS
 
 #undef CONFIG_BOOTCOMMAND
