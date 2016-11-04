@@ -453,6 +453,7 @@
 #define REAL_PREBOOT \
 	"setenv silent 1; " \
 	"nand lock tight; " \
+	"i2c dev $i2cbus; " \
 	"ubi part boot-config; " \
 	"run readsoftdip; " \
 	"run readcplddip; " \
@@ -476,6 +477,7 @@
 #define REAL_PREBOOT_FEEBLE_RECOVERY \
 	"setenv silent 1; " \
 	"nand lock tight; " \
+	"i2c dev $i2cbus; " \
 	"ubi part boot-config; " \
 	"run readsoftdip; " \
 	"run readcplddip; " \
