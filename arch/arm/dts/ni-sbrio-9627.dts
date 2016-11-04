@@ -70,14 +70,14 @@
 	clock-names = "pclk", "hclk", "tx_clk";
 	phy-handle = <&phy0>;
 	phy-mode = "rgmii-id";
-	emio-speed-gpios = <0>,
-			   <&gpio 54 0>;
+	xlnx,emio = <1>;
+	cdns,emio-gpio-speed-1000 = <54>;
 
 	#address-cells = <0x1>;
 	#size-cells = <0x0>;
 
 	phy0: phy@0 {
-		compatible = "micrel,KSZ9031";
+		compatible = "Micrel,ksz9031";
 		device_type = "ethernet-phy";
 		reg = <0x0>;
 		/* Interrupt on GPIO25, shared with phy1. */
@@ -122,7 +122,7 @@
 	};
 
 	phy1: phy@1 {
-		compatible = "micrel,KSZ9031";
+		compatible = "Micrel,ksz9031";
 		device_type = "ethernet-phy";
 		reg = <0x1>;
 		/* Interrupt on GPIO25, shared with phy0. */
@@ -174,8 +174,8 @@
 	phy-handle = <&phy1>;
 	phy-mode = "rgmii-id";
 	cdns,no_mdio_bus;
-	emio-speed-gpios = <0>,
-			   <&gpio 55 0>;
+	xlnx,emio = <1>;
+	cdns,emio-gpio-speed-1000 = <55>;
 };
 
 &sdhci0 {
