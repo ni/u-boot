@@ -295,7 +295,7 @@
 
 /* HW to use */
 #define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
-#define CONFIG_CONSOLE_UBOOT_DEV "eserial0"
+#define CONFIG_CONSOLE_UBOOT_DEV "serial@80000000"
 #ifndef CONFIG_DM_SERIAL
 #undef CONFIG_ZYNQ_SERIAL
 #ifndef CONFIG_ENETEXP
