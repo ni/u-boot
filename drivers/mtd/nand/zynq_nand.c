@@ -780,7 +780,7 @@ static void zynq_nand_select_chip(struct mtd_info *mtd, int chip)
 		struct nand_chip *nand_chip;
 		unsigned long data_phase_addr;
 
-		nand_chip = (struct nand_chip *)mtd->priv;
+		nand_chip = (struct nand_chip *)mtd_to_nand(mtd);
 		data_phase_addr = (unsigned long __force)nand_chip->IO_ADDR_R;
 		data_phase_addr |= ZYNQ_NAND_CLEAR_CS;
 		nand_chip->IO_ADDR_R = (void __iomem *__force)data_phase_addr;
@@ -800,7 +800,7 @@ static void zynq_nand_select_chip(struct mtd_info *mtd, int chip)
 static void zynq_nand_cmd_function(struct mtd_info *mtd, unsigned int command,
 				 int column, int page_addr)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	const struct zynq_nand_command_format *curr_cmd = NULL;
 	struct zynq_nand_info *xnand = (struct zynq_nand_info *)chip->priv;
 	void *cmd_addr;
@@ -962,7 +962,7 @@ static void zynq_nand_cmd_function(struct mtd_info *mtd, unsigned int command,
  */
 static void zynq_nand_read_buf(struct mtd_info *mtd, u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 
 	/* Make sure that buf is 32 bit aligned */
 	if (((unsigned long)buf & 0x3) != 0) {
@@ -1010,7 +1010,7 @@ static void zynq_nand_read_buf(struct mtd_info *mtd, u8 *buf, int len)
  */
 static void zynq_nand_write_buf(struct mtd_info *mtd, const u8 *buf, int len)
 {
-	struct nand_chip *chip = mtd->priv;
+	struct nand_chip *chip = mtd_to_nand(mtd);
 	const u32 *nand = chip->IO_ADDR_W;
 
 	/* Make sure that buf is 32 bit aligned */
@@ -1091,10 +1091,8 @@ static int zynq_nand_init(struct nand_chip *nand_chip, int devnum)
 	}
 
 	xnand->nand_base = (void __iomem *)ZYNQ_NAND_BASEADDR;
-	mtd = (struct mtd_info *)&nand_info[0];
-
-	nand_chip->priv = xnand;
-	mtd->priv = nand_chip;
+	mtd = nand_to_mtd(nand_chip);
+	nand_set_controller_data(nand_chip, xnand);
 
 	/* Set address of NAND IO lines */
 	nand_chip->IO_ADDR_R = xnand->nand_base;
