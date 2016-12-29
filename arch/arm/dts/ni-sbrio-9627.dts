@@ -7,6 +7,10 @@
 	model = "NI sbRIO-9627";
 	compatible = "ni,zynq", "xlnx,zynq-7000";
 
+	aliases {
+		i2c0 = &i2c0;
+	};
+
 	amba {
 		i2c0: i2c@e0004000 {
 			nicpld@40 {
