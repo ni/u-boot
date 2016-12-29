@@ -202,9 +202,9 @@
 #define CONFIG_SYS_NO_FLASH
 
 #define CONFIG_OF_BOARD_SETUP
-#define CONFIG_SYS_I2C_RTC_ADDR 0x68
 
 #define CONFIG_I2C_CPLD_ADDR	0x40
+#define CONFIG_I2C_RTC_ADDR	0x68
 
 #define CONFIG_CMD_DATE		/* RTC? */
 #define CONFIG_REGINFO		/* Again, debugging */
