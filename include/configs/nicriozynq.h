@@ -407,7 +407,6 @@
 
 /* UBI */
 #define CONFIG_RBTREE
-#define CONFIG_CMD_UBI
 
 /* UBIFS */
 #define CONFIG_LZO
