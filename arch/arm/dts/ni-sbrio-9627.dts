@@ -8,7 +8,12 @@
 	compatible = "ni,zynq", "xlnx,zynq-7000";
 
 	aliases {
+		nullserial = &null_uart;
 		i2c0 = &i2c0;
+	};
+
+	chosen {
+		stdout-path = "nullserial:115200n8";
 	};
 
 	amba {
