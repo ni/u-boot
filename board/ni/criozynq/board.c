@@ -48,6 +48,14 @@ int board_init(void)
 int board_late_init (void)
 {
 	u8 tmp;
+	int err;
+	struct udevice *cpld;
+	err = i2c_get_chip_for_busnum(0, 0x40, 1, &cpld);
+	if (err) {
+		debug("%s: Cannot find CPLD\n", __func__);
+		cpld = NULL;
+	}
+
 #if defined(CONFIG_MFG)
 	char serial[11] = "";
 #endif
@@ -62,8 +70,10 @@ int board_late_init (void)
 	 * Take eth0 phy, eth1 phy, usb phy, usb hub, and external UART
 	 * out of reset
 	 */
-	tmp = 0x00;
-	i2c_write(0x40, 0x03, 1, &tmp, 1);
+	if (NULL != cpld) {
+		tmp = 0x00;
+		dm_i2c_write(cpld, 0x03, &tmp, 1);
+	}
 
 #if defined(CONFIG_MFG)
 	if (getenv("serial#") != NULL)
@@ -168,10 +178,17 @@ int dram_init(void)
 void reset_misc(void)
 {
 	u8 tmp;
+	int err;
+	struct udevice *dev;
 
+	err = i2c_get_chip_for_busnum(0, 0x40, 1, &dev);
+	if (err) {
+		debug("%s: Cannot find CPLD\n", __func__);
+		return;
+	}
 	/* Reset the target using the CPLD */
 	tmp = 0x80;
-	i2c_write(0x40, 0x02, 1, &tmp, 1);
+	dm_i2c_write(dev, 0x02, &tmp, 1);
 
 	while(1) {;}
 }

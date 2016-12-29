@@ -334,13 +334,6 @@
 #define CONFIG_ETHADDR 00:80:2f:00:00:00
 #endif
 
-#define CONFIG_SYS_I2C
-#define CONFIG_SYS_I2C_SPEED 400
-#define CONFIG_HARD_I2C
-#define CONFIG_ZYNQ_I2C
-#define CONFIG_RTC_DS3231
-#define CONFIG_SYS_I2C_RTC_ADDR 0x68
-
 /* USB Host support */
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_FAT
