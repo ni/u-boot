@@ -192,3 +192,26 @@ int ft_board_setup(void *blob, bd_t *bd)
 	return 0;
 }
 #endif
+
+/*
+ * Configure the RTC to not waste battery by disabling the BB32KHZ bit.
+ */
+#if defined(CONFIG_DM_RTC)
+#define RTC_STAT_REG_ADDR       0x0f
+#define RTC_STAT_BIT_BB32KHZ    0x40    /* Battery backed 32KHz Output  */
+void rtc_ds3232_disable_bb32khz (struct udevice *dev)
+{
+	int err;
+        uchar status;
+	struct udevice *rtc;
+
+	err = i2c_get_chip_for_busnum(0, CONFIG_I2C_RTC_ADDR, 1, &rtc);
+	if (err) {
+		debug("%s: Cannot find DS3232\n", __func__);
+		return;
+	}
+	dm_i2c_read(rtc, RTC_STAT_REG_ADDR, &status, 1);
+        status &= ~RTC_STAT_BIT_BB32KHZ;
+	dm_i2c_write(rtc, RTC_STAT_REG_ADDR, &status, 1);
+}
+#endif
