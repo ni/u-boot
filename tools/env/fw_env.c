@@ -1187,8 +1187,9 @@ int fw_env_open(struct env_opts *opts)
 			crc1_ok = 0;
 		} else {
 			crc1 = crc32 (0, (uint8_t *) redundant->data, ENV_SIZE);
-			if (common_args.aes_flag) {
-				ret = env_aes_cbc_crypt(redundant->data, 0);
+			if (opts->aes_flag) {
+				ret = env_aes_cbc_crypt(redundant->data, 0,
+							opts->aes_key);
 				if (ret)
 					return ret;
 			}
