@@ -183,7 +183,7 @@
 #define CONFIG_DEVICE_DESC "sbRIO-9607"
 #define CONFIG_TARGET_CLASS "cRIO"
 #else
-#error "Unrecognized CONFIG_DEVICE_CODE"
+#warning "Unrecognized CONFIG_DEVICE_CODE"
 #endif
 #ifndef CONFIG_PREFIXED_DEVICE_DESC
 #define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
@@ -258,7 +258,7 @@
 #elif defined(CONFIG_SBRIO9607)
 #define CONFIG_NI_BOARD_NAME "sbRIO-9607"
 #else
-#error "CONFIG_NI_BOARD_NAME not defined for this target"
+#warning "CONFIG_NI_BOARD_NAME not defined for this target"
 #endif
 
 #ifdef CONFIG_MFG
