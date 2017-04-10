@@ -42,6 +42,7 @@ int board_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init (void)
 {
 	u8 tmp;
@@ -128,6 +129,7 @@ int board_late_init (void)
 
 	return 0;
 }
+#endif /* !CONFIG_BOARD_LATE_INIT */
 
 #ifdef CONFIG_CMD_MMC
 int board_mmc_init(bd_t *bd)
