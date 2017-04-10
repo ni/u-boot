@@ -1064,9 +1064,13 @@ static int macb_enable_clk(struct udevice *dev)
 	if (ret)
 		return -EINVAL;
 
+	/* Zynq clock driver didn't support for enable or disable
+       clock. Hence, clk_enable() didn't apply for Zynq */
+#ifndef CONFIG_MACB_ZYNQ
 	ret = clk_enable(&clk);
 	if (ret)
 		return ret;
+#endif
 
 	clk_rate = clk_get_rate(&clk);
 	if (!clk_rate)
@@ -1138,12 +1142,6 @@ static int macb_eth_ofdata_to_platdata(struct udevice *dev)
 
 	pdata->iobase = dev_get_addr(dev);
 
-#ifdef CONFIG_CLK
-	if (clk_get_by_name(dev, "pclk", &macb->pclk_rate)) {
-		printf("ERROR: Failed to get pclk\n");
-		return -ENXIO;
-	}
-#endif
 	return macb_late_eth_ofdata_to_platdata(dev);
 }
 
