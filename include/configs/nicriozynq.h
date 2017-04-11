@@ -70,6 +70,13 @@
 #define CONFIG_RMC
 #endif
 
+#if \
+	defined (CONFIG_TARGET_NI_ELVISIII_BO) || \
+	defined (CONFIG_TARGET_NI_ELVISIII_MFG) || \
+	defined (CONFIG_TARGET_NI_ELVISIII_PLUS)
+#define CONFIG_ELVISIII
+#endif
+
 #if defined (CONFIG_TARGET_NI_CRIO9063) || \
 	defined (CONFIG_TARGET_NI_CRIO9063_MFG)
 #define CONFIG_CRIO9063
@@ -123,6 +130,15 @@
 #if defined (CONFIG_TARGET_NI_SBRIO9637) || \
 	defined (CONFIG_TARGET_NI_SBRIO9637_MFG)
 #define CONFIG_SBRIO9637
+#endif
+
+#if defined(CONFIG_TARGET_NI_ELVISIII_BO) || \
+	defined(CONFIG_TARGET_NI_ELVISIII_MFG)
+#define CONFIG_ELVISIII_BO
+#endif
+
+#if defined(CONFIG_TARGET_NI_ELVISIII_PLUS)
+#define CONFIG_ELVISIII_PLUS
 #endif
 
 #if defined (CONFIG_CRIO9068)
@@ -182,6 +198,16 @@
 #define CONFIG_FPGA_DEVICE_CODE "77D6"
 #define CONFIG_DEVICE_DESC "sbRIO-9607"
 #define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_ELVISIII_BO)
+#define CONFIG_DEVICE_CODE "7928"
+#define CONFIG_FPGA_DEVICE_CODE "7928"
+#define CONFIG_DEVICE_DESC "ELVIS III"
+#define CONFIG_TARGET_CLASS "cRIO"
+#elif defined (CONFIG_ELVISIII_PLUS)
+#define CONFIG_DEVICE_CODE "793C"
+#define CONFIG_FPGA_DEVICE_CODE "793C"
+#define CONFIG_DEVICE_DESC "ELVIS III+"
+#define CONFIG_TARGET_CLASS "cRIO"
 #else
 #warning "Unrecognized CONFIG_DEVICE_CODE"
 #endif
@@ -191,6 +217,9 @@
 
 #if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
 #define CONFIG_NI_USB_PID "0x770D"
+#define CONFIG_NI_USB_VID "0x3923"
+#elif defined (CONFIG_ELVISIII)
+#define CONFIG_NI_USB_PID "0x762F"
 #define CONFIG_NI_USB_VID "0x3923"
 #endif
 
@@ -206,9 +235,12 @@
 #define CONFIG_OF_BOARD_SETUP
 
 #define CONFIG_I2C_CPLD_ADDR	0x40
-#define CONFIG_I2C_RTC_ADDR	0x68
 
+#if !defined (CONFIG_ELVISIII)
+#define CONFIG_I2C_RTC_ADDR	0x68
 #define CONFIG_CMD_DATE		/* RTC? */
+#endif
+
 #define CONFIG_REGINFO		/* Again, debugging */
 /* check for input to stop even if delay is 0 */
 #define CONFIG_ZERO_BOOTDELAY_CHECK
@@ -259,6 +291,10 @@
 #define CONFIG_NI_BOARD_NAME "sbRIO-9627"
 #elif defined(CONFIG_SBRIO9607)
 #define CONFIG_NI_BOARD_NAME "sbRIO-9607"
+#elif defined(CONFIG_ELVISIII_BO)
+#define CONFIG_NI_BOARD_NAME "ELVIS III"
+#elif defined(CONFIG_ELVISIII_PLUS)
+#define CONFIG_NI_BOARD_NAME "ELVIS III+"
 #else
 #warning "CONFIG_NI_BOARD_NAME not defined for this target"
 #endif
@@ -297,9 +333,15 @@
 #define CONFIG_FPGA_ZYNQPL
 
 /* HW to use */
+#ifdef CONFIG_ELVISIII
+#define CONFIG_CONSOLE_LINUX_DEV "null"
+#define CONFIG_CONSOLE_UBOOT_DEV "nulldev"
+#else
 #define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
 #define CONFIG_CONSOLE_UBOOT_DEV "serial@80000000"
+#endif
 #ifndef CONFIG_DM_SERIAL
+#ifndef CONFIG_ELVISIII
 #undef CONFIG_ZYNQ_SERIAL
 #ifndef CONFIG_ENETEXP
 #define CONFIG_SYS_NS16550
@@ -312,6 +354,7 @@
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #endif
 #define CONFIG_CONS_INDEX 1 /* not actually used */
+#endif
 #endif
 #endif
 
@@ -466,7 +509,9 @@
 
 #include "niresetenv.h"
 
-#if defined (CONFIG_GEN2) || (defined (CONFIG_SBRIO) && defined(CONFIG_RMC))
+#if defined(CONFIG_GEN2) || \
+	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC)) || \
+	defined(CONFIG_ELVISIII)
 
 /* GEN2 cRIO-906x, sbRIO-96x7 with RMC use usbgadgetethaddr for the USB
  * Gadget Ethernet MAC. */
@@ -486,7 +531,8 @@
 
 #if defined(CONFIG_MEM_256) || \
 	defined(CONFIG_ENETEXP) || \
-	(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC))
+	(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC)) || \
+	defined(CONFIG_ELVISIII)
 /* cRIO-9063, cRIO-9066, NI 9147 and NI 9149 use ethaddr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr)
 #define ETHADDR_RESTORE ENV_RESTORE(ethaddr)

@@ -150,6 +150,19 @@ config TARGET_NI_SBRIO9637_MFG
 	select MFG
 	select CRIO
 
+config TARGET_NI_ELVISIII_BO
+    bool "NI ELVIS III Board Only"
+    select CRIO
+
+config TARGET_NI_ELVISIII_PLUS
+	bool "NI ELVIS III PLUS"
+	select CRIO
+
+config TARGET_NI_ELVISIII_MFG
+    bool "NI ELVIS III manufacturing U-Boot"
+    select MFG
+    select CRIO
+
 config TARGET_NI_SBRIO9651
 	bool "NI sbRIO 9651"
 	select SBRIO
