@@ -113,7 +113,7 @@ int board_late_init (void)
 	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC))
 	eth1addr_missing = getenv("eth1addr") == NULL;
 #endif
-#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO)
+#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
 	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
 #endif
 	if (serial_missing || ethaddr_missing || eth1addr_missing || usbgadgetethaddr_missing) {
@@ -143,7 +143,7 @@ int board_late_init (void)
                             getenv_ulong("backupeth1addroffset", 16,
 				CONFIG_BACKUP_ETH1ADDR_OFFSET)]);
 #endif
-#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO)
+#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
 		if (usbgadgetethaddr_missing && !nand_read_status)
 			eth_setenv_enetaddr("usbgadgetethaddr", &nand_buffer[
                             getenv_ulong("backupusbgadgetethaddroffset", 16,
