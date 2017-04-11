@@ -11,6 +11,8 @@
 #include <miiphy.h>
 #include <netdev.h>
 #include <zynqpl.h>
+#include <asm/arch/clk.h>
+#include <jffs2/load_kernel.h>
 
 #define BOOT_MODE_REG     (XPSS_SYS_CTRL_BASEADDR + 0x25C)
 #define BOOT_MODES_MASK    0x0000000F
@@ -133,6 +135,43 @@ int board_mmc_init(bd_t *bd)
 	return zynq_sdhci_init(XPSS_SDIO0_BASEADDR, 125000000, 0, SDHCI_QUIRK_NO_CD);
 }
 #endif
+
+#ifdef CONFIG_CMD_NAND
+static struct nand_chip nand_chip[CONFIG_SYS_MAX_NAND_DEVICE];
+void board_nand_init(void)
+{
+	struct nand_chip *nand = &nand_chip[0];
+	loff_t off;
+	loff_t size;
+
+	if (zynq_nand_init(nand, 0))
+		debug("ZYNQ NAND init failed\n");
+
+	/*
+	 * Unlock the entire flash for manufacturing
+	 */
+#if defined(CONFIG_MFG)
+	off = 0;
+#else
+	struct mtd_device *dev;
+	u8 part_num;
+	struct part_info *part;
+
+	if (mtdparts_init() ||
+		find_dev_and_part("u-boot", &dev, &part_num, &part))
+		off = CONFIG_MTD_UBOOT_OFFSET + CONFIG_BOARD_SIZE_LIMIT;
+	else
+		off = part->size + part->offset;
+#endif
+
+	/*
+	 * This is crappy (using 0 as the device), but this is what the Zynq
+	 * NAND driver does, so we do it too to make sure we get the same device
+	 */
+	size = nand_info[0]->size - off;
+	nand_unlock(nand_info[0], off, size, 0);
+}
+#endif /* CONFIG_CMD_NAND */
 
 int dram_init(void)
 {
