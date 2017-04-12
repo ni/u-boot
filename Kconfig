@@ -285,7 +285,7 @@ config SYS_EXTRA_OPTIONS
 config SYS_TEXT_BASE
 	depends on SPARC || ARC || X86 || ARCH_UNIPHIER || ARCH_ZYNQMP || \
 		(M68K && !TARGET_ASTRO_MCF5373L) || MICROBLAZE || MIPS || \
-		ARCH_ZYNQ
+		ARCH_ZYNQ || NIZYNQ
 	depends on !EFI_APP
 	hex "Text Base"
 	help

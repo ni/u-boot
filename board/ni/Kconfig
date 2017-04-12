@@ -176,6 +176,9 @@ config SYS_CONFIG_NAME
 	default "nimyrio" if MYRIO
 	default "nisomzynq" if SBRIO
 
+config SYS_TEXT_BASE
+	default 0x4000000
+
 config MFG
 	bool "Manufacturing U-Boot"
 
