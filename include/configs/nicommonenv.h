@@ -148,7 +148,6 @@
 		__stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) "\0" \
 	"backupeth3addroffset=" \
 		__stringify(CONFIG_BACKUP_ETH3ADDR_OFFSET) "\0" \
-	"wirelessRegionFactory=840\0" \
 	"wl12xxnvs=" CONFIG_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
