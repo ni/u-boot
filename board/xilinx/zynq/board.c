@@ -9,6 +9,7 @@
 #include <fpga.h>
 #include <mmc.h>
 #include <zynqpl.h>
+#include <asm/arch/nand.h>
 #include <asm/arch/hardware.h>
 #include <asm/arch/sys_proto.h>
 
@@ -154,3 +155,12 @@ int dram_init(void)
 	return 0;
 }
 #endif
+
+static struct nand_chip nand_chip[CONFIG_SYS_MAX_NAND_DEVICE];
+void board_nand_init(void)
+{
+	struct nand_chip *nand = &nand_chip[0];
+
+	if (zynq_nand_init(nand, 0))
+		puts("ZYNQ NAND init failed\n");
+}
