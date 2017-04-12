@@ -45,6 +45,8 @@
 #define CONFIG_NI_USB_VID "0x3923"
 
 #define CONFIG_NAND_ZYNQ
+#define CONFIG_ENV_IS_IN_UBI
+
 #include <configs/zynq-common.h>
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
@@ -109,7 +111,6 @@
 #undef CONFIG_ENV_IS_IN_FLASH /* zynq-common.h could have defined this */
 #endif
 
-#define CONFIG_ENV_IS_IN_UBI
 #define CONFIG_ENV_UBI_PART "boot-config"
 #define CONFIG_ENV_UBI_VOLUME "u-boot-env1"
 #define CONFIG_ENV_UBI_VOLUME_REDUND "u-boot-env2"
