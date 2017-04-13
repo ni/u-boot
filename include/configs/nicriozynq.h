@@ -180,6 +180,10 @@
 #define CONFIG_MMC_SDMA
 #endif
 
+#if defined (CONFIG_ELVISIII)
+#define WLAN_ZYNQ_SDHCI_BASEADDR0	"e0100000"
+#endif
+
 #define CONFIG_DOS_PARTITION
 
 #define NI_DEFAULT_NVS
@@ -253,7 +257,8 @@
 
 #if defined(CONFIG_ELVISIII)
 #define CRIO_EXTRA_ENV_SETTINGS \
-	"wirelessRegionFactory=00\0"
+	"wirelessRegionFactory=00\0" \
+	"wlan_sdio_base_addr=" WLAN_ZYNQ_SDHCI_BASEADDR0 "\0"
 #else
 #define CRIO_EXTRA_ENV_SETTINGS
 #endif
