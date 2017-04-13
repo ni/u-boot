@@ -148,8 +148,8 @@ struct zynq_nand_info {
  * @end_cmd_valid:	The second cycle command is valid for cmd or data phase
  */
 struct zynq_nand_command_format {
-	u8 start_cmd;
-	u8 end_cmd;
+	int start_cmd;
+	int end_cmd;
 	u8 addr_cycles;
 	u8 end_cmd_valid;
 };
