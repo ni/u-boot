@@ -358,6 +358,7 @@
 	"netmask=255.255.255.0\0" \
 	"gatewayip=192.168.1.185\0" \
 	"serverip=192.168.1.185\0" \
+	"ethaddr=" __stringify(CONFIG_ETHADDR) "\0" \
 	REAL_EXTRA_ENV_SETTINGS
 
 #undef CONFIG_BOOTCOMMAND
