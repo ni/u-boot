@@ -10,40 +10,6 @@
  */
 #define CONFIG_NIMYRIO /* Board */
 
-#if defined(CONFIG_TARGET_NIMYRIO_BO)
-#define CONFIG_BOARD_ONLY
-#elif defined(CONFIG_TARGET_ROBORIO)
-#define CONFIG_ROBORIO
-#elif \
-	defined(CONFIG_TARGET_ELVISRIOCM) || \
-	defined(CONFIG_TARGET_ELVISRIOCM_MFG)
-#define CONFIG_ELVISRIOCM
-#endif
-
-#if defined(CONFIG_BOARD_ONLY)
-#define CONFIG_DEVICE_CODE "76D3"
-#define CONFIG_FPGA_DEVICE_CODE "76D3"
-#define CONFIG_DEVICE_DESC "myRIO-1950"
-#elif defined(CONFIG_ROBORIO)
-#define CONFIG_DEVICE_CODE "76F2"
-#define CONFIG_FPGA_DEVICE_CODE "77A9"
-#define CONFIG_DEVICE_DESC "roboRIO"
-#elif defined(CONFIG_ELVISRIOCM)
-#define CONFIG_DEVICE_CODE "7885"
-#define CONFIG_FPGA_DEVICE_CODE "7885"
-#define CONFIG_DEVICE_DESC "ELVIS RIO CM"
-#else
-#define CONFIG_DEVICE_CODE "762F"
-#define CONFIG_FPGA_DEVICE_CODE "762F"
-#define CONFIG_DEVICE_DESC "myRIO-1900"
-#endif
-#define CONFIG_TARGET_CLASS "cRIO"
-#define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
-
-/* For all myRIOs, pretend to be the packaged myRIO over USB */
-#define CONFIG_NI_USB_PID "0x762F"
-#define CONFIG_NI_USB_VID "0x3923"
-
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
 
@@ -51,12 +17,7 @@
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
 
-#define CONFIG_SYS_NO_FLASH
-
 #define CONFIG_OF_BOARD_SETUP
-#define CONFIG_REGINFO		/* Again, debugging */
-/* check for input to stop even if delay is 0 */
-#define CONFIG_ZERO_BOOTDELAY_CHECK
 #undef CONFIG_BOOTDELAY
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
@@ -81,22 +42,6 @@
 #define CONFIG_INI_CASE_INSENSITIVE
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
-
-#if defined(CONFIG_ROBORIO)
-#define CONFIG_NI_BOARD_NAME "roboRIO"
-#elif defined(CONFIG_ELVISRIOCM)
-#define CONFIG_NI_BOARD_NAME "ELVIS RIO CM"
-#else
-#define CONFIG_NI_BOARD_NAME "myRIO"
-#endif
-
-#ifdef CONFIG_MFG
-#define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"
-#else
-#define CONFIG_NI_BOARD_NAME_SUFFIX
-#endif
-
-#define CONFIG_NI_BOARD_NAME_PREFIX
 
 #define CONFIG_IDENT_STRING \
 	"\nNational Instruments" \
@@ -136,8 +81,6 @@
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
-#define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
-#define CONFIG_CONSOLE_UBOOT_DEV "eserial0"
 
 #ifdef CONFIG_ROBORIO
 #define CONFIG_NET_MULTI
@@ -185,13 +128,11 @@
  * NAND Flash settings
  */
 #define CONFIG_SYS_NAND_SELF_INIT
-#define CONFIG_NAND_ZYNQ_USE_FSBL_TIMINGS
 #define CONFIG_CMD_NAND_LOCK_UNLOCK
 #define CONFIG_SYS_MAX_NAND_DEVICE 1
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
-#define CONFIG_MTD_RESERVE_END 524288
 #define CONFIG_CMD_MTDPARTS
 #define MTDIDS_DEFAULT "nand0=xilinx_nand"
 #define MTDPARTS_DEFAULT \
@@ -201,10 +142,6 @@
 		"70M(boot-config)," \
 		"-(root)"
 
-#if defined(CONFIG_MFG)
-#define CONFIG_NAND_BBT_NO_MARK
-#endif
-
 /* UBI */
 #define CONFIG_RBTREE
 #define CONFIG_CMD_UBI
@@ -213,18 +150,9 @@
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
 
-#define CONFIG_MTD_UBOOT_OFFSET		0x20000
 #define CONFIG_BOARD_SIZE_LIMIT		0x100000
-#define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
-#define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
 
-#define CONFIG_BACKUP_PAGE		0xB1F800
-#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7ea
-#define CONFIG_BACKUP_SERIAL_OFFSET	0x7f0
-#define CONFIG_BACKUP_ETHADDR_OFFSET	0x7f4
-#define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7fa
-
-#define CONFIG_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
+#define NI_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
 
 #undef CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_LOAD_ADDR 0x4000000

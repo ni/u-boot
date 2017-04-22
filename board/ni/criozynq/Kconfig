@@ -1,0 +1,124 @@
+if CRIO
+config CRIO_GEN2
+	bool "cRIO 2nd generation"
+
+config CRIO_MEM256
+	bool "cRIO with 256MB RAM"
+
+config CRIO_MEM512
+	bool "cRIO with 512MB RAM"
+
+config CRIO_ENETEXP
+	bool "cRIO Ethernet Expansion"
+
+config CRIO_SBRIO96X7
+	bool "sbRIO96X7 use cRIO as a base"
+
+config CRIO_HALF_BOARD
+	bool "sbRIO Half Board"
+
+config CRIO_FULL_BOARD
+	bool "sbRIO Full Board"
+
+config CRIO_RMC
+	bool "sbRIO RMC"
+
+config ELVISIII
+	bool "ELVIS III targets"
+
+config NI9147
+	bool "NI 9147 target"
+	select CRIO_GEN2
+	select CRIO_ENETEXP
+
+config NI9149
+	bool "NI 9149 target"
+	select CRIO_GEN2
+	select CRIO_ENETEXP
+
+config CRIO9063
+	bool "cRIO-9063 target"
+	select CRIO_GEN2
+	select CRIO_MEM256
+
+config CRIO9064
+	bool "cRIO-9064 target"
+	select CRIO_GEN2
+	select CRIO_MEM512
+
+config CRIO9065
+	bool "cRIO-9065 target"
+	select CRIO_GEN2
+	select CRIO_MEM512
+
+config CRIO9066
+	bool "cRIO-9066 target"
+	select CRIO_GEN2
+	select CRIO_MEM256
+
+config CRIO9067
+	bool "cRIO-9067 target"
+	select CRIO_GEN2
+	select CRIO_MEM512
+
+config CRIO9068
+	bool "cRIO-9068 target"
+
+config SBRIO9607
+	bool "sbRIO-9607 target"
+	select CRIO_RMC
+	select CRIO_SBRIO96X7
+	select CRIO_HALF_BOARD
+
+config SBRIO9627
+	bool "sbRIO-9627 target"
+	select CRIO_RMC
+	select CRIO_SBRIO96X7
+	select CRIO_FULL_BOARD
+
+config SBRIO9637
+	bool "sbRIO-9637 target"
+	select CRIO_SBRIO96X7
+	select CRIO_FULL_BOARD
+
+config ELVISIII_BO
+	bool "ELVIS III RIO Board Only target"
+	select ELVISIII
+
+config ELVISIII_PLUS
+	bool "ELVIS III Plus target"
+	select ELVISIII
+
+
+config I2C_CPLD_ADDR
+	hex "CPLD I2C Address"
+	default 0x40
+
+if !ELVISIII
+config I2C_RTC_ADDR
+	hex "RTC I2C Address"
+	default 0x68
+endif
+
+endif
+
+config CRIO
+	bool "cRIO derivatives"
+	select CLK_ZYNQ if DM_CLK
+	select ZYNQ_GPIO
+	select MACB if DM_ETH
+	select MACB_ZYNQ if MACB
+	select NI_USB_PID if ELVISIII || CRIO_GEN2 || CRIO_SBRIO96X7
+	select NI_USB_VID if ELVISIII || CRIO_GEN2 || CRIO_SBRIO96X7
+	select MTD_UBOOT_OFFSET
+	select MTD_RESERVE_END
+	select BOARD_SIZE_LIMIT
+	select BOOT_BIN_SIZE_LIMIT
+	select BOOTFS_VOLUME_SIZE
+	select BACKUP_PAGE
+	select BACKUP_SERIAL_OFFSET
+	select BACKUP_USBGADGETETHADDR_OFFSET
+	select BACKUP_ETHADDR_OFFSET
+	select BACKUP_ETH1ADDR_OFFSET
+	select I2C_CPLD_ADDR
+	select I2C_RTC_ADDR if !ELVISIII

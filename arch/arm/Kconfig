@@ -836,18 +836,33 @@ config ARCH_ZYNQMP
 
 config NIZYNQ
 	bool "National Instruments zynq Platform"
+	select DEVICE_CODE
+	select FPGA_DEVICE_CODE
+	select DEVICE_DESC
+	select PREFIXED_DEVICE_DESC
+	select TARGET_CLASS
+	select NI_BOARD_NAME
+	select NI_BOARD_NAME_PREFIX
+	select NI_BOARD_NAME_SUFFIX
 	select CPU_V7
+	select SYS_NO_FLASH
 	select BOARD_LATE_INIT
 	select SUPPORT_SPL
 	select OF_CONTROL
 	select SPL_OF_CONTROL if SPL
 	select DM
 	select DM_ETH
+	select CLK
+	select DM_CLK
 	select DM_GPIO
 	select SPL_DM if SPL
 	select DM_MMC
 	select DM_SERIAL
+	select DM_USB if USB
+	select CONSOLE_UBOOT_DEV if DM_SERIAL
+	select CONSOLE_LINUX_DEV if DM_SERIAL
 	select SPL_SEPARATE_BSS if SPL
+	select NAND_ZYNQ_USE_FSBL_TIMINGS if !SPL
 
 config TEGRA
 	bool "NVIDIA Tegra"

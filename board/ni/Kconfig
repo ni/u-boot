@@ -5,92 +5,123 @@ choice
 config TARGET_NI_9149
 	bool "NI 9149"
 	select CRIO
+	select NI9149
 
 config TARGET_NI_9149_MFG
 	bool "NI 9149 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select NI9149
 
 config TARGET_NI_9147
 	bool "NI 9147"
 	select CRIO
+	select NI9147
 
 config TARGET_NI_9147_MFG
 	bool "NI 9147 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select NI9147
 
 config TARGET_NI_7931
 	bool "NI 7931"
 	select SBRIO
+	select NI7931
 
 config TARGET_NI_7931_MFG
 	bool "NI 7931 manufacturing U-Boot"
 	select SBRIO
 	select MFG
+	select NI7931
 
 config TARGET_NI_7932
 	bool "NI 7932"
 	select SBRIO
+	select NI7932
 
 config TARGET_NI_7932_MFG
 	bool "NI 7932 manufacturing U-Boot"
 	select SBRIO
 	select MFG
+	select NI7932
 
 config TARGET_NI_7935
 	bool "NI 7935"
 	select SBRIO
+	select NI7935
 
 config TARGET_NI_7935_MFG
 	bool "NI 7935 manufacturing U-Boot"
 	select SBRIO
 	select MFG
+	select NI7935
 
 config TARGET_NI_CRIO9063
 	bool "NI cRIO-9063"
 	select CRIO
+	select CRIO9063
 
 config TARGET_NI_CRIO9063_MFG
 	bool "NI cRIO-9063 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select CRIO9063
 
 config TARGET_NI_CRIO9064
 	bool "NI cRIO-9064"
 	select CRIO
+	select CRIO9064
 
 config TARGET_NI_CRIO9064_MFG
 	bool "NI cRIO-9064 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select CRIO9064
+
+config TARGET_NI_CRIO9065
+	bool "NI cRIO-9065"
+	select CRIO
+	select CRIO9065
+
+config TARGET_NI_CRIO9065_MFG
+	bool "NI cRIO-9065 manufacturing U-Boot"
+	select MFG
+	select CRIO
+	select CRIO9065
 
 config TARGET_NI_CRIO9066
 	bool "NI cRIO-9066"
 	select CRIO
+	select CRIO9066
 
 config TARGET_NI_CRIO9066_MFG
 	bool "NI cRIO-9066 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select CRIO9066
 
 config TARGET_NI_CRIO9067
 	bool "NI cRIO-9067"
 	select CRIO
+	select CRIO9067
 
 config TARGET_NI_CRIO9067_MFG
 	bool "NI cRIO-9067 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select CRIO9067
 
 config TARGET_NI_CRIO9068
 	bool "NI cRIO-9068"
 	select CRIO
+	select CRIO9068
 
 config TARGET_NI_CRIO9068_MFG
 	bool "NI cRIO-9068 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select CRIO9068
 
 config TARGET_NIMYRIO
 	bool "NI myRIO"
@@ -104,74 +135,137 @@ config TARGET_NIMYRIO_MFG
 config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
 	select MYRIO
+	select MYRIO_BO
 
 config TARGET_ELVISRIOCM
 	bool "NI ELVIS RIO Control Module"
 	select MYRIO
+	select ELVISRIOCM
 
 config TARGET_ELVISRIOCM_MFG
 	bool "NI ELVIS RIO Control Module manufacturing U-Boot"
 	select MFG
 	select MYRIO
+	select ELVISRIOCM
 
 config TARGET_ROBORIO
 	bool "NI roboRIO"
 	select MYRIO
+	select ROBORIO
 
 config TARGET_ROBORIO_MFG
 	bool "NI roboRIO manufacturing U-Boot"
 	select MFG
 	select MYRIO
+	select ROBORIO
 
 config TARGET_NI_SBRIO9607
 	bool "NI sbRIO-9607"
 	select CRIO
+	select SBRIO9607
 
 config TARGET_NI_SBRIO9607_MFG
 	bool "NI sbRIO-9607 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select SBRIO9607
 
 config TARGET_NI_SBRIO9627
 	bool "NI sbRIO-9627"
 	select CRIO
+	select SBRIO9627
 
 config TARGET_NI_SBRIO9627_MFG
 	bool "NI sbRIO-9627 manufacturing U-Boot"
 	select MFG
 	select CRIO
+	select SBRIO9627
 
 config TARGET_NI_SBRIO9637
 	bool "NI sbRIO-9637"
 	select CRIO
+	select SBRIO9637
 
 config TARGET_NI_SBRIO9637_MFG
 	bool "NI sbRIO-9637 manufacturing U-Boot"
 	select MFG
 	select CRIO
-
-config TARGET_NI_ELVISIII_BO
-    bool "NI ELVIS III Board Only"
-    select CRIO
-
-config TARGET_NI_ELVISIII_PLUS
-	bool "NI ELVIS III PLUS"
-	select CRIO
-
-config TARGET_NI_ELVISIII_MFG
-    bool "NI ELVIS III manufacturing U-Boot"
-    select MFG
-    select CRIO
+	select SBRIO9637
 
 config TARGET_NI_SBRIO9651
 	bool "NI sbRIO 9651"
 	select SBRIO
+	select SBRIO9651SOM
 
 config TARGET_NI_SBRIO9651_MFG
 	bool "NI sbRIO 9651 manufacturing U-Boot"
 	select SBRIO
 	select MFG
+	select SBRIO9651SOM
+
+config TARGET_NI_ELVISIII_BO
+	bool "NI ELVIS III Board Only"
+	select CRIO
+	select ELVISIII_BO
+
+config TARGET_NI_ELVISIII_PLUS
+	bool "NI ELVIS III Plus"
+	select CRIO
+	select ELVISIII_PLUS
+
+config TARGET_NI_ELVISIII_MFG
+	bool "NI ELVIS III manufacturing U-Boot"
+	select MFG
+	select CRIO
+	select ELVISIII_BO
 endchoice
+
+config DEVICE_CODE
+	string "NI Zynq PS device id"
+
+config FPGA_DEVICE_CODE
+	string "NI Zynq FPGA device id"
+	default DEVICE_CODE
+
+config NI_USB_PID
+	string "NI USB product id"
+	default "0x762F" if MYRIO
+	default "0x770D"
+
+config NI_USB_VID
+	string "NI USB vendor id"
+	default "0x3923"
+
+config DEVICE_DESC
+	string "NI product description"
+
+config PREFIXED_DEVICE_DESC
+	string "Prefix devices description"
+
+config TARGET_CLASS
+	string "NI product family"
+	default "cRIO" if CRIO || MYRIO
+	default "FlexRIO" if SBRIO
+
+config NI_BOARD_NAME
+	string "NI product name"
+	default DEVICE_DESC
+
+config NI_BOARD_NAME_PREFIX
+	string "Prefix of the board name"
+	default "Prototype" if PROTO
+
+config NI_BOARD_NAME_SUFFIX
+	string "Suffix of the board name"
+	default " Manufacturing" if MFG
+
+config CONSOLE_LINUX_DEV
+	string "Console device for Linux"
+	default "ttyS0"
+
+config CONSOLE_UBOOT_DEV
+	string "Console device for U-boot"
+	default "serial@80000000"
 
 config SYS_BOARD
 	default "criozynq" if CRIO
@@ -192,16 +286,58 @@ config SYS_CONFIG_NAME
 config SYS_TEXT_BASE
 	default 0x4000000
 
+config MTD_UBOOT_OFFSET
+	hex "U-boot MTD offset"
+	default 0x20000
+
+config MTD_RESERVE_END
+	hex "MTD Reserved End"
+	default 0x80000
+
+config BOARD_SIZE_LIMIT
+	hex "Board Size Limit"
+	default 0x80000 if CRIO_MEM256 || CRIO_ENETEXP
+	default 0x100000
+
+config BOOT_BIN_SIZE_LIMIT
+	hex "BOOT.bin max file size"
+	default 0x120000
+
+config BOOTFS_VOLUME_SIZE
+	hex "BOOTFS UBI volume size"
+	default 0x3600000
+
+config BACKUP_PAGE
+	hex "NAND backup page"
+	default 0xB1F800
+
+config BACKUP_SERIAL_OFFSET
+	hex "Serial number backup page offset"
+	default 0x7f0 if CRIO || MYRIO
+	default 0x7e4 if SBRIO
+
+config BACKUP_USBGADGETETHADDR_OFFSET
+	hex "USB Gadget Ethernet MAC backup page offset"
+	default 0x7ea if CRIO || MYRIO
+	default 0x7f4 if SBRIO
+
+config BACKUP_ETHADDR_OFFSET
+	hex "Primary Ethernet MAC backup page offset"
+	default 0x7f4 if CRIO || MYRIO
+	default 0x7e8 if SBRIO
+
+config BACKUP_ETH1ADDR_OFFSET
+	hex "Secondary Ethernet MAC backup page offset"
+	default 0x7fa if CRIO || MYRIO
+	default 0x7ee if SBRIO
+
 config MFG
 	bool "Manufacturing U-Boot"
+	select NAND_BBT_NO_MARK
 
-config CRIO
-	bool "cRIO derivatives"
 
-config MYRIO
-	bool "myRIO derivatives"
-
-config SBRIO
-	bool "sbRIO derivatives"
+source "board/ni/criozynq/Kconfig"
+source "board/ni/myrio/Kconfig"
+source "board/ni/somzynq/Kconfig"
 
 endif

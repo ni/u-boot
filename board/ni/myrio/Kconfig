@@ -1,0 +1,27 @@
+if MYRIO
+config MYRIO_BO
+	bool "myRIO board only"
+
+config ROBORIO
+	bool "roboRIO"
+
+config ELVISRIOCM
+	bool "ELVIS RIO Control Module"
+
+endif
+
+config MYRIO
+	bool "myRIO derivatives"
+	select CLK_ZYNQ if DM_CLK
+	select NI_USB_PID
+	select NI_USB_VID
+	select MTD_UBOOT_OFFSET
+	select MTD_RESERVE_END
+	select BOARD_SIZE_LIMIT
+	select BOOT_BIN_SIZE_LIMIT
+	select BOOTFS_VOLUME_SIZE
+	select BACKUP_PAGE
+	select BACKUP_SERIAL_OFFSET
+	select BACKUP_USBGADGETETHADDR_OFFSET
+	select BACKUP_ETHADDR_OFFSET
+	select BACKUP_ETH1ADDR_OFFSET

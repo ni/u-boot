@@ -1,0 +1,46 @@
+if SBRIO
+config NI793X
+	bool "NI 793X target"
+
+config NI7931
+	bool "NI 7931 target"
+	select NI793X
+
+config NI7932
+	bool "NI 7932 target"
+	select NI793X
+
+config NI7935
+	bool "NI 7935 target"
+	select NI793X
+
+config SBRIO9651SOM
+	bool "sbRIO-9651 SOM target"
+
+config BACKUP_CCA_SERIAL_OFFSET
+	hex "Backup page for CCA Serial Number"
+	default 0x7e0
+
+config BACKUP_ETH3ADDR_OFFSET
+	hex "Backup page for WiFi MAC"
+	default 0x7fa
+
+endif
+
+config SBRIO
+	bool "sbRIO derivatives"
+	select CLK_ZYNQ if DM_CLK
+	select NI_USB_PID
+	select NI_USB_VID
+	select MTD_UBOOT_OFFSET
+	select MTD_RESERVE_END
+	select BOARD_SIZE_LIMIT
+	select BOOT_BIN_SIZE_LIMIT
+	select BOOTFS_VOLUME_SIZE
+	select BACKUP_PAGE
+	select BACKUP_CCA_SERIAL_OFFSET
+	select BACKUP_SERIAL_OFFSET
+	select BACKUP_USBGADGETETHADDR_OFFSET
+	select BACKUP_ETHADDR_OFFSET
+	select BACKUP_ETH1ADDR_OFFSET
+	select BACKUP_ETH3ADDR_OFFSET

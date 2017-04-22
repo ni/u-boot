@@ -4,224 +4,6 @@
 /*
  * High Level Configuration Options
  */
-#if \
-	defined (CONFIG_TARGET_NI_CRIO9063) || \
-	defined (CONFIG_TARGET_NI_CRIO9063_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9064) || \
-	defined (CONFIG_TARGET_NI_CRIO9064_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9065) || \
-	defined (CONFIG_TARGET_NI_CRIO9065_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9066) || \
-	defined (CONFIG_TARGET_NI_CRIO9066_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9067) || \
-	defined (CONFIG_TARGET_NI_CRIO9067_MFG) || \
-	defined (CONFIG_TARGET_NI_9147) || \
-	defined (CONFIG_TARGET_NI_9147_MFG) || \
-	defined (CONFIG_TARGET_NI_9149) || \
-	defined (CONFIG_TARGET_NI_9149_MFG)
-#define CONFIG_GEN2
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_CRIO9063) || \
-	defined (CONFIG_TARGET_NI_CRIO9063_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9066) || \
-	defined (CONFIG_TARGET_NI_CRIO9066_MFG)
-#define CONFIG_MEM_256
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_CRIO9064) || \
-	defined (CONFIG_TARGET_NI_CRIO9064_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9065) || \
-	defined (CONFIG_TARGET_NI_CRIO9065_MFG) || \
-	defined (CONFIG_TARGET_NI_CRIO9067) || \
-	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
-#define CONFIG_MEM_512
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_SBRIO9607) || \
-	defined (CONFIG_TARGET_NI_SBRIO9607_MFG) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627_MFG) || \
-	defined (CONFIG_TARGET_NI_SBRIO9637) || \
-	defined (CONFIG_TARGET_NI_SBRIO9637_MFG)
-#define CONFIG_SBRIO
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_SBRIO9607) || \
-	defined (CONFIG_TARGET_NI_SBRIO9607_MFG)
-#define CONFIG_HALF_BOARD
-#elif \
-	defined (CONFIG_TARGET_NI_SBRIO9627) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627_MFG) || \
-	defined (CONFIG_TARGET_NI_SBRIO9637) || \
-	defined (CONFIG_TARGET_NI_SBRIO9637_MFG)
-#define CONFIG_FULL_BOARD
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_SBRIO9607) || \
-	defined (CONFIG_TARGET_NI_SBRIO9607_MFG) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627_MFG)
-#define CONFIG_RMC
-#endif
-
-#if \
-	defined (CONFIG_TARGET_NI_ELVISIII_BO) || \
-	defined (CONFIG_TARGET_NI_ELVISIII_MFG) || \
-	defined (CONFIG_TARGET_NI_ELVISIII_PLUS)
-#define CONFIG_ELVISIII
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9063) || \
-	defined (CONFIG_TARGET_NI_CRIO9063_MFG)
-#define CONFIG_CRIO9063
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9064) || \
-	defined (CONFIG_TARGET_NI_CRIO9064_MFG)
-#define CONFIG_CRIO9064
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9065) || \
-	defined (CONFIG_TARGET_NI_CRIO9065_MFG)
-#define CONFIG_CRIO9065
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9066) || \
-	defined (CONFIG_TARGET_NI_CRIO9066_MFG)
-#define CONFIG_CRIO9066
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9067) || \
-	defined (CONFIG_TARGET_NI_CRIO9067_MFG)
-#define CONFIG_CRIO9067
-#endif
-
-#if defined (CONFIG_TARGET_NI_CRIO9068) || \
-	defined (CONFIG_TARGET_NI_CRIO9068_MFG)
-#define CONFIG_CRIO9068
-#endif
-
-#if defined (CONFIG_TARGET_NI_9147) || \
-	defined (CONFIG_TARGET_NI_9147_MFG)
-#define CONFIG_NI9147
-#endif
-
-#if defined (CONFIG_TARGET_NI_9149) || \
-	defined (CONFIG_TARGET_NI_9149_MFG)
-#define CONFIG_NI9149
-#endif
-
-#if defined (CONFIG_TARGET_NI_SBRIO9607) || \
-	defined (CONFIG_TARGET_NI_SBRIO9607_MFG)
-#define CONFIG_SBRIO9607
-#endif
-
-#if defined (CONFIG_TARGET_NI_SBRIO9627) || \
-	defined (CONFIG_TARGET_NI_SBRIO9627_MFG)
-#define CONFIG_SBRIO9627
-#endif
-
-#if defined (CONFIG_TARGET_NI_SBRIO9637) || \
-	defined (CONFIG_TARGET_NI_SBRIO9637_MFG)
-#define CONFIG_SBRIO9637
-#endif
-
-#if defined(CONFIG_TARGET_NI_ELVISIII_BO) || \
-	defined(CONFIG_TARGET_NI_ELVISIII_MFG)
-#define CONFIG_ELVISIII_BO
-#endif
-
-#if defined(CONFIG_TARGET_NI_ELVISIII_PLUS)
-#define CONFIG_ELVISIII_PLUS
-#endif
-
-#if defined (CONFIG_CRIO9068)
-#define CONFIG_DEVICE_CODE "76D6"
-#define CONFIG_FPGA_DEVICE_CODE "76F8"
-#define CONFIG_DEVICE_DESC "cRIO-9068"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_CRIO9067) /* cRIO-9067 */
-#define CONFIG_DEVICE_CODE "7744"
-#define CONFIG_FPGA_DEVICE_CODE "7744"
-#define CONFIG_DEVICE_DESC "cRIO-9067"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_CRIO9066) /* cRIO-9066 */
-#define CONFIG_DEVICE_CODE "7743"
-#define CONFIG_FPGA_DEVICE_CODE "7743"
-#define CONFIG_DEVICE_DESC "cRIO-9066"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_CRIO9065) /* cRIO-9065, 4-slot cRIO, extended temp */
-#define CONFIG_DEVICE_CODE "7742"
-#define CONFIG_FPGA_DEVICE_CODE "7742"
-#define CONFIG_DEVICE_DESC "cRIO-9065"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_CRIO9064) /* cRIO-9064, 4-slot cRIO, 512MB RAM */
-#define CONFIG_DEVICE_CODE "7741"
-#define CONFIG_FPGA_DEVICE_CODE "7741"
-#define CONFIG_DEVICE_DESC "cRIO-9064"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_CRIO9063) /* cRIO-9063, 4-slot cRIO, 256MB RAM */
-#define CONFIG_DEVICE_CODE "7740"
-#define CONFIG_FPGA_DEVICE_CODE "7740"
-#define CONFIG_DEVICE_DESC "cRIO-9063"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_NI9149) /* NI 9149 */
-#define CONFIG_DEVICE_CODE "774E"
-#define CONFIG_FPGA_DEVICE_CODE "774E"
-#define CONFIG_DEVICE_DESC "NI 9149"
-#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
-#define CONFIG_TARGET_CLASS "Ethernet RIO"
-#elif defined (CONFIG_NI9147) /* NI 9147, 4-slot ethernet expansion cRIO*/
-#define CONFIG_DEVICE_CODE "774C"
-#define CONFIG_FPGA_DEVICE_CODE "774C"
-#define CONFIG_DEVICE_DESC "NI 9147"
-#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
-#define CONFIG_TARGET_CLASS "Ethernet RIO"
-#elif defined (CONFIG_SBRIO9637)
-#define CONFIG_DEVICE_CODE "77D4"
-#define CONFIG_FPGA_DEVICE_CODE "77D4"
-#define CONFIG_DEVICE_DESC "sbRIO-9637"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_SBRIO9627)
-#define CONFIG_DEVICE_CODE "77D5"
-#define CONFIG_FPGA_DEVICE_CODE "77D5"
-#define CONFIG_DEVICE_DESC "sbRIO-9627"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_SBRIO9607)
-#define CONFIG_DEVICE_CODE "77D6"
-#define CONFIG_FPGA_DEVICE_CODE "77D6"
-#define CONFIG_DEVICE_DESC "sbRIO-9607"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_ELVISIII_BO)
-#define CONFIG_DEVICE_CODE "7928"
-#define CONFIG_FPGA_DEVICE_CODE "7928"
-#define CONFIG_DEVICE_DESC "ELVIS III"
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined (CONFIG_ELVISIII_PLUS)
-#define CONFIG_DEVICE_CODE "793C"
-#define CONFIG_FPGA_DEVICE_CODE "793C"
-#define CONFIG_DEVICE_DESC "ELVIS III+"
-#define CONFIG_TARGET_CLASS "cRIO"
-#else
-#warning "Unrecognized CONFIG_DEVICE_CODE"
-#endif
-#ifndef CONFIG_PREFIXED_DEVICE_DESC
-#define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
-#endif
-
-#if defined (CONFIG_GEN2) || defined (CONFIG_SBRIO)
-#define CONFIG_NI_USB_PID "0x770D"
-#define CONFIG_NI_USB_VID "0x3923"
-#elif defined (CONFIG_ELVISIII)
-#define CONFIG_NI_USB_PID "0x762F"
-#define CONFIG_NI_USB_VID "0x3923"
-#endif
 
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
@@ -230,20 +12,13 @@
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
 
-#define CONFIG_SYS_NO_FLASH
-
 #define CONFIG_OF_BOARD_SETUP
 
-#define CONFIG_I2C_CPLD_ADDR	0x40
 
 #if !defined (CONFIG_ELVISIII)
-#define CONFIG_I2C_RTC_ADDR	0x68
 #define CONFIG_CMD_DATE		/* RTC? */
 #endif
 
-#define CONFIG_REGINFO		/* Again, debugging */
-/* check for input to stop even if delay is 0 */
-#define CONFIG_ZERO_BOOTDELAY_CHECK
 #undef CONFIG_BOOTDELAY
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
@@ -268,44 +43,6 @@
 #define CONFIG_INI_CASE_INSENSITIVE
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
-
-#if defined(CONFIG_CRIO9063)
-#define CONFIG_NI_BOARD_NAME "cRIO-9063"
-#elif defined(CONFIG_CRIO9064)
-#define CONFIG_NI_BOARD_NAME "cRIO-9064"
-#elif defined(CONFIG_CRIO9065)
-#define CONFIG_NI_BOARD_NAME "cRIO-9065"
-#elif defined(CONFIG_CRIO9066)
-#define CONFIG_NI_BOARD_NAME "cRIO-9066"
-#elif defined(CONFIG_CRIO9067)
-#define CONFIG_NI_BOARD_NAME "cRIO-9067"
-#elif defined(CONFIG_CRIO9068)
-#define CONFIG_NI_BOARD_NAME "cRIO-9068"
-#elif defined(CONFIG_NI9147)
-#define CONFIG_NI_BOARD_NAME "NI 9147"
-#elif defined(CONFIG_NI9149)
-#define CONFIG_NI_BOARD_NAME "NI 9149"
-#elif defined(CONFIG_SBRIO9637)
-#define CONFIG_NI_BOARD_NAME "sbRIO-9637"
-#elif defined(CONFIG_SBRIO9627)
-#define CONFIG_NI_BOARD_NAME "sbRIO-9627"
-#elif defined(CONFIG_SBRIO9607)
-#define CONFIG_NI_BOARD_NAME "sbRIO-9607"
-#elif defined(CONFIG_ELVISIII_BO)
-#define CONFIG_NI_BOARD_NAME "ELVIS III"
-#elif defined(CONFIG_ELVISIII_PLUS)
-#define CONFIG_NI_BOARD_NAME "ELVIS III+"
-#else
-#warning "CONFIG_NI_BOARD_NAME not defined for this target"
-#endif
-
-#ifdef CONFIG_MFG
-#define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"
-#else
-#define CONFIG_NI_BOARD_NAME_SUFFIX
-#endif
-
-#define CONFIG_NI_BOARD_NAME_PREFIX
 
 #define CONFIG_IDENT_STRING \
 	"\nNational Instruments" \
@@ -333,23 +70,16 @@
 #define CONFIG_FPGA_ZYNQPL
 
 /* HW to use */
-#ifdef CONFIG_ELVISIII
-#define CONFIG_CONSOLE_LINUX_DEV "null"
-#define CONFIG_CONSOLE_UBOOT_DEV "nulldev"
-#else
-#define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
-#define CONFIG_CONSOLE_UBOOT_DEV "serial@80000000"
-#endif
 #ifndef CONFIG_DM_SERIAL
 #ifndef CONFIG_ELVISIII
 #undef CONFIG_ZYNQ_SERIAL
-#ifndef CONFIG_ENETEXP
+#ifndef CONFIG_CRIO_ENETEXP
 #define CONFIG_SYS_NS16550
 #define CONFIG_SYS_NS16550_SERIAL
 #define CONFIG_SYS_NS16550_CLK 58824000
 #define CONFIG_SYS_NS16550_REG_SIZE 1
 #define CONFIG_SYS_NS16550_COM1 0x80000000
-#if !defined (CONFIG_GEN2) && !defined(CONFIG_SBRIO9607)
+#if !defined (CONFIG_CRIO_GEN2) && !defined(CONFIG_SBRIO9607)
 #define CONFIG_SYS_NS16550_COM2 0x80000010
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #endif
@@ -358,10 +88,6 @@
 #endif
 #endif
 
-/* Zynq Clock support */
-#define CONFIG_DM_CLK
-#define CONFIG_CLK_ZYNQ
-
 /* Zynq GEM Ethernet support */
 /* EMIO state for different speeds */
 #define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_ON	0
@@ -369,13 +95,9 @@
 #define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_ON	1
 #define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF	0
 
-#define CONFIG_DM_ETH
-#define CONFIG_MACB
-#define CONFIG_MACB_ZYNQ
 #define CONFIG_NET_MULTI
 #define CONFIG_CMD_MII
 #define CONFIG_MII
-#define CONFIG_PHYLIB
 #define CONFIG_PHY_MICREL
 #define CONFIG_PHY_MICREL_KSZ9031
 #define CONFIG_MENU
@@ -394,9 +116,6 @@
 #define CONFIG_ETHADDR 00:80:2f:00:00:00
 #endif
 
-/* Zynq GPIO support */
-#define CONFIG_ZYNQ_GPIO
-
 /* USB Host support */
 #define CONFIG_USB_STORAGE
 #define CONFIG_CMD_FAT
@@ -410,7 +129,7 @@
 #define CONFIG_USB_EHCI_ZYNQ
 #define CONFIG_USB_EHCI_TXFIFO_THRESH 8
 #define CONFIG_EHCI_IS_TDI
-#if defined(CONFIG_SBRIO) && defined(CONFIG_RMC)
+#if defined(CONFIG_CRIO_SBRIO96X7) && defined(CONFIG_CRIO_RMC)
 #define CONFIG_OTG_USB_BASE_ADDR ZYNQ_USB_BASEADDR1
 #endif
 
@@ -418,7 +137,7 @@
  * Physical Memory map
  */
 #define PHYS_SDRAM_1_BASE 0x00000000
-#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #else
 #define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
@@ -431,13 +150,11 @@
  * NAND Flash settings
  */
 #define CONFIG_SYS_NAND_SELF_INIT
-#define CONFIG_NAND_ZYNQ_USE_FSBL_TIMINGS
 #define CONFIG_CMD_NAND_LOCK_UNLOCK
 #define CONFIG_SYS_MAX_NAND_DEVICE 1
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
-#define CONFIG_MTD_RESERVE_END 524288
 #define CONFIG_CMD_MTDPARTS
 #define MTDIDS_DEFAULT "nand0=xilinx_nand"
 #define MTDPARTS_DEFAULT \
@@ -447,10 +164,6 @@
 		"70M(boot-config)," \
 		"-(root)"
 
-#if defined(CONFIG_MFG)
-#define CONFIG_NAND_BBT_NO_MARK
-#endif
-
 /* UBI */
 #define CONFIG_RBTREE
 
@@ -458,22 +171,7 @@
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
 
-#define CONFIG_MTD_UBOOT_OFFSET			0x20000
-#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
-#define CONFIG_BOARD_SIZE_LIMIT			0x80000 /* 512MB */
-#else
-#define CONFIG_BOARD_SIZE_LIMIT			0x100000 /* 1GB */
-#endif
-#define CONFIG_BOOT_BIN_SIZE_LIMIT		0x120000
-#define CONFIG_BOOTFS_VOLUME_SIZE		0x3600000
-
-#define CONFIG_BACKUP_PAGE			0xB1F800
-#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7ea
-#define CONFIG_BACKUP_SERIAL_OFFSET		0x7f0
-#define CONFIG_BACKUP_ETHADDR_OFFSET		0x7f4
-#define CONFIG_BACKUP_ETH1ADDR_OFFSET		0x7fa
-
-#if defined (CONFIG_SBRIO) && defined (CONFIG_FULL_BOARD)
+#if defined (CONFIG_CRIO_SBRIO96X7) && defined (CONFIG_CRIO_FULL_BOARD)
 #define CONFIG_MMC
 
 #define CONFIG_GENERIC_MMC
@@ -484,17 +182,17 @@
 
 #define CONFIG_DOS_PARTITION
 
-#define CONFIG_DEFAULT_NVS
+#define NI_DEFAULT_NVS
 
 #undef CONFIG_SYS_LOAD_ADDR
-#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #else
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
 #endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
-#if defined (CONFIG_MEM_256) || defined (CONFIG_ENETEXP)
+#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define FDT_HIGH "0x7FFFFFF"
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
@@ -509,8 +207,8 @@
 
 #include "niresetenv.h"
 
-#if defined(CONFIG_GEN2) || \
-	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC)) || \
+#if defined(CONFIG_CRIO_GEN2) || \
+	(defined(CONFIG_CRIO_SBRIO96X7) && defined(CONFIG_CRIO_RMC)) || \
 	defined(CONFIG_ELVISIII)
 
 /* GEN2 cRIO-906x, sbRIO-96x7 with RMC use usbgadgetethaddr for the USB
@@ -529,9 +227,9 @@
 #define WIFIETHADDR_SAVE
 #define WIFIETHADDR_RESTORE
 
-#if defined(CONFIG_MEM_256) || \
-	defined(CONFIG_ENETEXP) || \
-	(defined(CONFIG_SBRIO) && !defined(CONFIG_RMC)) || \
+#if defined(CONFIG_CRIO_MEM256) || \
+	defined(CONFIG_CRIO_ENETEXP) || \
+	(defined(CONFIG_CRIO_SBRIO96X7) && !defined(CONFIG_CRIO_RMC)) || \
 	defined(CONFIG_ELVISIII)
 /* cRIO-9063, cRIO-9066, NI 9147 and NI 9149 use ethaddr for wired Ethernet. */
 #define ETHADDR_SAVE ENV_SAVE(ethaddr)
@@ -594,7 +292,7 @@
 #define CONFIG_BOOTCOMMAND \
 	REAL_BOOTCOMMAND
 
-#ifdef CONFIG_ENETEXP
+#ifdef CONFIG_CRIO_ENETEXP
 #define CONFIG_PREBOOT \
 	REAL_PREBOOT_FEEBLE_RECOVERY
 #else

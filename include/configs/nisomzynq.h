@@ -5,51 +5,13 @@
 #ifndef __CONFIG_NISOMZYNQ_H
 #define __CONFIG_NISOMZYNQ_H
 
-#if \
-	defined(CONFIG_TARGET_NI_7931) || \
-	defined(CONFIG_TARGET_NI_7931_MFG)
-#define CONFIG_NI7931
-#endif
-
-#if \
-	defined(CONFIG_TARGET_NI_7932) || \
-	defined(CONFIG_TARGET_NI_7932_MFG)
-#define CONFIG_NI7932
-#endif
-
-#if \
-	defined(CONFIG_TARGET_NI_7935) || \
-	defined(CONFIG_TARGET_NI_7935_MFG)
-#define CONFIG_NI7935
-#endif
-
-#if \
-	defined(CONFIG_TARGET_NI_SBRIO9651) || \
-	defined(CONFIG_TARGET_NI_SBRIO9651_MFG)
-#define CONFIG_SBRIO9651SOM
-#endif
-
-#if \
-	defined(CONFIG_TARGET_NI_7931) || \
-	defined(CONFIG_TARGET_NI_7931_MFG) || \
-	defined(CONFIG_TARGET_NI_7932) || \
-	defined(CONFIG_TARGET_NI_7932_MFG) || \
-	defined(CONFIG_TARGET_NI_7935) || \
-	defined(CONFIG_TARGET_NI_7935_MFG)
-#define CONFIG_NI793X
-#endif
-
 /*
  * High Level Configuration Options
  */
-#if defined(CONFIG_SBRIO9651SOM)
-#define CONFIG_TARGET_CLASS "cRIO"
-#elif defined(CONFIG_NI793X)
-#define CONFIG_TARGET_CLASS "FlexRIO"
 /* NI-793xR Zynq FPGA load will only use a default bitfile, as it
  * is not user-reconfigurable */
-#undef CONFIG_FPGALOADCMD
-#define CONFIG_FPGALOADCMD \
+#undef SCRIPT_FPGALOADCMD
+#define SCRIPT_FPGALOADCMD \
 	"ubifsmount ubi:bootfs; " \
 	"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
 		"ubifsload $loadaddr .defbit/default.bit.bin && " \
@@ -68,38 +30,6 @@
 		"run recoverybootcmd;" \
 	"fi; " \
 	"run markhardbootcomplete;"
-#else
-#error "Unknown CONFIG_TARGET_CLASS"
-#endif
-
-#if defined(CONFIG_SBRIO9651SOM)
-#define CONFIG_DEVICE_CODE "775E"
-#define CONFIG_FPGA_DEVICE_CODE "775E"
-#define CONFIG_DEVICE_DESC "sbRIO-9651"
-#define CONFIG_PREFIXED_DEVICE_DESC "NI " CONFIG_DEVICE_DESC
-#elif defined(CONFIG_NI7931)
-#define CONFIG_DEVICE_CODE "77B1"
-#define CONFIG_FPGA_DEVICE_CODE "77B1"
-#define CONFIG_DEVICE_DESC "NI-7931R"
-#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
-#elif defined(CONFIG_NI7932)
-#define CONFIG_DEVICE_CODE "77B2"
-#define CONFIG_FPGA_DEVICE_CODE "77B2"
-#define CONFIG_DEVICE_DESC "NI-7932R"
-#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
-#elif defined(CONFIG_NI7935)
-#define CONFIG_DEVICE_CODE "77AC"
-#define CONFIG_FPGA_DEVICE_CODE "77AC"
-#define CONFIG_DEVICE_DESC "NI-7935R"
-#define CONFIG_PREFIXED_DEVICE_DESC CONFIG_DEVICE_DESC
-#else
-#error "Unknown CONFIG_DEVICE_CODE"
-#endif
-
-#define CONFIG_NI_BOARD_NAME CONFIG_DEVICE_DESC
-
-#define CONFIG_NI_USB_PID "0x770D"
-#define CONFIG_NI_USB_VID "0x3923"
 
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_NAND_ZYNQ
@@ -109,13 +39,8 @@
 
 #undef CONFIG_ZYNQ_XIL_LQSPI
 
-#define CONFIG_SYS_NO_FLASH
-
 #define CONFIG_OF_BOARD_SETUP
 #define CONFIG_CMD_DATE		/* RTC? */
-#define CONFIG_REGINFO		/* Again, debugging */
-/* check for input to stop even if delay is 0 */
-#define CONFIG_ZERO_BOOTDELAY_CHECK
 #undef CONFIG_BOOTDELAY
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
@@ -140,18 +65,6 @@
 #define CONFIG_INI_CASE_INSENSITIVE
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
-
-#ifdef CONFIG_MFG
-#define CONFIG_NI_BOARD_NAME_SUFFIX " Manufacturing"
-#else
-#define CONFIG_NI_BOARD_NAME_SUFFIX
-#endif
-
-#ifdef CONFIG_PROTO
-#define CONFIG_NI_BOARD_NAME_PREFIX " Prototype"
-#else
-#define CONFIG_NI_BOARD_NAME_PREFIX
-#endif
 
 #define CONFIG_IDENT_STRING \
 	"\nNational Instruments" \
@@ -190,8 +103,6 @@
 #define CONFIG_SYS_NS16550_COM3 0x80000020
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
-#define CONFIG_CONSOLE_LINUX_DEV "ttyS0"
-#define CONFIG_CONSOLE_UBOOT_DEV "eserial0"
 
 /* Use both GEM interfaces */
 #define CONFIG_NET_MULTI
@@ -253,13 +164,11 @@
  * NAND Flash settings
  */
 #define CONFIG_SYS_NAND_SELF_INIT
-#define CONFIG_NAND_ZYNQ_USE_FSBL_TIMINGS
 #define CONFIG_CMD_NAND_LOCK_UNLOCK
 #define CONFIG_SYS_MAX_NAND_DEVICE 1
 #define CONFIG_SYS_NAND_ONFI_DETECTION
 #define CONFIG_MTD_DEVICE
 #define CONFIG_MTD_PARTITIONS
-#define CONFIG_MTD_RESERVE_END 524288
 #define CONFIG_CMD_MTDPARTS
 #define MTDIDS_DEFAULT "nand0=xilinx_nand"
 #define MTDPARTS_DEFAULT \
@@ -270,7 +179,6 @@
 		"-(root)"
 
 #if defined(CONFIG_MFG)
-#define CONFIG_NAND_BBT_NO_MARK
 #define CONFIG_ENV_FORCE_DEFAULT
 #endif
 
@@ -282,31 +190,7 @@
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
 
-#define CONFIG_MTD_UBOOT_OFFSET		0x20000
 #define CONFIG_BOARD_SIZE_LIMIT		0x100000
-#define CONFIG_BOOT_BIN_SIZE_LIMIT	0x120000
-#define CONFIG_BOOTFS_VOLUME_SIZE	0x3600000
-
-#define CONFIG_BACKUP_PAGE		0xB1F800
-
-/* CCA Serial Number, useful when testing multiple sbRIO-9651 at once in
- * manufacturing, so that the test can tell which CCA is it working on. This is
- * a different variable than the Module Assembly (MA) serial number. */
-#define CONFIG_BACKUP_CCA_SERIAL_OFFSET	0x7e0
-
-#define CONFIG_BACKUP_SERIAL_OFFSET	0x7e4
-
-/* Primary MAC Address */
-#define CONFIG_BACKUP_ETHADDR_OFFSET	0x7e8
-
-/* Secondary MAC Address */
-#define CONFIG_BACKUP_ETH1ADDR_OFFSET	0x7ee
-
-/* USB (Gadget) Ethernet MAC Address */
-#define CONFIG_BACKUP_USBGADGETETHADDR_OFFSET	0x7f4
-
-/* WiFi MAC Address */
-#define CONFIG_BACKUP_ETH3ADDR_OFFSET	0x7fa
 
 #define CONFIG_MMC
 
@@ -317,7 +201,7 @@
 #define CONFIG_DOS_PARTITION
 #endif
 
-#define CONFIG_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
+#define NI_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
 
 #undef CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_LOAD_ADDR 0x8000000

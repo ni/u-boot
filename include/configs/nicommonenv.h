@@ -32,8 +32,8 @@
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
 	"ncip:i,mtu:d,"
 
-#ifndef CONFIG_FPGALOADCMD
-#define CONFIG_FPGALOADCMD \
+#ifndef SCRIPT_FPGALOADCMD
+#define SCRIPT_FPGALOADCMD \
 	"ubifsmount ubi:bootfs; " \
 	"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
 		"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
@@ -84,13 +84,13 @@
 #endif
 
 #if defined(CONFIG_NI_USB_VID) && defined(CONFIG_NI_USB_PID)
-#define CONFIG_GADGET_VARS \
+#define NI_GADGET_VARS \
 	"USBVendorID=" CONFIG_NI_USB_VID "\0" \
 	"USBProductID=" CONFIG_NI_USB_PID "\0" \
 	"USBProduct=" CONFIG_PREFIXED_DEVICE_DESC "\0" \
 	"USBDevice=0x" CONFIG_DEVICE_CODE "\0"
 #else
-#define CONFIG_GADGET_VARS
+#define NI_GADGET_VARS
 #endif
 
 #if defined(CONFIG_OTG_USB_BASE_ADDR)
@@ -133,7 +133,7 @@
 	"DeviceDesc=" CONFIG_DEVICE_DESC "\0" \
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
-	CONFIG_GADGET_VARS \
+	NI_GADGET_VARS \
 	"mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0" \
 	"verifyaddr=" VERIFY_ADDR "\0" \
@@ -148,7 +148,7 @@
 		__stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) "\0" \
 	"backupeth3addroffset=" \
 		__stringify(CONFIG_BACKUP_ETH3ADDR_OFFSET) "\0" \
-	"wl12xxnvs=" CONFIG_DEFAULT_NVS "\0" \
+	"wl12xxnvs=" NI_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
@@ -260,7 +260,7 @@
 			"run setlederrorstatus; " \
 			"echo $recovery_err; " \
 		"fi;\0" \
-	"fpgaloadcmd=" CONFIG_FPGALOADCMD "\0" \
+	"fpgaloadcmd=" SCRIPT_FPGALOADCMD "\0" \
 	"ipresetcmd=echo Resetting primary Ethernet configuration; " \
 		"setenv dhcpenabled 1; " \
 		"setenv linklocalenabled 1; " \
