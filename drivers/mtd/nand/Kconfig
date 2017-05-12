@@ -41,6 +41,11 @@ config NAND_VF610_NFC
 	  The driver supports a maximum 2k page size. The driver
 	  currently does not support hardware ECC.
 
+config NAND_BBT_NO_MARK
+	bool "NAND BBT region no mark"
+	help
+	  Allow erase/write in the bbt regions.
+
 choice
 	prompt "Hardware ECC strength"
 	depends on NAND_VF610_NFC
