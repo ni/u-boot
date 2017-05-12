@@ -1398,7 +1398,7 @@ checkarmreloc: u-boot
 	fi
 
 env fdtview: scripts_basic
-	$(Q)$(MAKE) $(build)=tools/$@
+	$(Q)$(MAKE) HOSTCC=$(CC) $(build)=tools/$@
 
 tools-only: scripts_basic $(version_h) $(timestamp_h)
 	$(Q)$(MAKE) $(build)=tools
