@@ -568,6 +568,12 @@ config CMD_PXE
 	help
 	  Boot image via network using PXE protocol
 
+config PXE_PLATFORM_DEFAULT
+	string "pxe default platform"
+	depends on CMD_PXE
+	help
+	  Default boot image name for PXE boot.
+
 config CMD_NFS
 	bool "nfs"
 	default y
