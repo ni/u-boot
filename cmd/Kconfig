@@ -653,6 +653,11 @@ config CMD_CACHE
 	help
 	  Enable the "icache" and "dcache" commands
 
+config CMD_INI
+	bool "ini"
+	help
+	  Enable the INI file parser.
+
 config CMD_TIME
 	bool "time"
 	help
