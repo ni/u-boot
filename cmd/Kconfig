@@ -658,6 +658,11 @@ config CMD_INI
 	help
 	  Enable the INI file parser.
 
+config CMD_SHA1SUM
+	bool "SHA1"
+	help
+	  Enable the SHA1.
+
 config CMD_TIME
 	bool "time"
 	help
