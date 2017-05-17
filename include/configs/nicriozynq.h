@@ -278,7 +278,8 @@
 	"i2c dev $i2cbus; " \
 	"usb start; " \
 	"usb reset; " \
-	"run nc; "
+	"run nc; " \
+	"setenv silent; "
 
 #else /* !CONFIG_MFG */
 
