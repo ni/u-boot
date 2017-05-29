@@ -296,6 +296,7 @@
 			"setenv ipaddr $sipaddr; " \
 			"setenv netmask $snetmask; " \
 			"setenv gatewayip $sgatewayip; " \
+			"setenv dnsip $sdnsip; " \
 		"fi;\0" \
 	"markhardbootcomplete=" \
 		"i2c mw 0x40 1 0x20;\0" \
