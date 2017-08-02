@@ -74,7 +74,9 @@ machine-$(CONFIG_ARCH_ROCKCHIP)		+= rockchip
 machine-$(CONFIG_STM32)			+= stm32
 machine-$(CONFIG_TEGRA)			+= tegra
 machine-$(CONFIG_ARCH_UNIPHIER)		+= uniphier
-machine-$(CONFIG_ARCH_ZYNQ)		+= zynq
+ifneq (,$(findstring y,$(CONFIG_ZYNQ)$(CONFIG_NIZYNQ)))
+machine-y				+= zynq
+endif
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

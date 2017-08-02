@@ -1,0 +1,22 @@
+if NIZYNQ
+choice
+	prompt "NI Zynq board select"
+
+config TARGET_NI_CRIO9068
+	bool "NI cRIO-9068"
+
+endchoice
+
+config SYS_BOARD
+	default "criozynq"
+
+config SYS_VENDOR
+	default "ni"
+
+config SYS_SOC
+	default "zynq"
+
+config SYS_CONFIG_NAME
+	default "nicriozynq" if TARGET_NI_CRIO9068
+
+endif
