@@ -4,6 +4,9 @@
 /*
  * High Level Configuration Options
  */
+#define CONFIG_CRIO9068 /* Board */
+#define CONFIG_DEVICE_CODE 76D6
+
 #define CONFIG_ZYNQ_GEM
 #define CONFIG_NAND_ZYNQ
 #include <configs/zynq-common.h>
@@ -38,7 +41,7 @@
 
 #define CONFIG_TIMESTAMP	/* print image timestamp on bootm, etc */
 
-#define CONFIG_IDENT_STRING	""
+#define CONFIG_IDENT_STRING	"\nNational Instruments cRIO-9068"
 
 #define CONFIG_DEFAULT_HOSTNAME_BASE	"cRIO-"
 
