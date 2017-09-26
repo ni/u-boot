@@ -836,7 +836,9 @@ void phy_connect_dev(struct phy_device *phydev, struct eth_device *dev)
 #endif
 {
 	/* Soft Reset the PHY */
+#if !defined(CONFIG_MFG)
 	phy_reset(phydev);
+#endif
 	if (phydev->dev && phydev->dev != dev) {
 		printf("%s:%d is connected to %s.  Reconnecting to %s\n",
 				phydev->bus->name, phydev->addr,
