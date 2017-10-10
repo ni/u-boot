@@ -103,3 +103,12 @@
 	status = "okay";
 	dr_mode = "peripheral";
 };
+
+&ni_uart0 {
+	status = "okay";
+};
+
+&clkc {
+	/* Enable fclk1 for serial. */
+	fclk-enable = <0x2>;
+};

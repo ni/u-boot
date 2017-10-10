@@ -68,7 +68,6 @@
 
 /* HW to use */
 #ifndef CONFIG_DM_SERIAL
-#ifndef CONFIG_ELVISIII
 #undef CONFIG_ZYNQ_SERIAL
 #ifndef CONFIG_CRIO_ENETEXP
 #define CONFIG_SYS_NS16550
@@ -83,6 +82,9 @@
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
 #endif
+
+#if defined (CONFIG_ELVISIII)
+#define FPGA_CONSOLE_MULTIPLEX_EMIO	56
 #endif
 
 /* Zynq GEM Ethernet support */
@@ -254,6 +256,12 @@
 
 #if defined(CONFIG_ELVISIII)
 #define CRIO_EXTRA_ENV_SETTINGS \
+	"consolemultiplexcmd=" \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
+			"gpio set " __stringify(FPGA_CONSOLE_MULTIPLEX_EMIO) "; " \
+		"else " \
+			"gpio clear " __stringify(FPGA_CONSOLE_MULTIPLEX_EMIO) "; " \
+		"fi;\0" \
 	"wirelessRegionFactory=00\0" \
 	"wlan_sdio_base_addr=" WLAN_ZYNQ_SDHCI_BASEADDR0 "\0"
 #else

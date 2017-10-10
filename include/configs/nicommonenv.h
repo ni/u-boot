@@ -469,6 +469,7 @@
 		"run recoverycmd; " \
 	"else " \
 		"run fpgaloadcmd; " \
+		"run consolemultiplexcmd; " \
 		"run consoleoutcmd; " \
 		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \
@@ -493,6 +494,7 @@
 		"forcedrecovery=1; " \
 		"run recoverycmd; " \
 	"else " \
+		"run consolemultiplexcmd; " \
 		"run consoleoutcmd; " \
 		"if test -n \\\\\"$isipreset\\\\\"; then " \
 			"run ipresetcmd; " \

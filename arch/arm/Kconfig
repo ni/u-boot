@@ -859,6 +859,7 @@ config NIZYNQ
 	select DM_MMC
 	select DM_SERIAL
 	select DM_USB if USB
+	select SYS_NS16550 if DM_SERIAL
 	select CONSOLE_UBOOT_DEV if DM_SERIAL
 	select CONSOLE_LINUX_DEV if DM_SERIAL
 	select SPL_SEPARATE_BSS if SPL
