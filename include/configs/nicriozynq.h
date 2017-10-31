@@ -283,6 +283,19 @@
 
 #undef CONFIG_BOOTCOMMAND
 
+#if defined(CONFIG_MFG_DHCP)
+
+#define CONFIG_PREBOOT \
+	"dcache off; " \
+	"i2c dev $i2cbus; " \
+	"usb start; " \
+	"usb reset; " \
+	"dhcp; " \
+	"run nc; " \
+	"setenv silent; "
+
+#else /* !CONFIG_MFG_DHCP */
+
 #define CONFIG_PREBOOT \
 	"dcache off; " \
 	"i2c dev $i2cbus; " \
@@ -290,6 +303,8 @@
 	"usb reset; " \
 	"run nc; " \
 	"setenv silent; "
+
+#endif
 
 #else /* !CONFIG_MFG */
 

@@ -335,6 +335,9 @@ config MFG
 	bool "Manufacturing U-Boot"
 	select NAND_BBT_NO_MARK
 
+config MFG_DHCP
+	bool "Enable DHCP in MFG U-Boot"
+
 
 source "board/ni/criozynq/Kconfig"
 source "board/ni/myrio/Kconfig"
