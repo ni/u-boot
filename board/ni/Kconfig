@@ -216,6 +216,7 @@ config TARGET_NI_ELVISIII_PLUS
 config TARGET_NI_ELVISIII_MFG
 	bool "NI ELVIS III manufacturing U-Boot"
 	select MFG
+	select MFG_DHCP
 	select CRIO
 	select ELVISIII_BO
 endchoice
