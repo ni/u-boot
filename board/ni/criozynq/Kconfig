@@ -81,15 +81,6 @@ config SBRIO9637
 	select CRIO_SBRIO96X7
 	select CRIO_FULL_BOARD
 
-config ELVISIII_BO
-	bool "ELVIS III RIO Board Only target"
-	select ELVISIII
-
-config ELVISIII_PLUS
-	bool "ELVIS III Plus target"
-	select ELVISIII
-
-
 config I2C_CPLD_ADDR
 	hex "CPLD I2C Address"
 	default 0x40

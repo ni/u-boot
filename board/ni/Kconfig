@@ -203,22 +203,17 @@ config TARGET_NI_SBRIO9651_MFG
 	select MFG
 	select SBRIO9651SOM
 
-config TARGET_NI_ELVISIII_BO
-	bool "NI ELVIS III Board Only"
+config TARGET_NI_ELVISIII
+	bool "NI ELVIS III"
 	select CRIO
-	select ELVISIII_BO
-
-config TARGET_NI_ELVISIII_PLUS
-	bool "NI ELVIS III Plus"
-	select CRIO
-	select ELVISIII_PLUS
+	select ELVISIII
 
 config TARGET_NI_ELVISIII_MFG
 	bool "NI ELVIS III manufacturing U-Boot"
 	select MFG
 	select MFG_DHCP
 	select CRIO
-	select ELVISIII_BO
+	select ELVISIII
 endchoice
 
 config DEVICE_CODE
