@@ -26,7 +26,7 @@
 
 #define READONLY_MFG_ENV_VARS \
 	"serial#:xo,ethaddr:mc,eth1addr:mc,usbgadgetethaddr:mc," \
-	"wirelessRegionFactory:so,wl12xxnvs:so,"
+	"wirelessRegionFactory:so,wireless_board_id:so,wl12xxnvs:so,"
 
 #define NET_TYPE_ENV_VARS \
 	"ipaddr:i,sipaddr:i,netmask:i,snetmask:i,gatewayip:i,sgatewayip:i," \
@@ -392,6 +392,7 @@
 	"resetenv=" \
 		"serial_save=${serial#} && " \
 		ENV_SAVE(wirelessRegionFactory) \
+		ENV_SAVE(wireless_board_id) \
 		USBGADGETETHADDR_SAVE \
 		WIFIETHADDR_SAVE \
 		ETHADDR_SAVE \
@@ -399,6 +400,7 @@
 		"env default -a && " \
 		"env set serial# $serial_save && " \
 		ENV_RESTORE(wirelessRegionFactory) \
+		ENV_RESTORE(wireless_board_id) \
 		USBGADGETETHADDR_RESTORE \
 		WIFIETHADDR_RESTORE \
 		ETHADDR_RESTORE \
