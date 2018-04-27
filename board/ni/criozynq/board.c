@@ -66,6 +66,44 @@ int board_init(void)
 	return 0;
 }
 
+struct backup_var {
+	char *variable;
+	char *backupvar;
+	int default_offset;
+	int (*handler)(char *entry, u8 *buffer);
+};
+
+static int ethaddr_handler(char *var, u8 *buffer)
+{
+	eth_setenv_enetaddr(var, buffer);
+	return 0;
+}
+
+static int serialno_handler(char *var, u8 *buffer)
+{
+	char string[18] = "";
+	sprintf(string, "%08X", *(u32 *)buffer);
+	setenv(var, string);
+	return 0;
+}
+
+struct backup_var backup_var_table[] = {
+	{ "serial#", "backupserialoffset", CONFIG_BACKUP_SERIAL_OFFSET,
+		serialno_handler },
+	{ "ethaddr", "backupethaddroffset", CONFIG_BACKUP_ETHADDR_OFFSET,
+		ethaddr_handler },
+#if defined(CONFIG_MEM_512) || \
+	defined(CONFIG_CRIO9068) || \
+	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC))
+	{ "eth1addr", "backupeth1addroffset", CONFIG_BACKUP_ETH1ADDR_OFFSET,
+		ethaddr_handler },
+#endif
+#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
+	{ "usbgadgetethaddr", "backupusbgadgetethaddroffset",
+		CONFIG_BACKUP_USBGADGETETHADDR_OFFSET, ethaddr_handler },
+#endif
+};
+
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init (void)
 {
@@ -80,12 +118,9 @@ int board_late_init (void)
 
 #if defined(CONFIG_MFG)
 	char serial[11] = "";
-#endif
-#if !defined(CONFIG_MFG)
-	int serial_missing = 0;
-	int ethaddr_missing = 0;
-	int eth1addr_missing = 0;
-	int usbgadgetethaddr_missing = 0;
+#else
+	unsigned env_missing = 0;
+	int i;
 #endif
 
 	/*
@@ -103,53 +138,43 @@ int board_late_init (void)
 	set_default_env("Default env required for auto-bringup.\n");
 	if (strlen(serial) != 0)
 		setenv("serial#", serial);
-#endif
+#else
+	/* Check if any variable is missing and restore */
+	for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
+		if (getenv(backup_var_table[i].variable) == NULL)
+			env_missing |= (1 << i);
+	}
 
-#if !defined(CONFIG_MFG)
-	serial_missing = getenv("serial#") == NULL;
-	ethaddr_missing = getenv("ethaddr") == NULL;
-#if defined(CONFIG_MEM_512) || \
-	defined(CONFIG_CRIO9068) || \
-	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC))
-	eth1addr_missing = getenv("eth1addr") == NULL;
-#endif
-#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
-	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
-#endif
-	if (serial_missing || ethaddr_missing || eth1addr_missing || usbgadgetethaddr_missing) {
+	if (env_missing) {
 		u8 nand_buffer[nand_info[0]->writesize];
 		int nand_read_status;
-		char string[18];
 		size_t len = nand_info[0]->writesize;
 
 		nand_read_status = nand_read(nand_info[0],
 		    getenv_ulong("backuppage", 16, CONFIG_BACKUP_PAGE), &len,
 		    nand_buffer);
-		if (serial_missing && !nand_read_status) {
-			sprintf(string, "%08x", *(u32 *)&nand_buffer[
-			    getenv_ulong("backupserialoffset", 16,
-				CONFIG_BACKUP_SERIAL_OFFSET)]);
-			setenv("serial#", string);
+
+		if (nand_read_status)
+			goto var_restore_end;
+
+		for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
+			struct backup_var *entry = &backup_var_table[i];
+			unsigned long offset;
+
+			if (!(env_missing & (1 << i)))
+				continue;
+
+			if (NULL == entry->backupvar)
+				offset = entry->default_offset;
+			else
+				offset = getenv_ulong(entry->backupvar, 16,
+						      entry->default_offset);
+
+			entry->handler(entry->variable, &nand_buffer[offset]);
 		}
-		if (ethaddr_missing && !nand_read_status)
-			eth_setenv_enetaddr("ethaddr", &nand_buffer[
-                            getenv_ulong("backupethaddroffset", 16,
-				CONFIG_BACKUP_ETHADDR_OFFSET)]);
-#if defined(CONFIG_MEM_512) || \
-	defined(CONFIG_CRIO9068) || \
-	(defined(CONFIG_SBRIO) && defined(CONFIG_RMC))
-		if (eth1addr_missing && !nand_read_status)
-			eth_setenv_enetaddr("eth1addr", &nand_buffer[
-                            getenv_ulong("backupeth1addroffset", 16,
-				CONFIG_BACKUP_ETH1ADDR_OFFSET)]);
-#endif
-#if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
-		if (usbgadgetethaddr_missing && !nand_read_status)
-			eth_setenv_enetaddr("usbgadgetethaddr", &nand_buffer[
-                            getenv_ulong("backupusbgadgetethaddroffset", 16,
-				CONFIG_BACKUP_USBGADGETETHADDR_OFFSET)]);
-#endif
 		saveenv();
+var_restore_end:
+		;
 	}
 #endif
 
