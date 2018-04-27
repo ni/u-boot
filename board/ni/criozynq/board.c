@@ -87,6 +87,29 @@ static int serialno_handler(char *var, u8 *buffer)
 	return 0;
 }
 
+static int pstring_handler(char *var, u8 *buffer)
+{
+	struct pstring {
+		u8 len;
+		char string[0];
+	} __packed *pstr;
+	char *string;
+
+	pstr = (struct pstring *)buffer;
+
+	string = malloc(pstr->len + 1);
+	if (NULL == string)
+		return -ENOMEM;
+
+	memcpy(string, pstr->string, pstr->len);
+	string[pstr->len] = '\0';
+
+	setenv(var, string);
+	free(string);
+
+	return 0;
+}
+
 struct backup_var backup_var_table[] = {
 	{ "serial#", "backupserialoffset", CONFIG_BACKUP_SERIAL_OFFSET,
 		serialno_handler },
@@ -101,6 +124,12 @@ struct backup_var backup_var_table[] = {
 #if defined(CONFIG_GEN2) || defined(CONFIG_SBRIO) || defined(CONFIG_ELVISIII)
 	{ "usbgadgetethaddr", "backupusbgadgetethaddroffset",
 		CONFIG_BACKUP_USBGADGETETHADDR_OFFSET, ethaddr_handler },
+#endif
+#if defined(CONFIG_ELVISIII)
+	{ "wirelessRegionFactory", NULL,
+		CONFIG_BACKUP_WIRELESS_REGION_OFFSET, pstring_handler },
+	{ "wireless_board_id", NULL,
+		CONFIG_BACKUP_WIRELESS_BOARD_ID_OFFSET, pstring_handler },
 #endif
 };
 

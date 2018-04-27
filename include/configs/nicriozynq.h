@@ -262,8 +262,6 @@
 		"else " \
 			"gpio clear " __stringify(FPGA_CONSOLE_MULTIPLEX_EMIO) "; " \
 		"fi;\0" \
-	"wirelessRegionFactory=00\0" \
-	"wireless_board_id=10\0" \
 	"wlan_sdio_base_addr=" WLAN_ZYNQ_SDHCI_BASEADDR0 "\0"
 #else
 #define CRIO_EXTRA_ENV_SETTINGS

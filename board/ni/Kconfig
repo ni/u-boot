@@ -359,6 +359,20 @@ comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- XX XX"
 comment ".        000007f0  XX XX XX XX -- -- -- --  -- -- -- -- -- -- -- --"
 	depends on SBRIO
 
+if ELVISIII
+config BACKUP_WIRELESS_REGION_OFFSET
+	hex "Wireless region backup page offset"
+	default 0x7e0 if ELVISIII
+comment "default: 000007e0  XX XX XX XX XX -- -- --  -- -- -- -- -- -- -- --"
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+
+config BACKUP_WIRELESS_BOARD_ID_OFFSET
+	hex "Wireless board ID page offset"
+	default 0x7e5 if ELVISIII
+comment "default: 000007e0  -- -- -- -- -- XX XX XX  XX XX -- -- -- -- -- --"
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+endif
+
 config MFG
 	bool "Manufacturing U-Boot"
 	select NAND_BBT_NO_MARK
