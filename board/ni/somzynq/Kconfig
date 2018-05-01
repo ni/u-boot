@@ -20,10 +20,14 @@ config SBRIO9651SOM
 config BACKUP_CCA_SERIAL_OFFSET
 	hex "Backup page for CCA Serial Number"
 	default 0x7e0
+comment "default: 000007e0  XX XX XX XX -- -- -- --  -- -- -- -- -- -- -- --"
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
 
 config BACKUP_ETH3ADDR_OFFSET
 	hex "Backup page for WiFi MAC"
 	default 0x7fa
+comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- XX XX XX XX XX XX"
 
 endif
 

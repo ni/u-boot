@@ -311,21 +311,53 @@ config BACKUP_SERIAL_OFFSET
 	hex "Serial number backup page offset"
 	default 0x7f0 if CRIO || MYRIO
 	default 0x7e4 if SBRIO
+comment ".      : 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007f0  XX XX XX XX -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007e0  -- -- -- -- XX XX XX XX  -- -- -- -- -- -- -- --"
+	depends on SBRIO
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on SBRIO
 
 config BACKUP_USBGADGETETHADDR_OFFSET
 	hex "USB Gadget Ethernet MAC backup page offset"
 	default 0x7ea if CRIO || MYRIO
 	default 0x7f4 if SBRIO
+comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- XX XX XX XX XX XX"
+	depends on CRIO || MYRIO
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on SBRIO
+comment ".        000007f0  -- -- -- -- XX XX XX XX  XX XX -- -- -- -- -- --"
+	depends on SBRIO
 
 config BACKUP_ETHADDR_OFFSET
 	hex "Primary Ethernet MAC backup page offset"
 	default 0x7f4 if CRIO || MYRIO
 	default 0x7e8 if SBRIO
+comment ".        000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007f0  -- -- -- -- XX XX XX XX  XX XX -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007e0  -- -- -- -- -- -- -- --  XX XX XX XX XX XX -- --"
+	depends on SBRIO
+comment ".        000007f0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on SBRIO
 
 config BACKUP_ETH1ADDR_OFFSET
 	hex "Secondary Ethernet MAC backup page offset"
 	default 0x7fa if CRIO || MYRIO
 	default 0x7ee if SBRIO
+comment ".        000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on CRIO || MYRIO
+comment "default: 000007f0  -- -- -- -- -- -- -- --  -- -- XX XX XX XX XX XX"
+	depends on CRIO || MYRIO
+comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- XX XX"
+	depends on SBRIO
+comment ".        000007f0  XX XX XX XX -- -- -- --  -- -- -- -- -- -- -- --"
+	depends on SBRIO
 
 config MFG
 	bool "Manufacturing U-Boot"
