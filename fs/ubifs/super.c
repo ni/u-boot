@@ -1751,6 +1751,7 @@ void ubifs_umount(struct ubifs_info *c)
 #ifdef __UBOOT__
 	/* Finally free U-Boot's global copy of superblock */
 	if (ubifs_sb != NULL) {
+		list_del_init(&ubifs_sb->s_instances);
 		free(ubifs_sb->s_fs_info);
 		free(ubifs_sb);
 	}
