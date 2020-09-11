@@ -303,7 +303,8 @@ dtb-$(CONFIG_MACH_SUN9I) += \
 
 dtb-$(CONFIG_NIZYNQ) += \
 	ni-sbrio-9627.dtb \
-	ni-elvisiii.dtb
+	ni-elvisiii.dtb \
+	ni-roborio2.dtb
 
 dtb-$(CONFIG_VF610) += vf500-colibri.dtb \
 	vf610-colibri.dtb \
