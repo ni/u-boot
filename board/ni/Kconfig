@@ -313,7 +313,7 @@ config BOOTFS_VOLUME_SIZE
 	default 0x3600000
 
 config BACKUP_PAGE
-	hex "NAND backup page"
+	hex "backup page"
 	default 0xB1F800
 
 config BACKUP_SERIAL_OFFSET
