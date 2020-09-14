@@ -61,6 +61,46 @@ int board_init(void)
 	return 0;
 }
 
+struct backup_var {
+	char *variable;
+	char *backupvar;
+	int default_offset;
+	int (*handler)(char *entry, u8 *buffer);
+};
+
+static int ethaddr_handler(char *var, u8 *buffer)
+{
+	eth_setenv_enetaddr(var, buffer);
+	return 0;
+}
+
+static int serialno_handler(char *var, u8 *buffer)
+{
+	char string[18] = "";
+	sprintf(string, "%08X", *(u32 *)buffer);
+	setenv(var, string);
+	return 0;
+}
+
+struct backup_var backup_var_table[] = {
+	{ "serial#", "backupserialoffset", CONFIG_BACKUP_SERIAL_OFFSET,
+		serialno_handler },
+	{ "ethaddr", "backupethaddroffset", CONFIG_BACKUP_ETHADDR_OFFSET,
+		ethaddr_handler },
+#if defined(CONFIG_NIMYRIO)
+	/* Only set eth1addr_missing for myRIO targets, because all current
+	 * non-myRIO targets don't have an eth1addr programmed. */
+	{ "eth1addr", "backupeth1addroffset", CONFIG_BACKUP_ETH1ADDR_OFFSET,
+		ethaddr_handler },
+#else
+	/* Only set usbgadgetethaddr_missing for non-myRIO targets, so that for
+	 * myRIO targets we'll never be missing the address (by always using
+	 * the initial value of 0). */
+	{ "usbgadgetethaddr", "backupusbgadgetethaddroffset",
+		CONFIG_BACKUP_USBGADGETETHADDR_OFFSET, ethaddr_handler },
+#endif
+};
+
 #ifdef CONFIG_BOARD_LATE_INIT
 int board_late_init (void)
 {
@@ -74,14 +114,8 @@ int board_late_init (void)
 	}
 
 #ifndef CONFIG_MFG
-	int serial_missing;
-	int ethaddr_missing;
-	/* These must be initialized to zero so that we default to this address
-	 * as not missing. This allows us to selectively populate the address
-	 * from a backup location for some targets (e.g. non-myRIO) and not for
-	 * others (e.g. myRIO). */
-	int usbgadgetethaddr_missing = 0;
-	int eth1addr_missing = 0;
+	unsigned env_missing = 0;
+	int i;
 #endif
 
 	/*
@@ -95,64 +129,42 @@ int board_late_init (void)
 #if defined(CONFIG_MFG)
 	set_default_env("Default env required for manufacturing.\n");
 #else
-	serial_missing = getenv("serial#") == NULL;
-	ethaddr_missing = getenv("ethaddr") == NULL;
-#ifdef CONFIG_NIMYRIO
-	/* Only set eth1addr_missing for myRIO targets, because all current
-	 * non-myRIO targets don't have an eth1addr programmed. */
-	eth1addr_missing = getenv("eth1addr") == NULL;
-#else
-	/* Only set usbgadgetethaddr_missing for non-myRIO targets, so that for
-	 * myRIO targets we'll never be missing the address (by always using
-	 * the initial value of 0). */
-	usbgadgetethaddr_missing = getenv("usbgadgetethaddr") == NULL;
-#endif
-	if (serial_missing || ethaddr_missing || eth1addr_missing ||
-	    usbgadgetethaddr_missing) {
+	/* Check if any variable is missing and restore */
+	for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
+		if (getenv(backup_var_table[i].variable) == NULL)
+			env_missing |= (1 << i);
+	}
+
+	if (env_missing) {
 		u8 nand_buffer[nand_info[0]->writesize];
 		int nand_read_status;
-		char string[18];
 		size_t len = nand_info[0]->writesize;
 
 		nand_read_status = nand_read(nand_info[0],
 		    getenv_ulong("backuppage", 16, CONFIG_BACKUP_PAGE), &len,
 		    nand_buffer);
-		if (serial_missing && !nand_read_status) {
-			sprintf(string, "%08x", *(u32 *)&nand_buffer[
-			    getenv_ulong("backupserialoffset", 16,
-				CONFIG_BACKUP_SERIAL_OFFSET)]);
-			setenv("serial#", string);
-		}
-		if (ethaddr_missing && !nand_read_status) {
-			int offset = getenv_ulong("backupethaddroffset", 16,
-                                CONFIG_BACKUP_ETHADDR_OFFSET);
 
-			if (memcmp(&nand_buffer[offset],
-			    "\xff\xff\xff\xff\xff\xff", 6)) {
-				eth_setenv_enetaddr("ethaddr", &nand_buffer[offset]);
-			}
-		}
-		if (eth1addr_missing && !nand_read_status) {
-			int offset = getenv_ulong("backupeth1addroffset", 16,
-                                CONFIG_BACKUP_ETH1ADDR_OFFSET);
+		if (nand_read_status)
+			goto var_restore_end;
 
-			if (memcmp(&nand_buffer[offset],
-			    "\xff\xff\xff\xff\xff\xff", 6)) {
-				eth_setenv_enetaddr("eth1addr", &nand_buffer[offset]);
-			}
-		}
-		if (usbgadgetethaddr_missing && !nand_read_status) {
-			int offset = getenv_ulong(
-				"backupusbgadgetethaddroffset", 16,
-				CONFIG_BACKUP_USBGADGETETHADDR_OFFSET);
+		for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
+			struct backup_var *entry = &backup_var_table[i];
+			unsigned long offset;
 
-			if (memcmp(&nand_buffer[offset],
-			    "\xff\xff\xff\xff\xff\xff", 6)) {
-				eth_setenv_enetaddr("usbgadgetethaddr",
-						    &nand_buffer[offset]);
-			}
+			if (!(env_missing & (1 << i)))
+				continue;
+
+			if (NULL == entry->backupvar)
+				offset = entry->default_offset;
+			else
+				offset = getenv_ulong(entry->backupvar, 16,
+						      entry->default_offset);
+
+			entry->handler(entry->variable, &nand_buffer[offset]);
 		}
 		saveenv();
+var_restore_end:
+		;
 	}
 #endif
 
