@@ -67,7 +67,7 @@ int board_late_init (void)
 	u8 tmp;
 	int err;
 	struct udevice *cpld;
-	err = i2c_get_chip_for_busnum(0, 0x40, 1, &cpld);
+	err = i2c_get_chip_for_busnum(0, CONFIG_I2C_CPLD_ADDR, 1, &cpld);
 	if (err) {
 		debug("%s: Cannot find CPLD\n", __func__);
 		cpld = NULL;
@@ -226,7 +226,7 @@ void reset_misc(void)
 	int err;
 	struct udevice *dev;
 
-	err = i2c_get_chip_for_busnum(0, 0x40, 1, &dev);
+	err = i2c_get_chip_for_busnum(0, CONFIG_I2C_CPLD_ADDR, 1, &dev);
 	if (err) {
 		debug("%s: Cannot find CPLD\n", __func__);
 		return;

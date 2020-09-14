@@ -17,6 +17,9 @@
 #undef CONFIG_ZYNQ_XIL_LQSPI
 
 #define CONFIG_OF_BOARD_SETUP
+
+#define CONFIG_I2C_CPLD_ADDR   0x40
+
 #undef CONFIG_BOOTDELAY
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
