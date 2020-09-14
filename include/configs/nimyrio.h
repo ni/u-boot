@@ -78,8 +78,23 @@
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
 
+/* Zynq Clock support */
+#define CONFIG_DM_CLK
+#define CONFIG_CLK_ZYNQ
+
 #ifdef CONFIG_ROBORIO
+/* Zynq GEM Ethernet support */
+/* EMIO state for different speeds */
+#define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_ON	0
+#define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_OFF	1
+#define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_ON	1
+#define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF	0
+
+#define CONFIG_DM_ETH
+#define CONFIG_MACB
+#define CONFIG_MACB_ZYNQ
 #define CONFIG_NET_MULTI
+#define CONFIG_CMD_MII
 #define CONFIG_MII
 #endif /* CONFIG_ROBORIO */
 
@@ -93,6 +108,9 @@
 #define CONFIG_BOOTP_SEND_HOSTNAME
 #define CONFIG_PXE_PLATFORM_DEFAULT	"default-" CONFIG_TARGET_CLASS, \
 					"default-" CONFIG_DEVICE_CODE
+
+/* Zynq GPIO support */
+#define CONFIG_ZYNQ_GPIO
 
 /* USB Host support */
 #define CONFIG_USB_STORAGE
