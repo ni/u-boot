@@ -112,6 +112,10 @@
 #define CONFIG_PXE_PLATFORM_DEFAULT	"default-" CONFIG_TARGET_CLASS, \
 					"default-" CONFIG_DEVICE_CODE
 
+#ifdef CONFIG_MFG
+#define CONFIG_NET_RANDOM_ETHADDR
+#endif
+
 /* Zynq GPIO support */
 #define CONFIG_ZYNQ_GPIO
 

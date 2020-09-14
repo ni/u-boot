@@ -113,7 +113,10 @@ int board_late_init (void)
 		cpld = NULL;
 	}
 
-#ifndef CONFIG_MFG
+#ifdef CONFIG_MFG
+	uchar enetaddr[6];
+	int ethaddr_missing;
+#else
 	unsigned env_missing = 0;
 	int i;
 #endif
@@ -128,6 +131,11 @@ int board_late_init (void)
 
 #if defined(CONFIG_MFG)
 	set_default_env("Default env required for manufacturing.\n");
+	ethaddr_missing = getenv("ethaddr") == NULL;
+	if (ethaddr_missing){
+		net_random_ethaddr(enetaddr);
+		eth_setenv_enetaddr("ethaddr",enetaddr);
+	}
 #else
 	/* Check if any variable is missing and restore */
 	for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
