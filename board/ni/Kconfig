@@ -279,6 +279,12 @@ config SYS_CONFIG_NAME
 	default "nimyrio" if MYRIO
 	default "nisomzynq" if SBRIO
 
+config NI_MEM256
+	bool "Device with 256MB RAM"
+
+config NI_MEM512
+	bool "Device with 512MB RAM"
+
 config SYS_TEXT_BASE
 	default 0x4000000
 
@@ -292,7 +298,7 @@ config MTD_RESERVE_END
 
 config BOARD_SIZE_LIMIT
 	hex "Board Size Limit"
-	default 0x80000 if CRIO_MEM256 || CRIO_ENETEXP
+	default 0x80000 if NI_MEM256 || CRIO_ENETEXP
 	default 0x100000
 
 config BOOT_BIN_SIZE_LIMIT

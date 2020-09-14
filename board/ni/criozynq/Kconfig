@@ -2,12 +2,6 @@ if CRIO
 config CRIO_GEN2
 	bool "cRIO 2nd generation"
 
-config CRIO_MEM256
-	bool "cRIO with 256MB RAM"
-
-config CRIO_MEM512
-	bool "cRIO with 512MB RAM"
-
 config CRIO_ENETEXP
 	bool "cRIO Ethernet Expansion"
 
@@ -39,27 +33,27 @@ config NI9149
 config CRIO9063
 	bool "cRIO-9063 target"
 	select CRIO_GEN2
-	select CRIO_MEM256
+	select NI_MEM256
 
 config CRIO9064
 	bool "cRIO-9064 target"
 	select CRIO_GEN2
-	select CRIO_MEM512
+	select NI_MEM512
 
 config CRIO9065
 	bool "cRIO-9065 target"
 	select CRIO_GEN2
-	select CRIO_MEM512
+	select NI_MEM512
 
 config CRIO9066
 	bool "cRIO-9066 target"
 	select CRIO_GEN2
-	select CRIO_MEM256
+	select NI_MEM256
 
 config CRIO9067
 	bool "cRIO-9067 target"
 	select CRIO_GEN2
-	select CRIO_MEM512
+	select NI_MEM512
 
 config CRIO9068
 	bool "cRIO-9068 target"

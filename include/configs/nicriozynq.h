@@ -136,7 +136,7 @@
  * Physical Memory map
  */
 #define PHYS_SDRAM_1_BASE 0x00000000
-#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
+#if defined (CONFIG_NI_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
 #else
 #define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
@@ -188,14 +188,14 @@
 #define NI_DEFAULT_NVS
 
 #undef CONFIG_SYS_LOAD_ADDR
-#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
+#if defined (CONFIG_NI_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
 #else
 #define CONFIG_SYS_LOAD_ADDR 0x8000000
 #endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
-#if defined (CONFIG_CRIO_MEM256) || defined (CONFIG_CRIO_ENETEXP)
+#if defined (CONFIG_NI_MEM256) || defined (CONFIG_CRIO_ENETEXP)
 #define FDT_HIGH "0x7FFFFFF"
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
@@ -230,7 +230,7 @@
 #define WIFIETHADDR_SAVE
 #define WIFIETHADDR_RESTORE
 
-#if defined(CONFIG_CRIO_MEM256) || \
+#if defined(CONFIG_NI_MEM256) || \
 	defined(CONFIG_CRIO_ENETEXP) || \
 	(defined(CONFIG_CRIO_SBRIO96X7) && !defined(CONFIG_CRIO_RMC)) || \
 	defined(CONFIG_ELVISIII)
