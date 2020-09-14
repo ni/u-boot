@@ -288,6 +288,10 @@ config NI_MEM256
 config NI_MEM512
 	bool "Device with 512MB RAM"
 
+config I2C_CPLD_ADDR
+	hex "CPLD I2C Address"
+	default 0x40
+
 config SYS_TEXT_BASE
 	default 0x4000000
 
