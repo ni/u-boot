@@ -11,6 +11,7 @@
 
 #ifdef CONFIG_ROBORIO2
 #define CONFIG_ZYNQ_QSPI
+#define CONFIG_MMC
 #else
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
@@ -163,6 +164,17 @@
 /* UBIFS */
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
+
+/* MMC */
+#ifdef CONFIG_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_DM_MMC
+#define CONFIG_MMC_SDHCI
+#define CONFIG_MMC_SDHCI_SDMA
+#define CONFIG_MMC_SDHCI_ZYNQ
+#define CONFIG_ZYNQ_SDHCI_MAX_FREQ 125000000
+#define CONFIG_CMD_MMC
+#endif
 
 /* QSPI Flash */
 #ifdef CONFIG_ZYNQ_QSPI

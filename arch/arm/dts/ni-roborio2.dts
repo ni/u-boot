@@ -11,6 +11,7 @@
 		nullserial = &null_uart;
 		i2c0 = &i2c0;
 		spi0 = &qspi;
+		mmc1 = &sdhci1;
 	};
 
 	chosen {
@@ -74,6 +75,11 @@
 			reg = <0xB20000 0x4E0000>;
 		};
 	};
+};
+
+&sdhci1 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
 };
 
 &can0 {
