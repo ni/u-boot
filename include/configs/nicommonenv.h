@@ -503,5 +503,28 @@
 		"fi; " \
 	"fi;"
 
+#define REAL_PREBOOT_NO_NAND \
+	"setenv silent 1; " \
+	"i2c dev $i2cbus; " \
+	"run readsoftdip; " \
+	"run readcplddip; " \
+	"run readbootmode; " \
+	"run read_usb_otgsc_id;" \
+	"run evaldip; " \
+	"if test -n \\\\\"$isforcedrecoverymode\\\\\"; then " \
+		"if test -n \\\\\"$isconsoleout\\\\\"; then " \
+			"setenv silent; " \
+		"fi; " \
+		"forcedrecovery=1; " \
+		"run recoverycmd; " \
+	"else " \
+		"run fpgaloadcmd; " \
+		"run consolemultiplexcmd; " \
+		"run consoleoutcmd; " \
+		"if test -n \\\\\"$isipreset\\\\\"; then " \
+			"run ipresetcmd; " \
+		"fi; " \
+	"fi;"
+
 
 #endif /* __CONFIG_NICOMMON_ENV_H */
