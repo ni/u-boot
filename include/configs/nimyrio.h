@@ -18,8 +18,6 @@
 
 #define CONFIG_OF_BOARD_SETUP
 
-#define CONFIG_I2C_CPLD_ADDR   0x40
-
 #undef CONFIG_BOOTDELAY
 /* -1 to Disable autoboot, -2 to force boot */
 #define CONFIG_BOOTDELAY	-2
@@ -81,10 +79,6 @@
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
 
-/* Zynq Clock support */
-#define CONFIG_DM_CLK
-#define CONFIG_CLK_ZYNQ
-
 #ifdef CONFIG_ROBORIO
 /* Zynq GEM Ethernet support */
 /* EMIO state for different speeds */
@@ -93,9 +87,6 @@
 #define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_ON	1
 #define MACB_ZYNQ_GEM_LINKSPD_100_GPIO_OFF	0
 
-#define CONFIG_DM_ETH
-#define CONFIG_MACB
-#define CONFIG_MACB_ZYNQ
 #define CONFIG_NET_MULTI
 #define CONFIG_CMD_MII
 #define CONFIG_MII
@@ -115,9 +106,6 @@
 #ifdef CONFIG_MFG
 #define CONFIG_NET_RANDOM_ETHADDR
 #endif
-
-/* Zynq GPIO support */
-#define CONFIG_ZYNQ_GPIO
 
 /* USB Host support */
 #define CONFIG_USB_STORAGE
@@ -167,8 +155,6 @@
 /* UBIFS */
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
-
-#define CONFIG_BOARD_SIZE_LIMIT		0x100000
 
 #define NI_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
 
