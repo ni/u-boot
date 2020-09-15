@@ -84,6 +84,11 @@
 
 #define CONFIG_CMD_ENV_FLAGS
 
+#define LOAD_BOOTFS "ubifsmount ubi:bootfs && ubifsload"
+#define LOAD_CONFIG "ubifsmount ubi:config && ubifsload"
+#define UBIFS_WB_CS "setenv ubifs_writeback_centisecs; "
+#define UBIFS_EXP_CS "setenv ubifs_expire_centisecs; "
+
 #define CONFIG_FPGA
 #define CONFIG_FPGA_XILINX
 #define CONFIG_FPGA_ZYNQPL

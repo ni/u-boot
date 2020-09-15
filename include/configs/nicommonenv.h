@@ -34,14 +34,13 @@
 
 #ifndef SCRIPT_FPGALOADCMD
 #define SCRIPT_FPGALOADCMD \
-	"ubifsmount ubi:bootfs; " \
 	"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
 		"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
 	"then " \
 		"loaddefaultbit=1; " \
 	"else " \
-		"if ubifsload $verifyaddr user.bit.crc && " \
-			"ubifsload $loadaddr user.bit.bin && " \
+		"if " LOAD_BOOTFS " $verifyaddr user.bit.crc && " \
+			LOAD_BOOTFS " $loadaddr user.bit.bin && " \
 			"md5sum -v $loadaddr $filesize *$verifyaddr; " \
 		"then " \
 			"if fpga load 0 $loadaddr $filesize; then " \
@@ -55,8 +54,8 @@
 		"fi; " \
 	"fi; " \
 	"if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
-		"if ubifsload $verifyaddr .defbit/default.bit.crc && " \
-			"ubifsload $loadaddr .defbit/default.bit.bin && " \
+		"if " LOAD_BOOTFS " $verifyaddr .defbit/default.bit.crc && " \
+			LOAD_BOOTFS " $loadaddr .defbit/default.bit.bin && " \
 			"md5sum -v $loadaddr $filesize *$verifyaddr; " \
 		"then " \
 			"configfpga=1; " \
@@ -154,8 +153,7 @@
 		"fatload mmc 0 $loadaddr linux_safemode.itb; " \
 		"source $loadaddr:bootscript;\0" \
 	"boot_safemode=" \
-		"if ubifsmount ubi:bootfs && " \
-		"ubifsload $loadaddr .safe/linux_safemode.itb && " \
+		"if " LOAD_BOOTFS " $loadaddr .safe/linux_safemode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
 			"source $loadaddr:bootscript; " \
@@ -165,8 +163,7 @@
 			"run recoverybootcmd;" \
 		"fi;\0" \
 	"boot_runmode=" \
-		"if ubifsmount ubi:bootfs && " \
-		"ubifsload $loadaddr linux_runmode.itb && " \
+		"if " LOAD_BOOTFS " $loadaddr linux_runmode.itb && " \
 		"imi $loadaddr; then " \
 			"setenv verify n; " \
 			"source $loadaddr:bootscript; " \
@@ -313,8 +310,7 @@
 			"bootmode=runmode; " \
 		"fi; " \
 		"setenv bootmodeval;\0" \
-	"readsoftdip=if ubifsmount ubi:config && " \
-		"ubifsload $loadaddr ni-rt.ini && " \
+	"readsoftdip=if " LOAD_CONFIG " $loadaddr ni-rt.ini && " \
 		"ini systemsettings; then " \
 			"setenv safemode.enabled ${safemode.enabled:-false}; " \
 			"setenv ipreset.enabled ${ipreset.enabled:-false}; " \
@@ -374,8 +370,8 @@
 		"setenv primarymac; " \
 		"setenv language; " \
 		"setenv sshd.enabled; " \
-		"setenv ubifs_writeback_centisecs; " \
-		"setenv ubifs_expire_centisecs; " \
+		UBIFS_WB_CS \
+		UBIFS_EXP_CS \
 		"setenv cpld.safemode; " \
 		"setenv cpld.ipreset; " \
 		"setenv cpld.consoleout; " \
