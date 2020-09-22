@@ -297,6 +297,7 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"i2cbus=0\0" \
 	"serverip=192.168.1.185\0" \
 	REAL_EXTRA_ENV_SETTINGS \
 	MYRIO_EXTRA_ENV_SETTINGS
@@ -305,6 +306,7 @@
 
 #define CONFIG_PREBOOT \
 	"dcache off; " \
+	"i2c dev $i2cbus; " \
 	"usb start; " \
 	"usb reset; " \
 	"dhcp; " \
@@ -315,6 +317,7 @@
 
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	"i2cbus=0\0" \
 	REAL_EXTRA_ENV_SETTINGS \
 	MYRIO_EXTRA_ENV_SETTINGS
 
