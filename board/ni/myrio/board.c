@@ -18,6 +18,8 @@
 #include <asm/arch/clk.h>
 #include <jffs2/load_kernel.h>
 #include <asm/arch/hardware.h>
+#include <spi.h>
+#include <spi_flash.h>
 
 #define BOOT_MODE_REG     (XPSS_SYS_CTRL_BASEADDR + 0x25C)
 #define BOOT_MODES_MASK    0x0000000F
@@ -113,6 +115,30 @@ int board_late_init (void)
 		cpld = NULL;
 	}
 
+#if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+	struct udevice *new, *bus_dev;
+	struct spi_flash *qspi_flash;
+	int ret;
+
+	/* Remove the old device, otherwise probe will just be a nop */
+	ret = spi_find_bus_and_cs(CONFIG_SF_DEFAULT_BUS, CONFIG_SF_DEFAULT_CS,
+		&bus_dev, &new);
+	if (!ret) {
+		device_remove(new);
+		device_unbind(new);
+	}
+	qspi_flash = NULL;
+	ret = spi_flash_probe_bus_cs(CONFIG_SF_DEFAULT_BUS,
+		CONFIG_SF_DEFAULT_CS, CONFIG_SF_DEFAULT_SPEED,
+		CONFIG_SF_DEFAULT_MODE, &new);
+	if (ret) {
+		debug("Failed to initialize SPI flash at %u:%u (error %d)\n",
+		       CONFIG_SF_DEFAULT_BUS, CONFIG_SF_DEFAULT_CS, ret);
+	} else {
+		qspi_flash = dev_get_uclass_priv(new);
+	}
+#endif
+
 #ifdef CONFIG_MFG
 	uchar enetaddr[6];
 	int ethaddr_missing;
@@ -144,15 +170,36 @@ int board_late_init (void)
 	}
 
 	if (env_missing) {
-		u8 nand_buffer[nand_info[0]->writesize];
-		int nand_read_status;
+#if defined(CONFIG_NAND_ZYNQ)
+		u8 buffer[nand_info[0]->writesize];
+		int read_status;
+		unsigned long offset_nand;
 		size_t len = nand_info[0]->writesize;
 
-		nand_read_status = nand_read(nand_info[0],
-		    getenv_ulong("backuppage", 16, CONFIG_BACKUP_PAGE), &len,
-		    nand_buffer);
 
-		if (nand_read_status)
+		offset_nand = getenv_ulong("backuppage", 16,
+				CONFIG_BACKUP_PAGE);
+		read_status = nand_read(nand_info[0], offset_nand, &len,
+				buffer);
+
+#elif defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+		u8 buffer[CONFIG_BACKUP_PAGE_SIZE];
+		int read_status;
+		size_t len = CONFIG_BACKUP_PAGE_SIZE;
+		unsigned long offset_qspi;
+
+		if (qspi_flash){
+			offset_qspi = getenv_ulong("backuppage", 16,
+				CONFIG_BACKUP_PAGE);
+			read_status = spi_flash_read(qspi_flash,
+				offset_qspi, len, buffer);
+		} else {
+			debug("%s: qspi_flash = NULL\n", __func__);
+			read_status = -ENODEV;
+		}
+#endif
+
+		if (read_status)
 			goto var_restore_end;
 
 		for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
@@ -168,7 +215,7 @@ int board_late_init (void)
 				offset = getenv_ulong(entry->backupvar, 16,
 						      entry->default_offset);
 
-			entry->handler(entry->variable, &nand_buffer[offset]);
+			entry->handler(entry->variable, &buffer[offset]);
 		}
 		saveenv();
 var_restore_end:
