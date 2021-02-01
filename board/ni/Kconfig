@@ -217,6 +217,18 @@ config TARGET_NI_ELVISIII_MFG
 	select MFG_DHCP
 	select CRIO
 	select ELVISIII
+
+config TARGET_ROBORIO2
+	bool "NI roboRIO 2.0"
+	select MYRIO
+	select ROBORIO2
+
+config TARGET_ROBORIO2_MFG
+	bool "NI roboRIO 2.0 manufacturing U-Boot"
+	select MFG
+	select MYRIO
+	select ROBORIO2
+
 endchoice
 
 config DEVICE_CODE

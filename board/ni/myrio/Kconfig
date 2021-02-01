@@ -4,18 +4,27 @@ config MYRIO_BO
 
 config NIMYRIO
 	bool "myRIO board"
+	select NI_ME256
 
 config ROBORIO
 	bool "roboRIO"
+	select NI_MEM256
 
 config ELVISRIOCM
 	bool "ELVIS RIO Control Module"
+	select NI_MEM256
 
+config ROBORIO2
+	bool "roboRIO 2.0"
+	select NI_MEM512
 endif
 
 config MYRIO
 	bool "myRIO derivatives"
 	select CLK_ZYNQ if DM_CLK
+	select ZYNQ_GPIO
+	select MACB if DM_ETH
+	select MACB_ZYNQ if MACB
 	select NI_USB_PID
 	select NI_USB_VID
 	select MTD_UBOOT_OFFSET
@@ -28,6 +37,7 @@ config MYRIO
 	select BACKUP_USBGADGETETHADDR_OFFSET
 	select BACKUP_ETHADDR_OFFSET
 	select BACKUP_ETH1ADDR_OFFSET
+	select I2C_CPLD_ADDR
 	select SILENT_CONSOLE
 	select SILENT_U_BOOT_ONLY
 	select SILENT_CONSOLE_UPDATE_ON_SET
