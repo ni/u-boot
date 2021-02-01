@@ -125,7 +125,11 @@
  * Physical Memory map
  */
 #define PHYS_SDRAM_1_BASE 0x00000000
+#if defined (CONFIG_NI_MEM256)
 #define PHYS_SDRAM_1_SIZE (256 * 1024 * 1024)
+#elif defined(CONFIG_NI_MEM512)
+#define PHYS_SDRAM_1_SIZE (512 * 1024 * 1024)
+#endif
 #define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_SYS_MEMTEST_SCRATCH 0xFFFFF000
 #define CONFIG_CMD_CACHE
@@ -159,12 +163,22 @@
 #define NI_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
 
 #undef CONFIG_SYS_LOAD_ADDR
+#if defined (CONFIG_NI_MEM256)
 #define CONFIG_SYS_LOAD_ADDR 0x4000000
+#elif defined(CONFIG_NI_MEM512)
+#define CONFIG_SYS_LOAD_ADDR 0x8000000
+#endif
 #define CONFIG_LOADADDR CONFIG_SYS_LOAD_ADDR
 
+#if defined (CONFIG_NI_MEM256)
 #define FDT_HIGH "0x7FFFFFF"
 #define INITRD_HIGH "0x7FF7FFF"
 #define VERIFY_ADDR "0x8000000"
+#elif defined(CONFIG_NI_MEM512)
+#define FDT_HIGH "0x17FFFFFF"
+#define INITRD_HIGH "0x17FF7FFF"
+#define VERIFY_ADDR "0x10000000"
+#endif
 
 /* This address is 32k before the load address of the initrd */
 #define FDT_ADDR "0x7FF8000"
