@@ -180,12 +180,6 @@ var_restore_end:
 }
 #endif /* !CONFIG_BOARD_LATE_INIT */
 
-#ifdef CONFIG_CMD_MMC
-int board_mmc_init(bd_t *bd)
-{
-	return zynq_sdhci_init(XPSS_SDIO0_BASEADDR, 125000000, 0, SDHCI_QUIRK_NO_CD);
-}
-#endif
 
 #ifdef CONFIG_CMD_NAND
 static struct nand_chip nand_chip[CONFIG_SYS_MAX_NAND_DEVICE];
