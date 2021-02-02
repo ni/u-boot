@@ -567,8 +567,9 @@ static int macb_phy_init(struct macb_device *macb, const char *name)
 		return -ENETDOWN;
 	}
 
-	/* First check for GMAC and that it is GiB capable */
-	if (gem_is_gigabit_capable(macb)) {
+	/* First check for GMAC and phy that it is GiB capable */
+	if (gem_is_gigabit_capable(macb) && (status & BMSR_ESTATEN)) {
+
 		lpa = macb_mdio_read(macb, MII_STAT1000);
 
 		if (lpa & (LPA_1000FULL | LPA_1000HALF)) {
