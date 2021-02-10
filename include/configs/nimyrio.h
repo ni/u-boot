@@ -79,7 +79,7 @@
 #define CONFIG_CONS_INDEX 1 /* not actually used */
 #endif
 
-#ifdef CONFIG_ROBORIO
+#if defined(CONFIG_ROBORIO) || defined(CONFIG_ROBORIO2)
 /* Zynq GEM Ethernet support */
 /* EMIO state for different speeds */
 #define MACB_ZYNQ_GEM_LINKSPD_1000_GPIO_ON	0
@@ -90,7 +90,7 @@
 #define CONFIG_NET_MULTI
 #define CONFIG_CMD_MII
 #define CONFIG_MII
-#endif /* CONFIG_ROBORIO */
+#endif /* CONFIG_ROBORIO || CONFIG_ROBORIO2 */
 
 #define CONFIG_MENU
 #define CONFIG_CMD_PXE
