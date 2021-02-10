@@ -203,7 +203,7 @@
 #define WL12XXNVS_SAVE ENV_SAVE(wl12xxnvs)
 #define WL12XXNVS_RESTORE ENV_RESTORE(wl12xxnvs)
 
-#elif defined(CONFIG_ROBORIO)
+#elif defined(CONFIG_ROBORIO) || defined(CONFIG_ROBORIO2)
 
 /* roboRIO uses usbgadgetethaddr for the USB Gadget Ethernet MAC. */
 #define USBGADGETETHADDR_SAVE ENV_SAVE(usbgadgetethaddr)
