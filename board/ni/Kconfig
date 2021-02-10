@@ -332,6 +332,10 @@ config BACKUP_PAGE
 	hex "backup page"
 	default 0xB1F800
 
+config BACKUP_PAGE_SIZE
+	hex "backup page size"
+	default 0x800
+
 config BACKUP_SERIAL_OFFSET
 	hex "Serial number backup page offset"
 	default 0x7f0 if CRIO || MYRIO
