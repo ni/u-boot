@@ -9,8 +9,12 @@
  * High Level Configuration Options
  */
 
+#ifdef CONFIG_ROBORIO2
+#define CONFIG_ZYNQ_QSPI
+#else
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
+#endif
 
 #include <configs/zynq-common.h>
 
@@ -159,6 +163,17 @@
 /* UBIFS */
 #define CONFIG_LZO
 #define CONFIG_CMD_UBIFS
+
+/* QSPI Flash */
+#ifdef CONFIG_ZYNQ_QSPI
+#define CONFIG_DM_SPI
+#define CONFIG_DM_SPI_FLASH
+#define CONFIG_SPI_FLASH
+#define CONFIG_SPI_FLASH_STMICRO
+#define CONFIG_SPI_FLASH_BAR
+#define CONFIG_CMD_SPI
+#define CONFIG_CMD_SF
+#endif
 
 #define NI_DEFAULT_NVS "begin-base64 444 /lib/firmware/ti-connectivity/wl1271-nvs.bin.gz`H4sICK4CAAAAA3dsMTI3MS1udnMuYmluAGPMDWEAAsZCMIUAjDMZv0OZzP+/`/2PAA57/YWVn5+Tm5RcWkZBWUmXQZzBksGBwYvBkCGCIYohhiGdIYIhg8Mdn`xIgGf//9+w+kGCGACA1MwthEVzEDzWD6DzSKiZUBbB4DJ4uEAAfD9/fP74ME`+O1R+QwM6HwgePONgUfixx8GDoEPPxi4RCj0GgiUMzYwyMorqalrSskrqaqq`i8nKKaioBuABjExAwCAqKiooKsonp0sFNwwdAACjiUGVkAMAAA==`====`"
 
