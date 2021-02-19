@@ -12,6 +12,7 @@
 #ifdef CONFIG_ROBORIO2
 #define CONFIG_ZYNQ_QSPI
 #define CONFIG_MMC
+#define CONFIG_ENV_IS_IN_EXT4
 #else
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
@@ -58,11 +59,21 @@
 #undef CONFIG_ENV_IS_IN_FLASH /* zynq-common.h could have defined this */
 #endif
 
+#ifdef CONFIG_ENV_IS_IN_SPI_FLASH /* zynq-common.h could have defined this */
+#undef CONFIG_ENV_IS_IN_SPI_FLASH
+#endif
+
+#ifdef CONFIG_ROBORIO2
+#define EXT4_ENV_INTERFACE "mmc"
+#define EXT4_ENV_DEVICE_AND_PART "1:1"
+#define EXT4_ENV_FILE "/uboot/uboot.env"
+#else
 #define CONFIG_ENV_UBI_PART "boot-config"
 #define CONFIG_ENV_UBI_VOLUME "u-boot-env1"
 #define CONFIG_ENV_UBI_VOLUME_REDUND "u-boot-env2"
 #undef CONFIG_ENV_SIZE
 #define CONFIG_ENV_SIZE			0x20000
+#endif
 
 #define CONFIG_CMD_ENV_FLAGS
 
