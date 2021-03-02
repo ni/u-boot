@@ -68,7 +68,7 @@ int board_late_init (void)
 #else
 	serial_missing = getenv("serial#") == NULL;
 	ethaddr_missing = getenv("ethaddr") == NULL;
-#ifdef CONFIG_MYRIO
+#ifdef CONFIG_NIMYRIO
 	/* Only set eth1addr_missing for myRIO targets, because all current
 	 * non-myRIO targets don't have an eth1addr programmed. */
 	eth1addr_missing = getenv("eth1addr") == NULL;

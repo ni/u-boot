@@ -2,6 +2,9 @@ if MYRIO
 config MYRIO_BO
 	bool "myRIO board only"
 
+config NIMYRIO
+	bool "myRIO board"
+
 config ROBORIO
 	bool "roboRIO"
 

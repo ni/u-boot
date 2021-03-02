@@ -126,15 +126,18 @@ config TARGET_NI_CRIO9068_MFG
 config TARGET_NIMYRIO
 	bool "NI myRIO"
 	select MYRIO
+	select NIMYRIO
 
 config TARGET_NIMYRIO_MFG
 	bool "NI myRIO manufacturing U-Boot"
 	select MFG
 	select MYRIO
+	select NIMYRIO
 
 config TARGET_NIMYRIO_BO
 	bool "NI myRIO board only"
 	select MYRIO
+	select NIMYRIO
 	select MYRIO_BO
 
 config TARGET_ELVISRIOCM

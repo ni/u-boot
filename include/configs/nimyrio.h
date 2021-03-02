@@ -8,7 +8,6 @@
 /*
  * High Level Configuration Options
  */
-#define CONFIG_NIMYRIO /* Board */
 
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
@@ -164,7 +163,7 @@
 
 #include "niresetenv.h"
 
-#if defined(CONFIG_MYRIO)
+#if defined(CONFIG_NIMYRIO)
 
 /* myRIO uses ethaddr for the USB Gadget Ethernet MAC. */
 #define USBGADGETETHADDR_SAVE ENV_SAVE(ethaddr)
@@ -227,7 +226,7 @@
 	READONLY_MFG_ENV_VARS \
 	NET_TYPE_ENV_VARS
 
-#if defined(CONFIG_MYRIO)
+#if defined(CONFIG_NIMYRIO)
 #define MYRIO_EXTRA_ENV_SETTINGS \
 	"wirelessRegionFactory=840\0"
 #else
