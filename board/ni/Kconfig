@@ -409,6 +409,16 @@ config MFG
 config MFG_DHCP
 	bool "Enable DHCP in MFG U-Boot"
 
+#
+# HACK: This flag define in env/Kconfig in newer commit in upstream.
+# cherry-pick the whole commits require huge effort for validation
+# and we only need this flag from a particular commit
+# hence, we just copy the flag we needed
+# commit ID: 1087a7942c055db6fbb6ef6028a77599989561fc
+
+config ENV_IS_IN_EXT4
+	bool "Environment is in a EXT4 filesystem"
+	depends on ROBORIO2
 
 source "board/ni/criozynq/Kconfig"
 source "board/ni/myrio/Kconfig"
