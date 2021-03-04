@@ -21,7 +21,7 @@
 	"setlederrorstatus:so,readbootmode:so,pxesupport:do," \
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
-	"writepartitions:so,writeboot:so,writefsbl:so,writeuboot:so," \
+	"writepartitions:so,writeboot:so,writebootqspi:so,writefsbl:so,writeuboot:so," \
 	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
 
 #define READONLY_MFG_ENV_VARS \
@@ -433,6 +433,11 @@
 	"writeboot=nand erase 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
 		"nand write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
 		"nand read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
+	"writebootqspi=sf probe 0 0 0;" \
+		"sf erase 0 " __stringify(CONFIG_QSPI_SIZE_LIMIT) "; " \
+		"sf write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"sf read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
 		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
 	"writefsbl=nand erase.part fsbl; " \
 		"nand write $loadaddr fsbl; " \
