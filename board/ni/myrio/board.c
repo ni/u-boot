@@ -68,11 +68,19 @@ struct backup_var {
 	char *backupvar;
 	int default_offset;
 	int (*handler)(char *entry, u8 *buffer);
+	char* (*get_handler)(u8 *buffer);
 };
 
 static int ethaddr_handler(char *var, u8 *buffer)
 {
-	eth_setenv_enetaddr(var, buffer);
+	if (getenv(var) != NULL) {
+		setenv(".flags", var);
+		eth_setenv_enetaddr(var, buffer);
+		setenv(".flags", NULL);
+	}
+	else {
+		eth_setenv_enetaddr(var, buffer);
+	}
 	return 0;
 }
 
@@ -80,26 +88,52 @@ static int serialno_handler(char *var, u8 *buffer)
 {
 	char string[18] = "";
 	sprintf(string, "%08X", *(u32 *)buffer);
-	setenv(var, string);
+	if (getenv(var) != NULL) {
+		setenv(".flags", var);
+		setenv(var, string);
+		setenv(".flags", NULL);
+	}
+	else {
+		setenv(var, string);
+	}
 	return 0;
+}
+
+static char* get_serialno_handler(u8 *buffer)
+{
+	static char string[18] = "";
+	sprintf(string, "%08X",  *(u32 *)(buffer));
+	debug("serial string = %s\n", string);
+	return string;
+
+}
+
+static char* get_ethaddr_handler(u8 *buffer)
+{
+	static char string[ARP_HLEN_ASCII+1];
+	sprintf(string, "%pM", buffer);
+	debug("eth string = %s\n", string);
+	return string;
+
 }
 
 struct backup_var backup_var_table[] = {
 	{ "serial#", "backupserialoffset", CONFIG_BACKUP_SERIAL_OFFSET,
-		serialno_handler },
+		serialno_handler,get_serialno_handler },
 	{ "ethaddr", "backupethaddroffset", CONFIG_BACKUP_ETHADDR_OFFSET,
-		ethaddr_handler },
+		ethaddr_handler, get_ethaddr_handler },
 #if defined(CONFIG_NIMYRIO)
 	/* Only set eth1addr_missing for myRIO targets, because all current
 	 * non-myRIO targets don't have an eth1addr programmed. */
 	{ "eth1addr", "backupeth1addroffset", CONFIG_BACKUP_ETH1ADDR_OFFSET,
-		ethaddr_handler },
+		ethaddr_handler, get_ethaddr_handler },
 #else
 	/* Only set usbgadgetethaddr_missing for non-myRIO targets, so that for
 	 * myRIO targets we'll never be missing the address (by always using
 	 * the initial value of 0). */
 	{ "usbgadgetethaddr", "backupusbgadgetethaddroffset",
-		CONFIG_BACKUP_USBGADGETETHADDR_OFFSET, ethaddr_handler },
+		CONFIG_BACKUP_USBGADGETETHADDR_OFFSET, ethaddr_handler,
+		get_ethaddr_handler }
 #endif
 };
 
@@ -163,12 +197,47 @@ int board_late_init (void)
 		eth_setenv_enetaddr("ethaddr",enetaddr);
 	}
 #else
+
+#if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+	u8 buffer[CONFIG_BACKUP_PAGE_SIZE];
+	int read_status;
+	size_t len = CONFIG_BACKUP_PAGE_SIZE;
+	unsigned long offset_qspi, offset_var;
+	char *var;
+	if (qspi_flash) {
+		 offset_qspi = getenv_ulong("backuppage", 16,
+				 CONFIG_BACKUP_PAGE);
+		 read_status = spi_flash_read(qspi_flash,
+				 offset_qspi, len, buffer);
+		 if (!read_status) {
+
+			/* Check if any variable is missing or not tally, then restore */
+			for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
+				if ((getenv(backup_var_table[i].variable) == NULL))
+					env_missing |= (1 << i);
+				else {
+					offset_var = getenv_ulong(backup_var_table[i].backupvar, 16,
+							backup_var_table[i].default_offset);
+					var = backup_var_table[i].get_handler(&buffer[offset_var]);
+					if (strcmp(var,getenv(backup_var_table[i].variable)) != 0) {
+						env_missing |= (1 << i);
+					}
+				}
+			}
+		}
+	}
+	else {
+		read_status = -ENODEV;
+		debug("%s: qspi_flash = NULL\n", __func__);
+	}
+#else
+
 	/* Check if any variable is missing and restore */
 	for (i = 0; i < ARRAY_SIZE(backup_var_table); i++) {
 		if (getenv(backup_var_table[i].variable) == NULL)
 			env_missing |= (1 << i);
 	}
-
+#endif
 	if (env_missing) {
 #if defined(CONFIG_NAND_ZYNQ)
 		u8 buffer[nand_info[0]->writesize];
@@ -181,22 +250,6 @@ int board_late_init (void)
 				CONFIG_BACKUP_PAGE);
 		read_status = nand_read(nand_info[0], offset_nand, &len,
 				buffer);
-
-#elif defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
-		u8 buffer[CONFIG_BACKUP_PAGE_SIZE];
-		int read_status;
-		size_t len = CONFIG_BACKUP_PAGE_SIZE;
-		unsigned long offset_qspi;
-
-		if (qspi_flash){
-			offset_qspi = getenv_ulong("backuppage", 16,
-				CONFIG_BACKUP_PAGE);
-			read_status = spi_flash_read(qspi_flash,
-				offset_qspi, len, buffer);
-		} else {
-			debug("%s: qspi_flash = NULL\n", __func__);
-			read_status = -ENODEV;
-		}
 #endif
 
 		if (read_status)
