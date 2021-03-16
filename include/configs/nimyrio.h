@@ -81,6 +81,14 @@
 #define CONFIG_FPGA_XILINX
 #define CONFIG_FPGA_ZYNQPL
 
+
+#ifdef CONFIG_ROBORIO2
+#ifdef CONFIG_SF_DEFAULT_SPEED /* spi_flash.h could have defined this */
+#undef CONFIG_SF_DEFAULT_SPEED
+#endif
+#define CONFIG_SF_DEFAULT_SPEED 60000000
+#endif
+
 /* HW to use */
 #ifndef CONFIG_DM_SERIAL
 #undef CONFIG_ZYNQ_SERIAL
