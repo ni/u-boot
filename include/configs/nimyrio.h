@@ -13,6 +13,7 @@
 #define CONFIG_ZYNQ_QSPI
 #define CONFIG_MMC
 #define CONFIG_ENV_IS_IN_EXT4
+#define CONFIG_PHY_SMSC
 #else
 #define CONFIG_NAND_ZYNQ
 #define CONFIG_ENV_IS_IN_UBI
