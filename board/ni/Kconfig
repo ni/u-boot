@@ -334,6 +334,7 @@ config BOOTFS_VOLUME_SIZE
 
 config BACKUP_PAGE
 	hex "backup page"
+	default 0x41F800 if ROBORIO2
 	default 0xB1F800
 
 config BACKUP_PAGE_SIZE
