@@ -392,6 +392,20 @@ comment "default: 000007e0  -- -- -- -- -- -- -- --  -- -- -- -- -- -- XX XX"
 comment ".        000007f0  XX XX XX XX -- -- -- --  -- -- -- -- -- -- -- --"
 	depends on SBRIO
 
+if ROBORIO2
+config QSPI_FPGA_SIZE_OFFSET
+	hex "QSPI offset for FPGA default bit size"
+	default 0x420000
+
+config QSPI_FPGA_SIZE_LENGTH
+	hex "FPGA default bit size length"
+	default 0x8
+
+config QSPI_FPGA_DEFAULT_BIT_OFFSET
+	hex "QSPI offset for FPGA default bit"
+	default 0x420008
+endif
+
 if ELVISIII
 config BACKUP_WIRELESS_REGION_OFFSET
 	hex "Wireless region backup page offset"
