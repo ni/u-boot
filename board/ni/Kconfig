@@ -324,6 +324,10 @@ config BOOT_BIN_SIZE_LIMIT
 	hex "BOOT.bin max file size"
 	default 0x120000
 
+config QSPI_UBOOT_PARTITION_LIMIT
+        hex "QSPI UBoot partition limit that exclude backup page"
+        default 0x410000
+
 config QSPI_SIZE_LIMIT
 	hex "Entire QSPI size"
 	default 0x1000000
