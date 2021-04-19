@@ -8,7 +8,8 @@
 
 #if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
 #define EXTRA_DEFAULT_ENV_FLAGS \
-	"writebootqspi:so,eraseqspi:so,"
+	"writebootqspi:so,eraseqspi:so," \
+	"qspifpgasizeoffset:so,qspifpgabitoffset:so,"
 #else
 #define EXTRA_DEFAULT_ENV_FLAGS \
 	"writepartitions:so,writeboot:so,writeuboot:so,writefsbl:so," \
@@ -127,6 +128,9 @@
 
 
 #if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+#define QSPI_FPGA_OFFSET \
+	"qspifpgasizeoffset=" __stringify(CONFIG_QSPI_FPGA_SIZE_OFFSET) "\0" \
+	"qspifpgabitoffset=" __stringify(CONFIG_QSPI_FPGA_DEFAULT_BIT_OFFSET) "\0"
 #define WRITE_BOOT_COMMANDS \
 	"writebootqspi=sf probe 0 0 0;" \
 		"sf erase 0 " __stringify(CONFIG_QSPI_UBOOT_PARTITION_LIMIT) "; " \
@@ -181,6 +185,7 @@
         "mtdids=" MTDIDS_DEFAULT "\0" \
 	"mtdparts=" MTDPARTS_DEFAULT "\0"
 
+#define QSPI_FPGA_OFFSET
 #endif
 
 #define REAL_EXTRA_ENV_SETTINGS \
@@ -215,6 +220,7 @@
 		__stringify(CONFIG_BACKUP_USBGADGETETHADDR_OFFSET) "\0" \
 	"backupeth3addroffset=" \
 		__stringify(CONFIG_BACKUP_ETH3ADDR_OFFSET) "\0" \
+	QSPI_FPGA_OFFSET \
 	"wl12xxnvs=" NI_DEFAULT_NVS "\0" \
 	"sdboot=echo Copying Safemode from SD to RAM...; " \
 		"mmcinfo; " \
