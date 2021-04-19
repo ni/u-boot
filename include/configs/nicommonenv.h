@@ -9,6 +9,7 @@
 #if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
 #define EXTRA_DEFAULT_ENV_FLAGS \
 	"writebootqspi:so,eraseqspi:so," \
+	"writefpgabit:so,writefpgasize:so," \
 	"qspifpgasizeoffset:so,qspifpgabitoffset:so,"
 #else
 #define EXTRA_DEFAULT_ENV_FLAGS \
@@ -132,6 +133,18 @@
 	"qspifpgasizeoffset=" __stringify(CONFIG_QSPI_FPGA_SIZE_OFFSET) "\0" \
 	"qspifpgabitoffset=" __stringify(CONFIG_QSPI_FPGA_DEFAULT_BIT_OFFSET) "\0"
 #define WRITE_BOOT_COMMANDS \
+	"writefpgabit=sf probe 0 0 0;" \
+                "sf write $loadaddr $qspifpgabitoffset $filesize;" \
+		"sf read $verifyaddr $qspifpgabitoffset $filesize;" \
+		"cmp.b $loadaddr $verifyaddr $filesize;\0" \
+	"writefpgasize=sf probe 0 0 0;" \
+		"mw.l $loadaddr $filesize;" \
+		"sf write $loadaddr $qspifpgasizeoffset " \
+		__stringify(CONFIG_QSPI_FPGA_SIZE_LENGTH) "; " \
+		"sf read $verifyaddr $qspifpgasizeoffset " \
+		__stringify(CONFIG_QSPI_FPGA_SIZE_LENGTH) "; " \
+		"cmp.b $loadaddr $verifyaddr " \
+		__stringify(CONFIG_QSPI_FPGA_SIZE_LENGTH) ";\0" \
 	"writebootqspi=sf probe 0 0 0;" \
 		"sf erase 0 " __stringify(CONFIG_QSPI_UBOOT_PARTITION_LIMIT) "; " \
 		"sf write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
