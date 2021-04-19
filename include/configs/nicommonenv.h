@@ -5,6 +5,16 @@
 #ifndef __CONFIG_NICOMMON_ENV_H
 #define __CONFIG_NICOMMON_ENV_H
 
+
+#if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+#define EXTRA_DEFAULT_ENV_FLAGS \
+	"writebootqspi:so,eraseqspi:so,"
+#else
+#define EXTRA_DEFAULT_ENV_FLAGS \
+	"writepartitions:so,writeboot:so,writeuboot:so,writefsbl:so," \
+	"mtdids:so,mtdparts:so,"
+#endif
+
 #define READONLY_DEFAULT_ENV_FLAGS \
 	"consolecmd:so,ncoutport:do,ncinport:do,nc:so,sc:so," \
 	"fdt_high:xo,initrd_high:xo,TargetClass:so,DeviceDesc:so," \
@@ -21,8 +31,8 @@
 	"setlederrorstatus:so,readbootmode:so,pxesupport:do," \
 	"readsoftdip:so,readcplddip:so,evaldip:so,safemode_err:so," \
 	"fpga_err:so,recovery_err:so,updateenv:so,resetenv:so," \
-	"writepartitions:so,writeboot:so,writebootqspi:so,writefsbl:so,writeuboot:so," \
-	"bootcmd:so,preboot:so,mtdids:so,mtdparts:so,"
+	"bootcmd:so,preboot:so," \
+	EXTRA_DEFAULT_ENV_FLAGS
 
 #define READONLY_MFG_ENV_VARS \
 	"serial#:xo,ethaddr:mc,eth1addr:mc,usbgadgetethaddr:mc," \
@@ -114,6 +124,65 @@
 #define USB_HOST_DEVICE_COMMANDS
 #endif /* CONFIG_OTG_USB_BASE_ADDR */
 
+
+
+#if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+#define WRITE_BOOT_COMMANDS \
+	"writebootqspi=sf probe 0 0 0;" \
+		"sf erase 0 " __stringify(CONFIG_QSPI_UBOOT_PARTITION_LIMIT) "; " \
+		"sf write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"sf read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
+	"eraseqspi=sf probe 0 0 0;" \
+		"sf erase 0 " __stringify(CONFIG_QSPI_SIZE_LIMIT) ";\0"
+
+#define MTD_PARTS_VARS
+#else
+#define WRITE_BOOT_COMMANDS \
+	"writepartitions=" \
+		"if ubi part boot-config && " \
+			"ubi read $verifyaddr u-boot-env1 1 && " \
+			"ubi read $verifyaddr u-boot-env2 1; " \
+		"then " \
+			"ubi remove bootfs && " \
+			"ubi remove config; " \
+		"else " \
+			"nand erase.part boot-config && " \
+			"ubi part boot-config && " \
+			"ubi create u-boot-env1 " __stringify(CONFIG_ENV_SIZE) " dynamic && " \
+			"ubi create u-boot-env2 " __stringify(CONFIG_ENV_SIZE) " dynamic; " \
+		"fi && " \
+		"ubi create bootfs " __stringify(CONFIG_BOOTFS_VOLUME_SIZE) " dynamic && " \
+		"ubi create config - dynamic && " \
+		"if ubi part root && " \
+			"ubi read $verifyaddr rootfs 1; " \
+		"then " \
+			"ubi remove rootfs; " \
+		"else " \
+			"nand erase.part root && " \
+			"ubi part root; " \
+		"fi && " \
+		"ubi create rootfs - dynamic;\0" \
+	"writeboot=nand erase 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"nand write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"nand read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
+	"writefsbl=nand erase.part fsbl; " \
+		"nand write $loadaddr fsbl; " \
+		"nand read $verifyaddr fsbl; " \
+		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_MTD_UBOOT_OFFSET) ";\0" \
+	"writeuboot=nand erase.part u-boot; " \
+		"nand write $loadaddr u-boot; " \
+		"nand read $verifyaddr u-boot; " \
+		"cmp.b $loadaddr $verifyaddr " \
+			__stringify(CONFIG_BOARD_SIZE_LIMIT) ";\0"
+
+#define MTD_PARTS_VARS \
+        "mtdids=" MTDIDS_DEFAULT "\0" \
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
+
+#endif
+
 #define REAL_EXTRA_ENV_SETTINGS \
 	"autoload=n\0" \
 	"silent=1\0" \
@@ -133,8 +202,7 @@
 	"DeviceCode=0x" CONFIG_DEVICE_CODE "\0" \
 	"FPGADeviceCode=0x" CONFIG_FPGA_DEVICE_CODE "\0" \
 	NI_GADGET_VARS \
-	"mtdids=" MTDIDS_DEFAULT "\0" \
-	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+	MTD_PARTS_VARS \
 	"verifyaddr=" VERIFY_ADDR "\0" \
 	"backuppage=" __stringify(CONFIG_BACKUP_PAGE) "\0" \
 	"backupserialoffset=" __stringify(CONFIG_BACKUP_SERIAL_OFFSET) "\0" \
@@ -402,48 +470,7 @@
 		ETHADDR_RESTORE \
 		WL12XXNVS_RESTORE \
 		"setenv .flags;\0" \
-	"writepartitions=" \
-		"if ubi part boot-config && " \
-			"ubi read $verifyaddr u-boot-env1 1 && " \
-			"ubi read $verifyaddr u-boot-env2 1; " \
-		"then " \
-			"ubi remove bootfs && " \
-			"ubi remove config; " \
-		"else " \
-			"nand erase.part boot-config && " \
-			"ubi part boot-config && " \
-			"ubi create u-boot-env1 " __stringify(CONFIG_ENV_SIZE) " dynamic && " \
-			"ubi create u-boot-env2 " __stringify(CONFIG_ENV_SIZE) " dynamic; " \
-		"fi && " \
-		"ubi create bootfs " __stringify(CONFIG_BOOTFS_VOLUME_SIZE) " dynamic && " \
-		"ubi create config - dynamic && " \
-		"if ubi part root && " \
-			"ubi read $verifyaddr rootfs 1; " \
-		"then " \
-			"ubi remove rootfs; " \
-		"else " \
-			"nand erase.part root && " \
-			"ubi part root; " \
-		"fi && " \
-		"ubi create rootfs - dynamic;\0" \
-	"writeboot=nand erase 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
-		"nand write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
-		"nand read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
-		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
-	"writebootqspi=sf probe 0 0 0;" \
-		"sf erase 0 " __stringify(CONFIG_QSPI_SIZE_LIMIT) "; " \
-		"sf write $loadaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
-		"sf read $verifyaddr 0 " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) "; " \
-		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_BOOT_BIN_SIZE_LIMIT) ";\0" \
-	"writefsbl=nand erase.part fsbl; " \
-		"nand write $loadaddr fsbl; " \
-		"nand read $verifyaddr fsbl; " \
-		"cmp.b $loadaddr $verifyaddr " __stringify(CONFIG_MTD_UBOOT_OFFSET) ";\0" \
-	"writeuboot=nand erase.part u-boot; " \
-		"nand write $loadaddr u-boot; " \
-		"nand read $verifyaddr u-boot; " \
-		"cmp.b $loadaddr $verifyaddr " \
-			__stringify(CONFIG_BOARD_SIZE_LIMIT) ";\0"
+	WRITE_BOOT_COMMANDS
 
 #define REAL_BOOTCOMMAND \
 	"if test $bootmode = safemode; then " \
