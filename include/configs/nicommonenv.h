@@ -45,6 +45,52 @@
 	"ncip:i,mtu:d,"
 
 #ifndef SCRIPT_FPGALOADCMD
+#if defined(CONFIG_ZYNQ_QSPI) && defined(CONFIG_DM_SPI_FLASH)
+#define SCRIPT_FPGALOADCMD \
+        "if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
+                "-n \\\\\"$isforcedrecoverymode\\\\\"; "\
+        "then " \
+                "loaddefaultbit=1; " \
+        "else " \
+                "if " LOAD_BOOTFS " $verifyaddr user.bit.crc && " \
+                        LOAD_BOOTFS " $loadaddr user.bit.bin && " \
+                        "md5sum -v $loadaddr $filesize *$verifyaddr; " \
+                "then " \
+                        "if fpga load 0 $loadaddr $filesize; then " \
+                                "fpgasuccess=1; " \
+                        "else " \
+                                "echo $fpga_err..(user) ; " \
+                                "loaddefaultbit=1; " \
+                        "fi; " \
+                "else " \
+                        "loaddefaultbit=1; " \
+                "fi; " \
+        "fi; " \
+        "if test -n \\\\\"$loaddefaultbit\\\\\"; then " \
+		"if sf probe 0 0 0 && " \
+			"sf read $loadaddr $qspifpgasizeoffset " \
+			__stringify(CONFIG_QSPI_FPGA_SIZE_LENGTH) "; " \
+		"then " \
+			"setexpr.l fpgasize *$loadaddr; " \
+                "fi; " \
+		"if test -n \\\\\"$fpgasize\\\\\"; then " \
+			"if sf read $loadaddr $qspifpgabitoffset $fpgasize; then " \
+				"configfpga=1; " \
+			"fi; "\
+		"fi; " \
+        "fi; " \
+        "if test -n \\\\\"$configfpga\\\\\"; then " \
+                "if fpga load 0 $loadaddr $fpgasize; then " \
+                        "fpgasuccess=1; " \
+                "fi; " \
+        "fi; " \
+        "if test -z \\\\\"$fpgasuccess\\\\\"; then " \
+                "echo $fpga_err; " \
+                "run recoverycmd; " \
+                "run recoverybootcmd;" \
+        "fi; " \
+        "run markhardbootcomplete;"
+#else
 #define SCRIPT_FPGALOADCMD \
 	"if test -n \\\\\"$isnofpgaapp\\\\\" -o $bootmode = safemode -o " \
 		"-n \\\\\"$isforcedrecoverymode\\\\\"; "\
@@ -84,6 +130,7 @@
 		"run recoverybootcmd;" \
 	"fi; " \
 	"run markhardbootcomplete;"
+#endif
 #endif
 
 /* Make sure that all resetenv save and restore macros are defined. */
