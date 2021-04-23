@@ -60,7 +60,12 @@
 		};
 		partition@u-boot {
 			label = "u-boot";
-			reg = <0x20000 0xB00000>;
+			reg = <0x20000 0x400000>;
+		};
+		partition@defaultbit {
+			label = "defaultbit";
+			reg = <0x420000 0x700000>;
+			read-only;
 		};
 		partition@- {
 			label = "-";
